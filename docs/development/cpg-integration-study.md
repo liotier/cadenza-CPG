@@ -1,6 +1,6 @@
 # Cadenza and the Chord Progression Generator: an integration study
 
-Status: study, revision 4. No code has been written; the measurements come from throwaway scripts described in
+Status: study, revision 5. No code has been written; the measurements come from throwaway scripts described in
 [Appendix A](#appendix-a-measurement-method).
 
 - Revision 1 surveyed the three projects and proposed avenues.
@@ -15,6 +15,10 @@ Status: study, revision 4. No code has been written; the measurements come from 
 - Revision 4 records decisions 12 to 15 (the fifth of 11ths and 13ths, with its trade-off kept for review; file access;
   Q-Link banks; the deferred probe of physical pads), corrects avenue J's risk, and notes the owner's routes from parts to
   clips in the parked topic at the end of [§7](#7-integration-avenues).
+- Revision 5 drops avenue J (decision 16), grounds the live pads' recommendation in Cadenza's current behaviour
+  ([avenue L](#l-live-palette-pads)), answers what a C port of the palette builder would give the user and recommends
+  against it ([avenue D](#d-the-palette-in-the-bar-editor-and-turnarounds)), and records where an MPC One keeps its
+  progression files.
 
 | Project | Version studied | Licence |
 |---|---|---|
@@ -457,8 +461,8 @@ the closing V, IV and I. No exception is needed, and it is only a starting order
 ### 6.5 Voicings, names, numerals
 
 - **Import chord identity, not CPG voicings.** Cadenza re-voices from chord tones with its own modes and knobs, which are
-  more expressive than the CPG's treatments. The exception is a `.progression` import
-  ([avenue J](#j-progression-import-and-export)), where Feel's hand notes can preserve a pad's exact notes.
+  more expressive than the CPG's treatments. (A `.progression` import could have kept exact voicings through Feel's hand
+  notes; [avenue J](#j-progression-import-and-export) is dropped, decision 16.)
 - **Names on tiles, not numerals.** The CPG reads numerals against the parallel major, Cadenza against the project scale
   (§2.1). The existing browser already shows names in the key ("Epic · Am F C G"); keeping names sidesteps the conflict.
   Wherever numerals appear, they follow Cadenza's convention, consistent with the rest of its screens.
@@ -595,8 +599,27 @@ dominant, or chromatic (tritone substitute, backdoor). Ranking: the relation's s
 from the preceding chord, then a seed. Deterministic, recallable, and complementary to CADENCE, which sets the last
 chord's top note: TURNAROUND would choose the chord, CADENCE its soprano.
 
-- **Two ways to get palettes.** From the generated table (B) for parts loaded from the catalogue; a C port of the palette
-  builder only if hand-made progressions must receive a palette of their own (question 3 of §11).
+**Palettes for progressions built from scratch.** The generated table (B) holds palettes for the 184 catalogue entries,
+computed offline by the CPG's own code. A progression the user builds from scratch, chord by chord in the bar editor, has
+no catalogue entry, hence no palette, unless something computes one on the device. Only C runs there, hence the question
+of a C port.
+
+- **What a port would give the user.** A palette whose spicy fourth row is analysed from the user's own chords: the
+  secondary dominants of *those* chords, their substitutions, the borrowed chords around *their* key centre.
+- **What it would cost.** A second implementation of the CPG's palette logic, roughly a thousand lines, to keep in step
+  with every CPG improvement: precisely what decision 10 set out to avoid.
+- **What gives most of the value without a port**, all generated offline from the CPG through the submodule:
+  1. *The part keeps its palette.* A palette loaded from the catalogue stays with the part through every edit of its
+     order; editing never takes it away.
+  2. *A palette for every scale.* A part that never loaded one gets its scale's palette: the CPG's Scale Mode lays out 16
+     distinct chords of a scale (its triads, then its sevenths), so seven precomputed palettes cover Cadenza's seven
+     scales.
+  3. *The nearest catalogue palette.* For a progression built from scratch, the catalogue palette that contains the most
+     of its chords, found on the device by comparing roots and qualities (184 palettes of 16 chords: a negligible search),
+     the table storing chords independently of the project's scale. Every chord stays exact; only the suggestions around
+     them come from the nearest template instead of from an analysis of the user's own.
+
+Recommendation: no port; the three measures above. Question 3 of §11 asks for confirmation.
 - **Size.** M.
 
 ### E. The palette walk, deterministic
@@ -701,21 +724,24 @@ fifth where SPREAD leaves room, which is how arrangers decide it; only then new 
 
 ### J. `.progression` import and export
 
-- **What.** Read Pad Perform files: identify each pad's chord from its notes (the interval analysis of the
-  [Finder](https://github.com/liotier/AkaiMPC/tree/main/AkaiMPCChordProgressionFinder)) and load the 16 pads as the
-  part's palette, which the palette model makes natural, keeping exact voicings as Feel hand notes. Export the reverse:
-  the part's palette as a `.progression`, so Pad Perform plays it.
+**Dropped** by decision 16: the integration goes the Cadenza way, through the CPG's code and a generated table, not through Pad
+Perform's files. Kept for the record:
+
+- **What it was.** Reading Pad Perform files into a part's palette (each pad's chord identified from its notes, as the
+  [Finder](https://github.com/liotier/AkaiMPC/tree/main/AkaiMPCChordProgressionFinder) does, exact voicings kept as Feel
+  hand notes), and writing a part's palette back as a `.progression`.
 - **File access.** Taken as available (decision 13). Presets do not show it: Cadenza's are compiled into its binary
   ([presets_data.h](../../src/presets_data.h)), and preset files are read by MPC, which hands the plugin a state chunk.
-  What does show it is that the plugin is native code running inside MPC's process with MPC's rights: Cadenza already
-  loads the ALSA library from the system with `dlopen` ([engine.c](../../src/engine.c), header comment). Unless MPC OS
-  3.10.1 confines plugins, which nothing found in this study suggests, file access is a matter of paths.
-- **What remains unknown.** Where the `Progressions` folder lives: Akai documents one at the root of a storage device
-  ([Akai support](https://support.akaipro.com/en/support/solutions/articles/69000824380-mpc-x-live-and-one-using-your-progressions-in-standalone)),
-  but not the internal drive's path, which is found on the device. And when MPC reads it: by the CPG's own export notes,
-  MPC parses progressions at startup, so an exported file would appear in Pad Perform after a restart. File I/O belongs in
-  setters, never in `seq_block`. A file browser is the most screen-hungry piece of this study.
-- **Size.** L.
+  What shows it is that a plugin is native code running inside MPC's process: Cadenza already loads the ALSA library
+  from the system with `dlopen` ([engine.c](../../src/engine.c), header comment), and other plugins ship data files in
+  their folders for themselves to load (sd88me's Dexed port, its DX7 cartridges). The fact still serves the parked
+  question of parts and clips, should Cadenza write MIDI files.
+- **Where the files are,** from a filesystem listing of an MPC One under MPC OS 3.10.1: the factory Pad Perform
+  progressions, 82 files (Pop 28, Dance 20, Jazz 13, Gospel 12, Ballad 9), in `/usr/share/Akai/SME0/Progressions` on the
+  system partition, which is mounted read-only; the user's folder, `/storage/MPC Documents/Progressions`, on the internal
+  drive; external drives under `/media/<volume>`, where Akai documents a `Progressions` folder at the drive's root
+  ([Akai support](https://support.akaipro.com/en/support/solutions/articles/69000824380-mpc-x-live-and-one-using-your-progressions-in-standalone)).
+  By the CPG's own export notes, MPC reads progressions at startup.
 
 ### K. Words
 
@@ -731,21 +757,34 @@ fifth where SPREAD leaves room, which is how arrangers decide it; only then new 
   queues the pad's chord to land at the part's SWITCH AT point; bass and melody follow it. The session runs as a
   transaction: KEEP keeps what was played as the part's order, CANCEL restores the part as it was. Turning parts into MPC
   clips is a separate question, parked at the end of this section.
-- **Cadenza's own live idiom.** Cadenza has no harmony performance yet, but every live control it has behaves the same
-  way: a tap changes the state at a quantised point counted from the song position, and the change stays until the next
-  tap. A JAM block "takes over every bar that isn't locked, at the next switch point"; a song part switches "at the next
-  bar line"; a knob turn lands "by the next beat"; tapping the queued item again cancels it; UNDO steps back
-  ([MANUAL §11](../../MANUAL.md#11-jam-pages), [§10](../../MANUAL.md#10-song-parts-and-mutes),
-  [§20](../../MANUAL.md#20-timing-how-cadenza-follows-mpc)). Nothing is momentary, and nothing records a performance onto
-  the timeline.
-- **Recommendation: hold, and capture on KEEP.** Applied to pads, the idiom gives **hold until the next tap**, quantised
-  by the part's SWITCH AT, a second tap on the queued pad cancelling it: Pad Perform's model and Cadenza's own. During the
-  session the held chord is the harmony of the whole loop, as on a Pad Perform pad. A looper's overdub would be foreign to
-  Cadenza. What it lacks is a way to keep a performance, and retrospective capture supplies it without changing how
-  playing feels: the engine remembers each tap and where it landed, and KEEP writes the last loop's worth into the part's
-  slots, the chords that sounded at the places they sounded, much as
-  [Ableton's Capture MIDI](https://help.ableton.com/hc/en-us/articles/360000776450-Capture-MIDI) retrieves what was just
-  played. Question 1 of §11 asks for confirmation.
+- **Cadenza's current behaviour.** Cadenza has no chord pads, so nothing defines their behaviour yet; but it has two
+  precedents.
+  - *Changing chords while playing* happens today in the PROGRESSIONS browser: a tile tap replaces the part's unlocked
+    chords at once and auditions the first one it changed ([`seq_prog_try`](../../src/seq_core.c#L7039)); the new chords
+    play from the next hit, mid-bar if need be, with no quantisation; they stay until the next tap; DONE keeps the last
+    one tried, CANCEL puts back what was there when the browser opened. PROGRESSION ◀ ▶ does the same outside the
+    browser, as one UNDO step ([`seq_prog_step`](../../src/seq_core.c#L7052)).
+  - *Performing* happens on the JAM pages, and every live control there behaves alike: a tap changes the state at a
+    quantised point counted from the song position, and the change stays until the next tap. A JAM block "takes over
+    every bar that isn't locked, at the next switch point"; a song part switches "at the next bar line"; a knob turn lands
+    "by the next beat"; tapping the queued item again cancels it; UNDO steps back
+    ([MANUAL §11](../../MANUAL.md#11-jam-pages), [§10](../../MANUAL.md#10-song-parts-and-mutes),
+    [§20](../../MANUAL.md#20-timing-how-cadenza-follows-mpc)).
+
+  Nothing in Cadenza is momentary, and nothing records a performance onto the timeline. The PROGRESSIONS browser already
+  is "hold until the next tap, then DONE or CANCEL", for whole progressions.
+- **Recommendation: the browser's behaviour, applied to single chords, with two changes.** A tap's chord holds until the
+  next tap and becomes the harmony of the whole loop, as on a Pad Perform pad; the session ends with KEEP or CANCEL, as the
+  browser's does. A looper's overdub would be foreign to Cadenza. The two changes:
+  1. *Timing.* A tap lands at the part's SWITCH AT point, a second tap on the queued pad cancelling it, as on JAM, instead
+     of at once: auditioning a progression tolerates an entrance mid-bar, performing a chord does not.
+  2. *What KEEP keeps.* The browser's DONE keeps the last tap, which for pads would be one chord for the whole loop. KEEP
+     instead keeps the performance, by retrospective capture: the engine remembers each tap and where it landed, and KEEP
+     writes the last loop's worth into the part's slots, the chords that sounded at the places they sounded, much as
+     [Ableton's Capture MIDI](https://help.ableton.com/hc/en-us/articles/360000776450-Capture-MIDI) retrieves what was
+     just played. Capture changes nothing in how playing feels.
+
+  Question 1 of §11 asks for confirmation.
 - **Engine.** Write-through on a scratch part with a swap at the boundary, as JAM's queue already does, rather than a
   harmony overlay that every lane would have to read: the lanes render whole loops in advance. One difference: a JAM block
   swaps one lane, a chord change all three (the Chords' voices and labels, the Bass, the Melody), which must swap together
@@ -770,7 +809,7 @@ fifth where SPREAD leaves room, which is how arrangers decide it; only then new 
 | G. Genre crosswalk | medium | M | low | good | 4 |
 | K. Words | medium | S | low | good | 1-2 |
 | I. Heptatonic scales | low to medium | M | medium | sensitive | 5 |
-| J. `.progression` I/O | medium | L | medium (folder path, startup reading) | to discuss | 5 |
+| J. `.progression` I/O | dropped (decision 16) | | | | |
 
 ### Not recommended now
 
@@ -799,7 +838,9 @@ The owner's routes, noted 2026-11-22, as the starting point when the topic resum
 On the third route: the engine is deterministic and host-free, and its parity harness ([tests/core_parity.c](../../tests/core_parity.c))
 already drives it offline with a synthetic song position and prints every note it would play. Rendering each part over its
 loop into a three-track Standard MIDI File, one track per lane, is a small step from there; loops of one or two bars need
-four bars rendered, since their fills play every fourth bar. File access is taken as available (decision 13).
+four bars rendered, since their fills play every fourth bar. File access is taken as available (decision 13); on an MPC
+One, the user's folders are under `/storage/MPC Documents` on the internal drive (`Sequences` among them), and external
+drives under `/media/<volume>` (avenue J's notes).
 
 ---
 
@@ -811,7 +852,7 @@ four bars rendered, since their fills play every fourth bar. File access is take
 | 2 | C palette browser; D palette in the bar editor | reuse of existing views | device test on the MPC One |
 | 3 | L live palette pads; D turnarounds | a pad view, a knob step | device test |
 | 4 | E palette walk; F Pedal and Smooth+; G crosswalk | a tile, two modes | device test, Smooth+ measured against Smooth |
-| 5 | I, J if wanted | as needed | per specification |
+| 5 | I if wanted | as needed | per specification |
 
 Stage 1 is engine work that can be built and tested in this repository without the device (§2.1). Each stage first
 becomes a specification in this directory, in the format of the CPG's
@@ -864,7 +905,7 @@ MPC One and MPC OS 3.10.1 as untested, and this fork's owner runs that combinati
 ## 10. Decision log
 
 Decisions of the fork's owner, 2026-11-22: 1 to 9 in answer to revision 1, 10 and 11 to revision 2, 12 to 15 to
-revision 3.
+revision 3, 16 to revision 4.
 
 | # | Decision | Consequence in this revision |
 |---|---|---|
@@ -883,6 +924,7 @@ revision 3.
 | 13 | A plugin can access files: avenue J needs no probe for that, only the folder's path. | avenue J |
 | 14 | No knob-placement constraint: Q-Link banks are how every plugin spans the MPCs, from the XL's 16 Q-Links down to the One's 4. | §11 |
 | 15 | The probe of whether the MPC One's physical pads reach the plugin is deferred. | §5.7, §11 |
+| 16 | No `.progression` import or export: the integration goes the Cadenza way. | avenue J dropped |
 
 **To revisit.** Decision 12, the fifth of 11ths and 13ths: when a listener misses the fifth, when a voicing style wants it,
 when `THEORY_CHORD_MAX` is raised for another reason, or when the CPG's 11ths and 13ths change. The trade-off and the ways
@@ -900,10 +942,9 @@ For the owner of this fork; the answers will be written into §10 before any spe
    Cadenza's track, since MPC echoes Cadenza's own port into it and the engine ignores it. The probe's question is
    therefore narrower: whether the pads' notes arrive there too, and can be told apart from that echo, for instance by
    channel. It would let avenue L's pads be played on the hardware.
-3. **Palettes for hand-made progressions.** Is the part's loaded palette enough, or should a progression built from
-   scratch in the bar editor receive a palette of its own, which needs the palette builder ported to C ?
-4. **`.progression` files.** With file access settled (decision 13), is avenue J wanted ? If so, a check on the device
-   finds the `Progressions` folder's path.
+3. **Palettes for progressions built from scratch.** Confirm the recommendation of avenue D: no C port of the palette
+   builder; instead the part keeps its loaded palette, a part without one gets its scale's palette, and a progression
+   built from scratch can take the nearest catalogue palette ?
 
 ---
 
@@ -927,7 +968,9 @@ All scripts were written in the session scratchpad and are not committed.
    above, a dominant seventh a semitone above or a whole tone below, or a diminished chord a semitone below.
 5. **Starting orders.** Lengths, and whether the first and last chords are the tonic (degree I or i without accidental),
    were read from `parseProgression`.
-6. **Other figures.** Genres, priorities, hints and chord types were counted from the CPG's `progressions` and
+6. **Device facts.** The paths of avenue J's notes come from a filesystem listing of an MPC One under MPC OS 3.10.1,
+   supplied by the fork's owner and not committed; only generic system paths are cited.
+7. **Other figures.** Genres, priorities, hints and chord types were counted from the CPG's `progressions` and
    `CHORD_INTERVALS`; Cadenza's spellings were printed by `theory_chord_name`, `theory_chord_name_c`, `theory_degree_c` and
    `theory_numeral`; the core parity trace was built from [tests/core_parity.c](../../tests/core_parity.c) and hashed.
 
