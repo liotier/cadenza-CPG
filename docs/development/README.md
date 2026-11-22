@@ -5,7 +5,7 @@ Studies and specifications for work on this fork of Cadenza. Nothing here is use
 
 | Document | Status | Subject |
 |---|---|---|
-| [cpg-integration-study.md](cpg-integration-study.md) | study, revision 2, no code | What the MPC Chord Progression Generator's palettes (and the Ouarpeggiator's palette walk) can bring to Cadenza, measured against Cadenza's engine, budgets and licence; the palette model; avenues ranked and staged; decision log; open questions |
+| [cpg-integration-study.md](cpg-integration-study.md) | study, revision 3, no code | What the MPC Chord Progression Generator's palettes (and the Ouarpeggiator's palette walk) can bring to Cadenza, measured against Cadenza's engine, budgets and licence; the palette model; avenues ranked and staged; decision log; open questions |
 
 Conventions:
 

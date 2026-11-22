@@ -1,12 +1,17 @@
 # Cadenza and the Chord Progression Generator: an integration study
 
-Status: study, revision 2. No code has been written; the measurements come from throwaway scripts described in
-[Appendix A](#appendix-a-measurement-method). Revision 1 surveyed the three projects and proposed avenues; revision 2
-records the owner's decisions ([§10](#10-decision-log)), rebuilds the integration around palettes rather than progressions
-([§4](#4-palettes-not-progressions)), and answers the questions the first revision raised: whether the progression path
-can accept any chord ([§6.2](#62-lifting-the-borrowed-only-clamp)), how turnaround chords can be found in a palette
-([avenue D](#d-the-palette-in-the-bar-editor-and-turnarounds)), and whether Cadenza's voice leading needs the CPG's
-([§6.6](#66-voice-leading-what-cadenza-already-does-what-the-cpg-would-add)).
+Status: study, revision 3. No code has been written; the measurements come from throwaway scripts described in
+[Appendix A](#appendix-a-measurement-method).
+
+- Revision 1 surveyed the three projects and proposed avenues.
+- Revision 2 recorded the owner's first decisions ([§10](#10-decision-log)), rebuilt the integration around palettes
+  rather than progressions ([§4](#4-palettes-not-progressions)), and answered three questions: whether the progression
+  path can accept any chord ([§6.2](#62-lifting-the-borrowed-only-clamp)), how turnaround chords can be found in a palette
+  ([avenue D](#d-the-palette-in-the-bar-editor-and-turnarounds)), and whether Cadenza's voice leading needs the CPG's
+  ([§6.6](#66-voice-leading-what-cadenza-already-does-what-the-cpg-would-add)).
+- Revision 3 records how the CPG is pinned and which identity test builds carry (decisions 10 and 11), and recommends
+  answers on the fifth of 11ths and 13ths ([avenue H](#h-completing-the-chord-vocabulary)) and on how live pads behave
+  ([avenue L](#l-live-palette-pads)).
 
 | Project | Version studied | Licence |
 |---|---|---|
@@ -509,10 +514,20 @@ Sizes follow the CPG's improvement specifications: **S** under a day of a sessio
 
 ### B. A palette table generated from the CPG
 
-- **What.** A Node tool, kept in this repository (decision 7), importing the CPG's modules at a pinned commit and emitting a
-  C header: per catalogue entry a stable identifier, its genre, English nickname, tonality, best Cadenza scale, starting
-  order with default durations (§6.4), and its 16 palette chords as Cadenza representations with spice level and
-  category. A CI check regenerates the header and fails on a difference, as the CPG's catalogue snapshot does.
+- **What.** A Node tool, kept in this repository (decision 7), importing the CPG's modules through a git submodule pinned
+  to a commit of `liotier/AkaiMPC` (decision 10), and emitting a C header: per catalogue entry a stable identifier, its
+  genre, English nickname, tonality, best Cadenza scale, starting order with default durations (§6.4), and its 16 palette
+  chords as Cadenza representations with spice level and category. A CI check regenerates the header and fails on a
+  difference, as the CPG's catalogue snapshot does.
+- **How the CPG's improvements arrive.** By bumping the submodule's commit and regenerating; the header's diff is the
+  review, as the catalogue snapshot is for the CPG's own changes. Nothing is ported. The plugin build reads only the
+  committed header, so building the plugin needs neither Node nor the submodule; only the generator and its CI check do.
+  The AkaiMPC repository also holds the Finder and the MIDI programs: a shallow or sparse submodule keeps the checkout
+  small.
+- **Strictness.** The generator fails, naming the chord and the entry, whenever the CPG emits a chord Cadenza cannot
+  represent exactly. A CPG change that needs Cadenza work then announces itself instead of degrading silently (decision 5),
+  in the spirit of the CPG's own strict template parser
+  ([spec 06](https://github.com/liotier/AkaiMPC/blob/main/AkaiMPCChordProgressionGenerator/docs/improvements/06-template-parser.md)).
 - **Why generate rather than port.** Computing palettes on the device would cost little: setters run off the audio
   thread. The reasons are elsewhere: the CPG's JavaScript stays the reference, with no C port of its thousand lines to
   drift from it, and the binary carries data instead of logic. The trade-off: palettes exist for catalogue entries only,
@@ -577,7 +592,7 @@ from the preceding chord, then a seed. Deterministic, recallable, and complement
 chord's top note: TURNAROUND would choose the chord, CADENCE its soprano.
 
 - **Two ways to get palettes.** From the generated table (B) for parts loaded from the catalogue; a C port of the palette
-  builder only if hand-made progressions must receive a palette of their own (question 6 of §11).
+  builder only if hand-made progressions must receive a palette of their own (question 4 of §11).
 - **Size.** M.
 
 ### E. The palette walk, deterministic
@@ -630,11 +645,31 @@ chord's top note: TURNAROUND would choose the chord, CADENCE its soprano.
 - **How.** New chromatic qualities as a second range appended after `src` 51, each a seven-note scale like the existing
   chromatic rows, so every existing call reads them as any other chord; new colours appended to the colour list. The Feel
   base code (§5.5) needs a versioned form for the new range. Names and numerals learn the new qualities.
-- **Optional.** If the fifth must sound in 11ths and 13ths, two new colours rather than a change to the existing ones,
-  whose output is saved sound; a 13th with its fifth has six notes, so CLUSTER's extra note would need a seventh place.
+- **Saving new colours.** They cannot be written into `.ch` as it stands: an older build ignores the whole field for a
+  single character outside its alphabet ([`load_slots`](../../src/seq_core.c#L4332)) and falls back to the legacy phrase,
+  losing every slot. New colours take an extra field, `.ch` keeping a fallback colour per slot, as 0.28 did for chromatic
+  sources with `old_src`.
 - **Fit.** Shared engine and save format: upstream-sensitive, to be discussed with the author before anything else in the
   engine.
 - **Size.** M.
+
+**Do new colours burden the user ?** No, if they stay out of the controls. A colour reaches the screen in two places only:
+the COLOUR knob's steps (POWER, TRIAD, 7TH, 9TH, 11TH, 13TH) and the bar editor's TYPE (as knobs, sus2, sus4, add9, 6).
+Colours written by the palette loader need neither: the user meets them as palette chords with names. The same holds for
+every sonority in the table above. The cost falls on development: each colour touches the colour tables, the names, the
+drift scores, the save fields and the tests.
+
+**The fifth in 11ths and 13ths: recommendation.** Keep Cadenza's fifthless 11th and 13th colours; add none.
+
+- The chord's identity is unchanged: same symbol, same function, same characteristic tones.
+- The fifth is the tone jazz voicing leaves out first; Cadenza's colours were designed so, within a six-note limit
+  (`THEORY_CHORD_MAX`) that SPREAD's Cluster already fills with one added note.
+- Two audibly different "13th" chords in one product, one from the knob and one from a palette, would be an inconsistency
+  nobody asked for.
+- A 13th with its fifth has six notes, and Cluster's addition would need a seventh place: that limit sizes arrays across the
+  engine and the strum queue, so the change is wide for 66 pads of 17 664 (0.4 %).
+- If the fifth is ever missed, it belongs to voicing, not to chord identity: a voicing style could sound it where SPREAD
+  leaves room, which is how arrangers decide it.
 
 ### I. More heptatonic scales
 
@@ -672,13 +707,27 @@ chord's top note: TURNAROUND would choose the chord, CADENCE its soprano.
 ### L. Live palette pads
 
 - **What.** A PALETTE page of 16 pads, laid out like the MPC's (the browser's 4 × 4 tile grid has the geometry). A tap
-  queues the pad's chord to land at the part's SWITCH AT point; bass and melody follow it; it holds until the next tap.
-  The session runs as a transaction: KEEP writes the performed order into the part, CANCEL restores the part as it was.
-- **Semantics to settle.** Whether a tapped chord holds indefinitely (Pad Perform's model) or is written into the loop's
-  timeline as it plays, like a looper overdubbing harmony; the first is simpler and truer to jamming (question 3 of §11).
+  queues the pad's chord to land at the part's SWITCH AT point; bass and melody follow it. The session runs as a
+  transaction: KEEP keeps what was played, CANCEL restores the part as it was.
+- **Cadenza's own live idiom.** Cadenza has no harmony performance yet, but every live control it has behaves the same
+  way: a tap changes the state at a quantised point counted from the song position, and the change stays until the next
+  tap. A JAM block "takes over every bar that isn't locked, at the next switch point"; a song part switches "at the next
+  bar line"; a knob turn lands "by the next beat"; tapping the queued item again cancels it; UNDO steps back
+  ([MANUAL §11](../../MANUAL.md#11-jam-pages), [§10](../../MANUAL.md#10-song-parts-and-mutes),
+  [§20](../../MANUAL.md#20-timing-how-cadenza-follows-mpc)). Nothing is momentary, and nothing records a performance onto
+  the timeline.
+- **Recommendation: hold, and capture on KEEP.** Applied to pads, the idiom gives **hold until the next tap**, quantised
+  by the part's SWITCH AT, a second tap on the queued pad cancelling it: Pad Perform's model and Cadenza's own. During the
+  session the held chord is the harmony of the whole loop, as on a Pad Perform pad. A looper's overdub would be foreign to
+  Cadenza. What it lacks is a way to keep a performance, and retrospective capture supplies it without changing how
+  playing feels: the engine remembers each tap and where it landed, and KEEP writes the last loop's worth into the part's
+  slots, the chords that sounded at the places they sounded, much as
+  [Ableton's Capture MIDI](https://help.ableton.com/hc/en-us/articles/360000776450-Capture-MIDI) retrieves what was just
+  played. Question 2 of §11 asks for confirmation.
 - **Engine.** Write-through on a scratch part with a swap at the boundary, as JAM's queue already does, rather than a
-  harmony overlay that every lane would have to read: the lanes render whole loops in advance, and the JAM mechanism
-  exists.
+  harmony overlay that every lane would have to read: the lanes render whole loops in advance. One difference: a JAM block
+  swaps one lane, a chord change all three (the Chords' voices and labels, the Bass, the Melody), which must swap together
+  at the same boundary.
 - **Physical pads.** After a device probe (§5.7).
 - **Size.** M to L.
 
@@ -757,8 +806,12 @@ The name "Cadenza" and its marks stay the author's; a repository name that descr
 ordinary practice for a personal fork, but a build shared with anyone should not present itself as Cadenza. There is also
 a practical side: the fork builds with Cadenza's own identity ([vst/vst.json](../../vst/vst.json): name "Cadenza", ID
 `ChSq`, plugin folder `Cadenza - VST - Cadenza`, MIDI port "Cadenza MIDI Out"). Installed beside the official plugin on
-the same MPC, the two would collide, and projects saved with one would open the other. Test builds should carry their own
-name, folder, port and ID, at the price of projects that only the fork opens.
+the same MPC, the two would collide, and projects saved with one would open the other. Decision 11: test builds keep
+Cadenza's identity for now, since the fork aims at a pull request. A test build therefore replaces the official plugin on
+the MPC rather than sitting beside it; the official release's folder is kept to restore it. Projects travel both ways: one
+saved by the fork opens in the official build with fork-only features degraded, never refused, since Cadenza skips
+unknown fields and bad entries, provided new features are saved as avenue H prescribes. An identity of its own (name,
+folder, port, ID) can come later for side-by-side tests, at the price of projects that only the fork opens.
 
 **The CPG and the Ouarpeggiator.** The Unlicense: nothing prevents porting their data and algorithms into Cadenza;
 contributing them upstream would donate public-domain work to a source-available product, the CPG itself staying public
@@ -776,7 +829,7 @@ MPC One and MPC OS 3.10.1 as untested, and this fork's owner runs that combinati
 
 ## 10. Decision log
 
-Decisions of the fork's owner, 2026-11-22, in answer to revision 1.
+Decisions of the fork's owner, 2026-11-22: 1 to 9 in answer to revision 1, 10 and 11 to revision 2.
 
 | # | Decision | Consequence in this revision |
 |---|---|---|
@@ -789,6 +842,8 @@ Decisions of the fork's owner, 2026-11-22, in answer to revision 1.
 | 7 | The generator tool lives in this fork, not in the CPG. | avenue B |
 | 8 | Yes to the palette browser by genre, the palette in the bar editor with turnarounds, the palette walk and the Pedal voicing. | §7, §8 |
 | 9 | From parts to clips: wanted, but not studied now. | parked, end of §7 |
+| 10 | The CPG is pinned as a git submodule, so that its improvements reach Cadenza without being ported. | avenue B |
+| 11 | Test builds keep Cadenza's identity for now, the fork aiming at a pull request; an identity of their own may come later, for side-by-side tests. | §9 |
 
 ---
 
@@ -796,19 +851,15 @@ Decisions of the fork's owner, 2026-11-22, in answer to revision 1.
 
 For the owner of this fork; the answers will be written into §10 before any specification.
 
-1. **11ths and 13ths.** Is the fifth's omission acceptable as Cadenza's voicing policy (§3, §6.1), or should the fifth
-   sound, at the cost of two new colours (avenue H) ?
-2. **The CPG at a pinned commit.** A git submodule of `liotier/AkaiMPC` (clean provenance, an extra step to clone), or a
-   copy of its two modules vendored with their commit hash (self-contained) ?
-3. **Live pads.** Does a tapped chord hold until the next tap, as in Pad Perform, or is it written into the loop as it
-   plays, like a looper overdubbing harmony ?
-4. **Physical pads.** Worth a device probe of whether the MPC One's pads can reach the plugin ?
-5. **Test builds.** Their own plugin identity, so they coexist with the official Cadenza, or Cadenza's, so existing
-   projects open in them ?
-6. **Palettes for hand-made progressions.** Is the part's loaded palette enough, or should a progression built from
+1. **The fifth of 11ths and 13ths.** Confirm the recommendation of avenue H: keep Cadenza's fifthless colours and add
+   none, the fifth becoming a voicing matter if ever missed ?
+2. **Live pads.** Confirm the recommendation of avenue L: hold until the next tap, quantised by SWITCH AT, with the last
+   loop's worth captured on KEEP ?
+3. **Physical pads.** Worth a device probe of whether the MPC One's pads can reach the plugin ?
+4. **Palettes for hand-made progressions.** Is the part's loaded palette enough, or should a progression built from
    scratch in the bar editor receive a palette of its own, which needs the palette builder ported to C ?
-7. **`.progression` files.** Is Pad Perform interoperability worth a device probe of file access from a plugin ?
-8. **The MPC One's knobs.** It has four Q-Link knobs where the Force has eight
+5. **`.progression` files.** Is Pad Perform interoperability worth a device probe of file access from a plugin ?
+6. **The MPC One's knobs.** It has four Q-Link knobs where the Force has eight
    ([Sound On Sound review](https://www.soundonsound.com/reviews/akai-mpc-one)). How do Cadenza's eight-knob pages behave
    on it, and should new controls favour knobs 1 to 4 ?
 
