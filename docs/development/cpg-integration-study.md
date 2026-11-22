@@ -1,6 +1,6 @@
 # Cadenza and the Chord Progression Generator: an integration study
 
-Status: study, revision 5. No code has been written; the measurements come from throwaway scripts described in
+Status: study, revision 6. No code has been written; the measurements come from throwaway scripts described in
 [Appendix A](#appendix-a-measurement-method).
 
 - Revision 1 surveyed the three projects and proposed avenues.
@@ -19,6 +19,9 @@ Status: study, revision 5. No code has been written; the measurements come from 
   ([avenue L](#l-live-palette-pads)), answers what a C port of the palette builder would give the user and recommends
   against it ([avenue D](#d-the-palette-in-the-bar-editor-and-turnarounds)), and records where an MPC One keeps its
   progression files.
+- Revision 6 records decisions 17 to 19 (live pads, no port, the pads' device test), compares Cadenza with Midicake's ARP
+  ([§2.4](#24-a-neighbour-midicakes-arp)), and adds the device test's protocol,
+  [device-test-pads.md](device-test-pads.md).
 
 | Project | Version studied | Licence |
 |---|---|---|
@@ -235,6 +238,36 @@ Two observations:
 What the Ouarpeggiator has and Cadenza lacks: Euclidean patterns, polymeter, curve-shaped dynamics, the palette walk. Only
 the last is harmonic, and it is the piece worth carrying over.
 
+### 2.4 A neighbour: Midicake's ARP
+
+Midicake's ARP is a hardware "4-track parametric arpeggiator & sequencer" that "does not make any sounds"
+([manual](https://manuals.midicake.com/arp/), [introduction](https://manuals.midicake.com/arp/introduction-to-arp/)). Its
+resemblance to Cadenza is close, and reads as convergent evolution rather than lineage: nothing in Cadenza's repository
+mentions it, and both answer the same problem (several MIDI parts kept in key by one changing harmony, played live and
+reproducibly) with the same devices.
+
+| | Midicake ARP | Cadenza |
+|---|---|---|
+| Lanes | 4 polyphonic arpeggiators, each on its own MIDI channel, all drawing "the same notes from a shared Chord or Scale" | 3 lanes (chords, bass, melody), each on its own channel, all following the chord under each step |
+| Harmony over time | [chord chains](https://manuals.midicake.com/arp/chord-chain-sequencing/): up to 32 chords, each with a type, a root, an inversion and a length from a clock tick to 256 bars; 12 stored | the part's slots: up to 64, of two bars to a quarter bar, plus change points and Feel's unequal lengths |
+| Rhythm | 16-step rhythm patterns (velocity, gate, ties, mutes) and groove patterns (timing offsets) | 16-step drawn rhythms (ACCENT, HIT, GHOST, HOLD, REST), SWING, HUMANIZE, PUSH |
+| Bass from chords | a pitch filter keeping a chord's first notes, for "more stable basslines" | the BASS lane's MOVEMENT (roots only, then fifths...) and its styles |
+| Live changes | a chain change lands by the MIDI clock; pressing a NOTE button, which sets a chord live, deactivates the chain | JAM blocks land at SWITCH AT, song parts at the bar line |
+| Randomness | FX, "a reproducible randomizer" with a seed; an appendix titled "Why is there no such thing as Random?" | "Nothing is random": seeds and hashes, pinned by checksums |
+
+The differences mark each design's centre. The ARP is an arpeggiator first: directions, bounce, ratchet, chop, binary
+patterns, and two LFOs per arpeggiator that can modulate "almost all parameters", so that patterns evolve over hours
+([behaviour parameters](https://manuals.midicake.com/arp/arp-behaviour-parameters/)). Cadenza is an arranger first: each
+lane is a musical role with a model of its own (voicing and voice leading, bass styles and approach notes, melody phrase
+forms with call and answer and cadence), genre blocks, song parts. The ARP's chords are shapes, eight sets of eight
+defined on C ([chords and scales](https://manuals.midicake.com/arp/chords-and-scales/)), given a root by its NOTE buttons;
+Cadenza's are degrees of a key, and with the CPG's palettes they become chords chosen for their function in the key.
+
+Two of the ARP's devices are precedents for this study: live chord entry overriding the programmed chain, as avenue L's
+pads would, and External Note Sync, by which an external keyboard sets the chord, as the MPC's pads might set Cadenza's
+([device-test-pads.md](device-test-pads.md)). One is an idea Cadenza lacks, outside this study's scope: slow,
+deterministic modulation of its own knobs.
+
 ---
 
 ## 3. Complementarity, measured
@@ -371,9 +404,11 @@ already planned.
    slots read the chord; in [bassline.h](../../src/bassline.h) a passing note is a scale step, only the approach is
    chromatic), so a minor palette in a major project gets correct chords and clashing passing notes (E naturals over Cm
    in C major).
-7. **No MIDI input.** MIDI does arrive on Cadenza's track: MPC echoes Cadenza's own port into it, and the engine ignores
-   it ([engine.c](../../src/engine.c), header comment). Whether the hardware pads' notes arrive there too, distinguishable
-   from that echo, is unverified; the device probe is deferred (decision 15). On-screen pads come first.
+7. **No MIDI input.** The toolchain's wrapper passes every MIDI event MPC sends to Cadenza's engine, whose handler
+   discards it ([engine.c:362](../../src/engine.c#L362)); among those events is the echo of Cadenza's own port, which MPC
+   routes back into its track ([engine.c](../../src/engine.c), header comment). Whether the hardware pads' notes arrive
+   too, distinguishable from that echo, is what [device-test-pads.md](device-test-pads.md) finds out (decision 19).
+   On-screen pads come first.
 8. **One source of truth for harmony: the CPG.** Cadenza consumes generated data, never a hand-kept translation (the
    Ouarpeggiator's drift, §2.3).
 9. **The licence** ([§9](#9-licence-governance-and-branding)).
@@ -619,7 +654,7 @@ of a C port.
      the table storing chords independently of the project's scale. Every chord stays exact; only the suggestions around
      them come from the nearest template instead of from an analysis of the user's own.
 
-Recommendation: no port; the three measures above. Question 3 of §11 asks for confirmation.
+Decided (decision 18): no port; the three measures above.
 - **Size.** M.
 
 ### E. The palette walk, deterministic
@@ -733,8 +768,10 @@ Perform's files. Kept for the record:
 - **File access.** Taken as available (decision 13). Presets do not show it: Cadenza's are compiled into its binary
   ([presets_data.h](../../src/presets_data.h)), and preset files are read by MPC, which hands the plugin a state chunk.
   What shows it is that a plugin is native code running inside MPC's process: Cadenza already loads the ALSA library
-  from the system with `dlopen` ([engine.c](../../src/engine.c), header comment), and other plugins ship data files in
-  their folders for themselves to load (sd88me's Dexed port, its DX7 cartridges). The fact still serves the parked
+  from the system with `dlopen` ([engine.c](../../src/engine.c), header comment); the toolchain ships `plugin_dir.h` "so
+  an engine can find presets, banks, ROMs and other files shipped next to it"
+  ([plugin_dir.h](https://github.com/Shrekage2024/mpc-vst-plugins/blob/8fbeffc/wrapper/plugin_dir.h)); and other plugins
+  do ship data files in their folders (sd88me's Dexed port, its DX7 cartridges). The fact still serves the parked
   question of parts and clips, should Cadenza write MIDI files.
 - **Where the files are,** from a filesystem listing of an MPC One under MPC OS 3.10.1: the factory Pad Perform
   progressions, 82 files (Pop 28, Dance 20, Jazz 13, Gospel 12, Ballad 9), in `/usr/share/Akai/SME0/Progressions` on the
@@ -773,7 +810,7 @@ Perform's files. Kept for the record:
 
   Nothing in Cadenza is momentary, and nothing records a performance onto the timeline. The PROGRESSIONS browser already
   is "hold until the next tap, then DONE or CANCEL", for whole progressions.
-- **Recommendation: the browser's behaviour, applied to single chords, with two changes.** A tap's chord holds until the
+- **Decided (decision 17): the browser's behaviour, applied to single chords, with two changes.** A tap's chord holds until the
   next tap and becomes the harmony of the whole loop, as on a Pad Perform pad; the session ends with KEEP or CANCEL, as the
   browser's does. A looper's overdub would be foreign to Cadenza. The two changes:
   1. *Timing.* A tap lands at the part's SWITCH AT point, a second tap on the queued pad cancelling it, as on JAM, instead
@@ -784,7 +821,8 @@ Perform's files. Kept for the record:
      [Ableton's Capture MIDI](https://help.ableton.com/hc/en-us/articles/360000776450-Capture-MIDI) retrieves what was
      just played. Capture changes nothing in how playing feels.
 
-  Question 1 of §11 asks for confirmation.
+  Midicake's ARP, a hardware sequencer, behaves alike on the same point: a chord picked live takes over from its programmed
+  chord chain (§2.4).
 - **Engine.** Write-through on a scratch part with a swap at the boundary, as JAM's queue already does, rather than a
   harmony overlay that every lane would have to read: the lanes render whole loops in advance. One difference: a JAM block
   swaps one lane, a chord change all three (the Chords' voices and labels, the Bass, the Melody), which must swap together
@@ -905,7 +943,7 @@ MPC One and MPC OS 3.10.1 as untested, and this fork's owner runs that combinati
 ## 10. Decision log
 
 Decisions of the fork's owner, 2026-11-22: 1 to 9 in answer to revision 1, 10 and 11 to revision 2, 12 to 15 to
-revision 3, 16 to revision 4.
+revision 3, 16 to revision 4, 17 to 19 to revision 5.
 
 | # | Decision | Consequence in this revision |
 |---|---|---|
@@ -925,6 +963,9 @@ revision 3, 16 to revision 4.
 | 14 | No knob-placement constraint: Q-Link banks are how every plugin spans the MPCs, from the XL's 16 Q-Links down to the One's 4. | §11 |
 | 15 | The probe of whether the MPC One's physical pads reach the plugin is deferred. | §5.7, §11 |
 | 16 | No `.progression` import or export: the integration goes the Cadenza way. | avenue J dropped |
+| 17 | Live pads take the PROGRESSIONS browser's behaviour for single chords: hold until the next tap, landing at SWITCH AT, the performance kept on KEEP by retrospective capture, CANCEL restoring. | avenue L |
+| 18 | No C port of the palette builder: the part keeps its palette, a part without one gets its scale's palette, a progression built from scratch can take the nearest catalogue palette. | avenue D |
+| 19 | The device test of the physical pads goes ahead, by the protocol of [device-test-pads.md](device-test-pads.md). | §11 |
 
 **To revisit.** Decision 12, the fifth of 11ths and 13ths: when a listener misses the fifth, when a voicing style wants it,
 when `THEORY_CHORD_MAX` is raised for another reason, or when the CPG's 11ths and 13ths change. The trade-off and the ways
@@ -936,15 +977,12 @@ forward are in [avenue H](#h-completing-the-chord-vocabulary).
 
 For the owner of this fork; the answers will be written into §10 before any specification.
 
-1. **Live pads.** Confirm the recommendation of avenue L: hold until the next tap, quantised by SWITCH AT, with the last
-   loop's worth captured on KEEP ?
-2. **Physical pads (deferred, decision 15).** Can the MPC One's pads reach the plugin ? Known: MIDI already arrives on
-   Cadenza's track, since MPC echoes Cadenza's own port into it and the engine ignores it. The probe's question is
-   therefore narrower: whether the pads' notes arrive there too, and can be told apart from that echo, for instance by
-   channel. It would let avenue L's pads be played on the hardware.
-3. **Palettes for progressions built from scratch.** Confirm the recommendation of avenue D: no C port of the palette
-   builder; instead the part keeps its loaded palette, a part without one gets its scale's palette, and a progression
-   built from scratch can take the nearest catalogue palette ?
+1. **Physical pads (decision 19).** Can the MPC One's pads reach the plugin ? The code settles the plugin's side: the
+   toolchain's wrapper passes every incoming MIDI event to Cadenza's engine, whose handler discards it. The open part is
+   MPC's: which events it sends to Cadenza's track, and whether pad notes can be told apart from the echo of Cadenza's own
+   port. The protocol, [device-test-pads.md](device-test-pads.md), runs a stage without code and a stage with a diagnostic
+   build; its results table will answer this question. Its stage 2 needs code outside `docs/development`, and waits for
+   the owner's go-ahead.
 
 ---
 
