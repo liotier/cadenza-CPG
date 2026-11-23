@@ -39,7 +39,8 @@ The questions are therefore all on MPC's side:
 ## 2. Stage 1: without code
 
 A stock Cadenza 0.28.1 discards what it receives, so stage 1 observes MPC's routing from the outside: through a synth
-plugin built with the same toolchain, and through what MPC records on Cadenza's track.
+plugin built with the same toolchain, and through what MPC records on Cadenza's track. Cadenza itself will not react to
+pads or to any MIDI input, whatever MPC delivers: its silence is evidence of nothing.
 
 Before starting: save any open project, then make a new one at 120 BPM. Keep a pencil, or the phone's camera, for the
 results table of §4.
@@ -117,3 +118,17 @@ in it. Restore the original file after the test.
 - **Chords arrive as several notes (Q5).** MPC's own Pad Perform chords could feed Cadenza too, identified as the CPG's
   Finder identifies chords from their notes.
 - **Pads never arrive (Q1).** Avenue L keeps its on-screen pads only.
+
+## 6. Runs
+
+### Run 1, 2026-11-23, by the owner, stock Cadenza 0.28.1
+
+| Observation | Reading |
+|---|---|
+| Cadenza exposes no MIDI input port, only its output, "Cadenza MIDI Out"; its input is the plugin track's own MIDI input setting (device and channel), as for any plugin | As the code has it: Cadenza creates one ALSA port, "MIDI Out", with read capabilities only ([engine.c:280](../../src/engine.c#L280)), and its input can only come through VST2 `effProcessEvents` (§1) |
+| Cadenza does not react to the pads, nor to MIDI sent from the device and channel set as its track's input | Expected: `midi()` discards every event ([engine.c:362](../../src/engine.c#L362)). The observation cannot tell "not delivered" from "delivered and ignored", so Q1 to Q5 stay open |
+
+Next: steps 1.1 to 1.3 (a synth built on the same toolchain, played from the pads) and 1.5 to 1.6 (recording on
+Cadenza's track), then stage 2. Step 1.1 carries the most weight: Cadenza is registered as an instrument, as the synths
+are, and receives MIDI through the same wrapper code, so a synth of the same toolchain that plays from the pads makes Q1
+very likely for Cadenza too; only stage 2 makes it certain and answers Q2 to Q4.
