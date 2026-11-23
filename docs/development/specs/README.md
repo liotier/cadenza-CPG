@@ -12,7 +12,7 @@ taken or from the code, to be read and questioned, needing no answer of their ow
 its §2.1. Specifications 00 to 02, implemented before these rules, keep their tables as they were; addendum A of spec 00
 marks each decision's kind.
 
-Approvals pending are decisions O5 to O7 of the [strategy's list](../implementation-strategy.md#81-decidable-now).
+Approvals pending are in the [strategy's list](../implementation-strategy.md#81-decidable-now): O6, spec 04.
 
 | # | Specification | Status | Depends on |
 |---|---|---|---|
@@ -20,9 +20,9 @@ Approvals pending are decisions O5 to O7 of the [strategy's list](../implementat
 | 0a | [Local tools: native runner, ARM size estimate](00-infrastructure.md#addendum-a-local-tools) (spec 00, addendum A) | implemented | 00 |
 | 01 | [Key-aware chord spelling](01-key-aware-spelling.md) | implemented; device run pending | 00 |
 | 02 | [Chromatic chords through the progression path](02-chromatic-progression-path.md) | implemented; device run pending | 00 |
-| 03 | [The missing sonorities](03-missing-sonorities.md) | for approval | 02 |
-| 04 | [The palette table, generated from the CPG](04-palette-table.md) | for approval | 00, 03 |
-| 05 | [The part's palette](05-part-palette.md) | for approval | 02, 03, 04 |
+| 03 | [The missing sonorities](03-missing-sonorities.md) | approved | 02 |
+| 04 | [The palette table, generated from the CPG](04-palette-table.md) | for approval: D3 studied, D9 asked | 00, 03 |
+| 05 | [The part's palette](05-part-palette.md) | §2.1 answered; approved with 04 | 02, 03, 04 |
 
 ## How far the drafting goes, and why
 

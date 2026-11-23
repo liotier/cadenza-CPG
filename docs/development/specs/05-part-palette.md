@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | for approval (revised after steps 0 to 2) |
+| Status | §2.1 answered by the owner, 2026-11-23; approved once spec 04 is, which it rests on |
 | Type | engine, save format |
 | Size | M |
 | Depends on | 02, 03, 04 |
@@ -31,10 +31,12 @@ questioned. *Rests on*: what a decision presupposes, here or elsewhere.
 
 ### 2.1 For the owner: decidable now
 
-| # | Question | Proposed answer | Alternatives | Rests on |
+Both answered by the owner, 2026-11-23, as proposed (study, decisions 22 and 23).
+
+| # | Question | Answer | Alternatives considered | Rests on |
 |---|---|---|---|---|
-| D2 | Does a project keep the palette it was made with, or follow the catalogue? | **It keeps it:** saved by value in a new field `<P>.pl=` (hex), only for a part that holds one, about 95 bytes a part. A later CPG revision never changes a saved project, as Cadenza's rule is for everything else. 0.28.1 ignores the unknown field: the slots play as written, the palette is dropped there. | Save only the catalogue identifier: a few bytes, and the project's palette follows CPG updates, which may then reshape a song's harmonic space without the user doing anything | D1 |
-| D9 | Do the six genre presets get palettes? | **No:** their parts hold none, and show their scale's palette (D3). Presets are baked states (`presets_data.h`) whose building tool is not in the release export; they keep sounding the same. | Give each preset's parts the nearest catalogue palette: re-baking the presets, without the author's tool | none |
+| D2 | Does a project keep the palette it was made with, or follow the catalogue? | **It keeps it** (owner: the principle of least surprise, respect for the composer, and a cleaner boundary between the CPG and Cadenza): saved by value in a new field `<P>.pl=` (hex), only for a part that holds one, about 95 bytes a part. A later CPG revision never changes a saved project, as Cadenza's rule is for everything else. 0.28.1 ignores the unknown field: the slots play as written, the palette is dropped there. | Save only the catalogue identifier: a few bytes, and the project's palette follows CPG updates, which may then reshape a song's harmonic space without the user doing anything | D1 |
+| D9 | Do the six genre presets get palettes? | **No** (owner: Cadenza's genres are about time, the CPG's are palettes; orthogonal dimensions): their parts hold none, and show their scale's palette (D3). Presets are baked states (`presets_data.h`) whose building tool is not in the release export; they keep sounding the same. | Give each preset's parts the nearest catalogue palette: re-baking the presets, without the author's tool | none |
 
 ### 2.2 For the owner: after a further step
 

@@ -2,13 +2,18 @@
 
 | | |
 |---|---|
-| Status | for approval (revised after steps 0 to 2) |
+| Status | approved: §2.1 answered by the owner, 2026-11-23 |
 | Type | capability, save format |
 | Size | M |
 | Depends on | 02 |
 | Blocks | 04, 05 |
 
 ## 1. Purpose
+
+**Scope against spec 04's style question** (measured 2026-11-23): every CPG style uses seven of the eight sonorities;
+the Italian sixth appears only in Classic (98 pads) and Jazz (26). Whichever style the palette table takes (spec 04, D3),
+the seven are needed; the seventh-without-fifth colour that gives the Italian sixth would go unused only if the table
+took neither Classic nor Jazz. The step does not wait for that answer.
 
 Decision 5 of the study rules out approximation. The coverage tool of step 0
 ([coverage.txt](../measurements/coverage.txt)) counts 375 of the catalogue's 17 664 pads, across the six styles, that
@@ -44,11 +49,14 @@ questioned. *Rests on*: what a decision presupposes, here or elsewhere.
 
 ### 2.1 For the owner: decidable now
 
-| # | Question | Proposed answer | Alternatives | Rests on |
+All three answered by the owner, 2026-11-23, as proposed. D6's answer, "the fallbacks computed at save time:", ended on a
+colon; it is read as accepting the proposed fallbacks, the owner to say if anything was cut off.
+
+| # | Question | Answer | Alternatives considered | Rests on |
 |---|---|---|---|---|
-| D3 | Do the new sonorities stay off every control, reachable only as palette chords? | **Yes.** The colours are appended outside the controls' set: `COL_QUARTAL` (10), `COL_7NO5` (11), `COL_7SUS4` (12) after `COL_COUNT`, which stays 10, with `COL_ALL` (13) closing the set. `COL_COUNT` validates the saved digits of `.ch` and is what a front end may iterate to offer colours (lesson 6). | Offer some on the bar editor's TYPE list: more choice on screen, a type and a screen change for each, and the burden the study's avenue H warned against | D1 |
-| D6 | Which chord does an older Cadenza play in place of each new one? | **The fallbacks of §3.3, computed by one rule at save time:** a new colour on an old source keeps its source and degree and takes the old colour that scores best on that chord's own scale; a second-range source takes the first-range quality and old colour, on the same root, that score best. The score: pitch classes shared with the exact chord less those added; ties to the more shared, then to the fewer notes. | Amend any row of §3.3 by hand (for instance the quartal's 11th, which keeps the whole stack, against sus4, which keeps two of its three notes) | D5 |
-| D7 | What are the new chords called? | **The CPG's names** (`CHORD_NAME_SUFFIX`), from the quality and colour, never from intervals (§3.2); the Italian sixth `Ab7`, as the CPG writes it and as Cadenza already names its fifthless 11ths and 13ths by the full chord (decision 12). | `Ab7(no5)` for the Italian sixth, which tells it from a full dominant seventh on screen at the cost of differing from the CPG | D1, D3; spec 01 |
+| D3 | Do the new sonorities stay off every control, reachable only as palette chords? | **Yes** (owner). The colours are appended outside the controls' set: `COL_QUARTAL` (10), `COL_7NO5` (11), `COL_7SUS4` (12) after `COL_COUNT`, which stays 10, with `COL_ALL` (13) closing the set. `COL_COUNT` validates the saved digits of `.ch` and is what a front end may iterate to offer colours (lesson 6). | Offer some on the bar editor's TYPE list: more choice on screen, a type and a screen change for each, and the burden the study's avenue H warned against | D1 |
+| D6 | Which chord does an older Cadenza play in place of each new one? | **The fallbacks of §3.3, computed by one rule at save time** (owner): a new colour on an old source keeps its source and degree and takes the old colour that scores best on that chord's own scale; a second-range source takes the first-range quality and old colour, on the same root, that score best. The score: pitch classes shared with the exact chord less those added; ties to the more shared, then to the fewer notes. | Amend any row of §3.3 by hand (for instance the quartal's 11th, which keeps the whole stack, against sus4, which keeps two of its three notes) | D5 |
+| D7 | What are the new chords called? | **The CPG's names** (owner) (`CHORD_NAME_SUFFIX`), from the quality and colour, never from intervals (§3.2); the Italian sixth `Ab7`, as the CPG writes it and as Cadenza already names its fifthless 11ths and 13ths by the full chord (decision 12). | `Ab7(no5)` for the Italian sixth, which tells it from a full dominant seventh on screen at the cost of differing from the CPG | D1, D3; spec 01 |
 
 ### 2.2 For the owner: after a further step
 

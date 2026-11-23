@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | for approval (revised after steps 0 to 2) |
+| Status | for approval: D3 under study at the owner's request, D9 awaiting the owner's answer (2026-11-23) |
 | Type | data, tooling |
 | Size | M |
 | Depends on | 00 (the submodule), 03 (the full vocabulary) |
@@ -33,8 +33,8 @@ decision presupposes, here or elsewhere.
 
 | # | Question | Proposed answer | Alternatives | Rests on |
 |---|---|---|---|---|
-| D3 | Which of the CPG's six styles fills each catalogue palette? | **Classic alone.** Cadenza re-voices every chord and adds sevenths with its COLOUR knob, so the other styles' voicings and the Jazz style's seventh upgrades are redundant here; Classic carries the functional fourth row (secondary dominants, augmented sixths, the Neapolitan). The one loss: the Jazz style's tritone substitute in that row. | Jazz alone (the tritone substitute, without the Classic row's other functions); several styles per entry (each about 9 KB more of binary, and a choice of style in the browser) | none |
-| D9 | How are the spare bars of a starting order laid out? | **By decision 4's rule:** the loop is the smallest of 1, 2, 4, 8 or 16 bars holding one bar per chord; the spare bars go to the tonic, at the end when the order ends on it, at the start when it only starts on it, else to the last chord (§3.3). It leaves five-chord orders lopsided: the tonic held four bars, then one bar each. Stored as pairs of palette index and length in quarter bars. | Spread the spare bars over the chords for orders of five to seven (I-V-vi-iii-IV: two bars on I, V and vi, one on iii and IV); or keep the rule now and judge it at step 6's device run, where orders are first heard | decision 4 |
+| D3 | Which of the CPG's six styles fills each catalogue palette, and with which colours? Owner, 2026-11-23: no decision yet; the COLOUR control's interaction with the styles to be studied first (§2.4) | **Classic, its colours kept** (§2.4, option a): COLOUR acts on its triads, 53 % of the pads and 82 % of the starting orders' chords; the rest keep the palette's own colour, as a chord with its own type does in Cadenza today. Classic carries the functional fourth row (secondary dominants, augmented sixths, the Neapolitan); the one loss is the Jazz style's tritone substitute in that row. | b: every chord stored as a triad, COLOUR owning all colour; c: a second style, Jazz, chosen at load, about 9 KB more; d: all six styles, about 44 KB more (§2.4) | none |
+| D9 | How are the spare bars of a starting order laid out? Owner's question, 2026-11-23: *are we thinking of playing the progression in order?* Yes: loading a palette writes its template, in order, into the slots as its starting order (study, decisions 2 and 4; spec 05, D4); from there the order is anyone's, through the bar editor, live pads and the walk (steps 7, 8, 10). If loading should write nothing, this question disappears and spec 05's D4 changes (§2.4) | **By decision 4's rule:** the loop is the smallest of 1, 2, 4, 8 or 16 bars holding one bar per chord; the spare bars go to the tonic, at the end when the order ends on it, at the start when it only starts on it, else to the last chord (§3.3). It leaves five-chord orders lopsided: the tonic held four bars, then one bar each. Stored as pairs of palette index and length in quarter bars. | Spread the spare bars over the chords for orders of five to seven (I-V-vi-iii-IV: two bars on I, V and vi, one on iii and IV); or keep the rule now and judge it at step 6's device run, where orders are first heard | decision 4; spec 05, D4 (that loading writes the order at all) |
 
 ### 2.2 For the owner: after a further step
 
@@ -54,6 +54,54 @@ None.
 | D10 | **Nicknames in English, whole,** from the CPG's `locales/en.json`, UTF-8 as the CPG writes them. | Cadenza's screens are in English, and the CPG's exports use canonical English; how a tile shortens the ten names over 19 characters is the browser's question (step 6). | Cadenza's language |
 | D11 | **The table is linked by the plugin's front end, never by the core.** `src/cpg_palettes.c` joins `vst/vst.json`'s sources and the plugin test's command line; the core's verbs (step 5) take palette data as arguments. | The core's fifteen command lines in the author's test script and its other front ends stay as they are; the core needs no catalogue to hold a part's palette. Spec 05 rests on it. | strategy, lesson 6 |
 | D12 | **The generator also writes a report,** `docs/development/measurements/palettes.txt`: counts, the table's bytes, nickname lengths, the starting orders' layouts by template length, and, for every chord, Cadenza's spelling of its root (from `enumerate.c`, which gains a names column) against the CPG's in the entry's key. CI compares it as it compares `coverage.txt`. | Lesson 7 measured in C only; the report measures the whole table, and keeps the numeral question in view for the author. | D1; spec 01 |
+
+### 2.4 Background to D3 and D9: COLOUR, the CPG's styles, and starting orders
+
+**How COLOUR works** ([seq_core.c](../../../src/seq_core.c), `eff_colour`, `chord_level`). A slot whose own colour is
+Triad and which is not locked plays the COLOUR knob's level (Power, Triad, 7th, 9th, 11th, 13th), shaped slot by slot by
+COMPLEXITY's colour layers (a fixed rank per slot, so turning up colours one more chord at a time). Every other slot, one
+with its own colour (7th, sus4, add9, 6th...) or a locked one, plays its own colour and ignores the knob. The knob's
+extensions come from the chord's own scale: on G in C major, 7th gives G7.
+
+**What the CPG's styles change** (measured over the 184 palettes, each style in C): every style shares 93 to 96 % of
+its chords' roots and triads with Classic; they differ mainly in colour, and in voicing, which Cadenza replaces with its
+own. A palette's four rows are its template chords, then mostly seventh versions, borrowed chords, and functional chords.
+Pop/Rock I-V-vi-IV in Classic: `C G Am F`, `Dm Cmaj7 Gmaj7 Fmaj7`, `Bb Fm Ab Eb`, `G7 A D7 Db`; in Jazz the third row
+becomes `Bbmaj7 Fm7 Abmaj7 Ebmaj7`. The styles' sevenths are a taste, not the scale's: `Gmaj7` where COLOUR on G gives
+`G7`, `Bbmaj7` where it gives `Bb7`. So COLOUR and a CPG style are two different colourings, and neither reproduces the
+other.
+
+**The colour each pad would be stored with,** were the CPG's colours kept:
+
+| Style | Triad: COLOUR colours it | A fixed 7th to 13th | A fixed sus, add9 or 6th | A new sonority (step 3) |
+|---|---|---|---|---|
+| Classic | 53 % | 37 % | 5 % | 6 % |
+| Smooth, Modal, Pedal | 55 to 56 % | 37 to 38 % | 4 to 5 % | 2 % |
+| Experimental | 54 % | 39 % | 5 % | 2 % |
+| Jazz | 43 % | 51 % | 4 % | 3 % |
+
+In Classic, the first row, which the starting order uses, is 82 % triads (606 of 736 pads): a loaded palette's loop
+follows COLOUR almost entirely; the colour variants come in when picked.
+
+**The options for D3:**
+
+- **a. Classic, its colours kept** (proposed). Exact, as decision 5 requires. COLOUR acts as it always has: on chords
+  without a colour of their own. A user who wants more colour turns COLOUR up and gets Cadenza's scale-consistent
+  extensions on the triads; the palette's own coloured chords stay as the CPG wrote them.
+- **b. Every chord stored as a triad,** COLOUR owning all colour. The palette's seventh and sus versions would collapse
+  onto its triads (`C` and `Cmaj7` become one chord), losing up to 42 % of what the palette holds: against decision 5.
+- **c. A second style, Jazz, chosen when a palette loads.** About 9 KB more (184 × 16 × 3 bytes), a style choice on the
+  browser's screen (step 6). Adds the Jazz style's colouring and its tritone substitute.
+- **d. All six styles.** About 44 KB more, most of the 70 KB of headroom, for differences that are mostly colour.
+
+Option a now leaves c open: the generator can add a style later, at about 9 KB each.
+
+**Starting orders (D9).** The study's model (§4.3) gives a palette two parts: its chords, the harmonic space, and a
+starting order, the template it came from, so that a loaded palette plays at once. Decision 2 calls the templates starting
+points, decision 4 gives their spare time to the tonic, and spec 05's D4 writes the order into the slots when a palette
+loads, as the progression presets do today. The alternative: loading a palette writes nothing, the part's slots stay as
+they are, and the palette is only the space the editing tools draw from (steps 7 to 10). Then a newly loaded palette is
+silent until chords are picked from it, D9 disappears, and spec 05's D4 becomes *loading sets the palette only*.
 
 ## 3. Specification
 

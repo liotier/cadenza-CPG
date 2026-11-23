@@ -1,6 +1,6 @@
 # Cadenza and the Chord Progression Generator: an integration study
 
-Status: study, revision 9 (the [revision history](#revision-history) closes the document). No code has been written; the
+Status: study, revision 10 (the [revision history](#revision-history) closes the document). No code has been written; the
 measurements come from throwaway scripts described in [Appendix A](#appendix-a-measurement-method).
 
 | Project | Version studied | Licence |
@@ -957,6 +957,8 @@ revision 3, 16 to revision 4, 17 to 19 to revision 5; 2026-11-23: 20, after the 
 | 19 | The device test of the physical pads goes ahead, by the protocol of [device-test-pads.md](device-test-pads.md). | §11 |
 | 20 | No MIDI input: Cadenza wants harmony sequenced in Cadenza. Hardware pads and harmony carried by MPC clips are set aside; avenue L's pads stay on screen; the device test closes, its findings kept. | avenue L, §5.7, [device-test-pads.md](device-test-pads.md) |
 | 21 | Room in the binary, both ways: the ARM build drops the functions the plugin never calls (section garbage collection, about 46 KB), and the fork's budget goes from 688 to 720 KB. The budget is upstream's own discipline, with no device limit cited for it. | §5, [spec 01](specs/01-key-aware-spelling.md) |
+| 22 | A project keeps the palette it was made with, saved by value: the principle of least surprise, respect for the composer, and a cleaner boundary between the CPG and Cadenza (a CPG revision never reaches into a saved song). | [spec 05](specs/05-part-palette.md), D2 |
+| 23 | Cadenza's genres and the CPG's are orthogonal: Cadenza's (its genre presets, its JAM columns) are about time, rhythm and arrangement; the CPG's are palettes, harmony. The genre presets get no palettes, and neither kind of genre implies the other. | [spec 05](specs/05-part-palette.md), D9; avenue G |
 
 **To revisit.** Decision 12, the fifth of 11ths and 13ths: when a listener misses the fifth, when a voicing style wants it,
 when `THEORY_CHORD_MAX` is raised for another reason, or when the CPG's 11ths and 13ths change. The trade-off and the ways
@@ -1046,3 +1048,6 @@ All scripts were written in the session scratchpad and are not committed.
   note written for 0.24.
 - Revision 9 recorded decision 21: section garbage collection in the ARM build and a budget of 720 KB, after step 1
   measured over the old one. Amended: §11 points to the strategy's single list of the owner's pending decisions.
+- Revision 10 recorded decisions 22 and 23: a project keeps its palette by value; Cadenza's genres and the CPG's are
+  orthogonal, so genre presets get no palettes. Decision 23 puts avenue G, the genre crosswalk, in question: a question
+  for the owner (strategy, §8.1, O14).
