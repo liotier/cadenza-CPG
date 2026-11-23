@@ -1,6 +1,6 @@
 # Cadenza and the Chord Progression Generator: an integration study
 
-Status: study, revision 8 (the [revision history](#revision-history) closes the document). No code has been written; the
+Status: study, revision 9 (the [revision history](#revision-history) closes the document). No code has been written; the
 measurements come from throwaway scripts described in [Appendix A](#appendix-a-measurement-method).
 
 | Project | Version studied | Licence |
@@ -956,6 +956,7 @@ revision 3, 16 to revision 4, 17 to 19 to revision 5; 2026-11-23: 20, after the 
 | 18 | No C port of the palette builder: the part keeps its palette, a part without one gets its scale's palette, a progression built from scratch can take the nearest catalogue palette. | avenue D |
 | 19 | The device test of the physical pads goes ahead, by the protocol of [device-test-pads.md](device-test-pads.md). | §11 |
 | 20 | No MIDI input: Cadenza wants harmony sequenced in Cadenza. Hardware pads and harmony carried by MPC clips are set aside; avenue L's pads stay on screen; the device test closes, its findings kept. | avenue L, §5.7, [device-test-pads.md](device-test-pads.md) |
+| 21 | Room in the binary, both ways: the ARM build drops the functions the plugin never calls (section garbage collection, about 46 KB), and the fork's budget goes from 688 to 720 KB. The budget is upstream's own discipline, with no device limit cited for it. | §5, [spec 01](specs/01-key-aware-spelling.md) |
 
 **To revisit.** Decision 12, the fifth of 11ths and 13ths: when a listener misses the fifth, when a voicing style wants it,
 when `THEORY_CHORD_MAX` is raised for another reason, or when the CPG's 11ths and 13ths change. The trade-off and the ways
@@ -1042,3 +1043,5 @@ All scripts were written in the session scratchpad and are not committed.
   [§5](#5-constraints-any-integration-must-respect) and [avenue B](#b-a-palette-table-generated-from-the-cpg) with the
   first CI measurement (step 0): the binary has 2.5 KB of headroom, not 22 KB, the earlier figure coming from a budget
   note written for 0.24.
+- Revision 9 recorded decision 21: section garbage collection in the ARM build and a budget of 720 KB, after step 1
+  measured over the old one.

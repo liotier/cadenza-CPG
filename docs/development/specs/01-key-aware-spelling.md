@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | implemented; over the binary budget, pending the owner's decision |
+| Status | implemented; the device run pending |
 | Type | defect |
 | Size | S-M |
 | Depends on | 00 |
@@ -99,11 +99,14 @@ step 3, which that step adds.
 
 ## 8. Implementation notes
 
-**Blocked on the binary budget.** Step 0 measured 2 556 bytes of headroom (spec 00, §4). An ARM cross-compiler (GCC 13.3,
-the toolchain's flags; the toolchain itself uses GCC 11, so the figure is approximate) puts this step at +4 476 bytes of
-code, 3.4 KB of it the spelling logic, after a rewrite for size (the project scale spelled once per call, one name table
-without pointers). CI's build fails its budget check until the owner decides how to make room: section garbage collection
-in the ARM build (about 45 KB of functions the plugin never calls), a raised budget, or both.
+**The binary budget.** Step 0 measured 2 556 bytes of headroom (spec 00, §4). An ARM cross-compiler (GCC 13.3, the
+toolchain's flags; the toolchain itself uses GCC 11) put this step at +4 476 bytes of code, 3.4 KB of it the spelling
+logic, after a rewrite for size (the project scale spelled once per call, one name table without pointers). The first
+push of this step failed CI's budget check, as expected. The owner chose both remedies (study, decision 21): section
+garbage collection in the ARM build (`-ffunction-sections -fdata-sections -Wl,--gc-sections` in `vst/vst.json`'s
+`cflags_arm`), which drops about 46 KB of functions the plugin never calls (kept for the other front ends), and a budget
+of 720 KB (`vst/budget.json`). The plugin still exports `VSTPluginMain` alone. Fork builds are no longer byte-identical to
+official ones; the device run (verification 5) also confirms that the collected binary loads.
 
 **Interface** ([theory.h](../../../src/theory.h)), differing from §3.1 for size: `theory_spelling_t` (letter, accidental),
 `theory_spelling_text`, `theory_spell_tonic`, `theory_spell_degree`, `theory_spell_root`, `theory_spell_tone` (D4),
@@ -139,4 +142,4 @@ chromatic names (verification 2), single notes, octaves and tones. Three of the 
 scale degree. In D minor, the major chord on F♯ is therefore `bIV`, and D1 spells it `Gb7`, where `F#7` (♯III) is the
 usual reading. Changing it means changing the numeral, an upstream behaviour outside this step: for the owner's review.
 
-**Verification.** 1, 2 and 4 hold; 3 holds natively (CI's build stops at the budget); 5, the device run, waits.
+**Verification.** 1 to 4 hold; 5, the device run, waits.
