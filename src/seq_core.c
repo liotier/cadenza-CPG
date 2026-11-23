@@ -629,7 +629,7 @@ static void name_slots(const seq_t *s, seq_part_t *p) {
             memcpy(p->slot_num[i], p->slot_num[i % n], sizeof p->slot_num[i]);
             continue;
         }
-        theory_chord_name_c(s->key, slot_scale(s, p, i), p->prog[i], eff_colour(s, p, i), p->slot_text[i], sizeof p->slot_text[i]);
+        theory_chord_name_s(s->key, s->scale, slot_scale(s, p, i), p->prog[i], eff_colour(s, p, i), p->slot_text[i], sizeof p->slot_text[i]);
         theory_numeral(s->key, s->scale, slot_scale(s, p, i), p->prog[i], p->slot_num[i], sizeof p->slot_num[i]);
     }
 }
@@ -651,7 +651,7 @@ static void voice_points(const seq_t *s, seq_part_t *p) {
             w = t ? slot_at(p, b, t - 1) : slot_at(p, b + p->bars - 1, SEQ_STEPS - 1);
             if (mode == VMODE_CLOSE) p->voice_n[v] = slot_notes(s, p, v, p->voice[v]);
             else p->voice_n[v] = theory_voice_mode(notes, slot_notes(s, p, v, notes), p->voice[w], p->voice_n[w], mode, p->voice[v]);
-            theory_chord_name_c(s->key, slot_scale(s, p, v), p->prog[v], eff_colour(s, p, v), p->slot_text[v], sizeof p->slot_text[v]);
+            theory_chord_name_s(s->key, s->scale, slot_scale(s, p, v), p->prog[v], eff_colour(s, p, v), p->slot_text[v], sizeof p->slot_text[v]);
             theory_numeral(s->key, s->scale, slot_scale(s, p, v), p->prog[v], p->slot_num[v], sizeof p->slot_num[v]);
         }
 }
@@ -2542,12 +2542,33 @@ int seq_step_on(const seq_t *s, int lane, int step) {
     return ccur(s)->lane[lane].steps[seq_grid_bar(s) * SEQ_STEPS + step].on;
 }
 
+/* fork (docs/development/specs/01-key-aware-spelling.md): the chord sounding at a step of a part (a change point's included), as
+ * theory_note_name_s's ctx; 0 for a bad part, bar or step */
+static int chord_ctx(const seq_t *s, int part, int bar, int step, theory_chord_t *out) {
+    const seq_part_t *p;
+    int v;
+    if (part < 0 || part >= SEQ_NPARTS || !step_ok(&s->part[part], bar, step)) return 0;
+    p = &s->part[part], v = slot_at(p, bar, step);
+    *out = (theory_chord_t){slot_scale(s, p, v), p->prog[v], eff_colour(s, p, v)};
+    return 1;
+}
+
+int seq_note_name(const seq_t *s, int part, int bar, int step, int note, char *buf, int len) {
+    theory_chord_t c;
+    return theory_note_name_s(s->key, s->scale, chord_ctx(s, part, bar, step, &c) ? &c : NULL, note, buf, len);
+}
+
+int seq_pc_name(const seq_t *s, int part, int bar, int step, int pc, char *buf, int len) {
+    theory_chord_t c;
+    return copy_text(buf, len, theory_pc_text_s(s->key, s->scale, chord_ctx(s, part, bar, step, &c) ? &c : NULL, pc));
+}
+
 int seq_cell_label(const seq_t *s, int lane, int step, char *buf, int len) {
     int bar = seq_grid_bar(s), n[THEORY_CHORD_MAX];
     if (!seq_step_on(s, lane, step)) return copy_text(buf, len, " ");
     if (lane == LANE_CHORDS) return seq_slot_name(s, step_slot(ccur(s), bar, step), buf, len);
     step_notes(s, lane, bar, step, n);
-    return theory_note_name(n[0], buf, len);
+    return seq_note_name(s, s->cur_part, bar, step, n[0], buf, len);
 }
 
 /* The frame of the block being played that song position `at` falls on: 0 outside a block (a setter's event) or before the
@@ -9342,7 +9363,7 @@ int seq_last_move_lane(const seq_t *s) { return s->move_text[0] ? s->move_lane :
  * names: "Am7" */
 static void chord_word(const seq_t *s, int deg, int src, int colour, char *buf, int len) {
     int sc = theory_slot_scale(s->scale, src);
-    if (s->names) theory_chord_name_c(s->key, sc, deg, colour, buf, len);
+    if (s->names) theory_chord_name_s(s->key, s->scale, sc, deg, colour, buf, len);
     else theory_degree_c(s->key, s->scale, sc, deg, colour, buf, len);
 }
 

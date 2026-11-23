@@ -422,6 +422,110 @@ static void test_18_theory_avoid(void) {
     CHECK(ok, "every key, scale, degree and colour: drift = the triad's + the colour's cost + 20 x theory_avoid");
 }
 
+/* fork, docs/development/specs/01-key-aware-spelling.md, verification 1: the tonic and seven letters of every key and scale, written
+ * by hand from the key signatures (each mode read from its relative major), not derived from the code under test. D2 picks a black
+ * key's name by the fewer accidentals in that scale, the sharp one on a tie: Eb major but D# Phrygian, F# major (6 against 6) */
+static const char *const SPELL_TABLE[SCALE_COUNT][12] = {
+    {"C D E F G A B", "Db Eb F Gb Ab Bb C", "D E F# G A B C#", "Eb F G Ab Bb C D", "E F# G# A B C# D#", "F G A Bb C D E",
+     "F# G# A# B C# D# E#", "G A B C D E F#", "Ab Bb C Db Eb F G", "A B C# D E F# G#", "Bb C D Eb F G A", "B C# D# E F# G# A#"},
+    {"C D Eb F G Ab Bb", "C# D# E F# G# A B", "D E F G A Bb C", "D# E# F# G# A# B C#", "E F# G A B C D", "F G Ab Bb C Db Eb",
+     "F# G# A B C# D E", "G A Bb C D Eb F", "G# A# B C# D# E F#", "A B C D E F G", "Bb C Db Eb F Gb Ab", "B C# D E F# G A"},
+    {"C D Eb F G A Bb", "C# D# E F# G# A# B", "D E F G A B C", "Eb F Gb Ab Bb C Db", "E F# G A B C# D", "F G Ab Bb C D Eb",
+     "F# G# A B C# D# E", "G A Bb C D E F", "G# A# B C# D# E# F#", "A B C D E F# G", "Bb C Db Eb F G Ab", "B C# D E F# G# A"},
+    {"C D E F G A Bb", "C# D# E# F# G# A# B", "D E F# G A B C", "Eb F G Ab Bb C Db", "E F# G# A B C# D", "F G A Bb C D Eb",
+     "F# G# A# B C# D# E", "G A B C D E F", "Ab Bb C Db Eb F Gb", "A B C# D E F# G", "Bb C D Eb F G Ab", "B C# D# E F# G# A"},
+    {"C Db Eb F G Ab Bb", "C# D E F# G# A B", "D Eb F G A Bb C", "D# E F# G# A# B C#", "E F G A B C D", "F Gb Ab Bb C Db Eb",
+     "F# G A B C# D E", "G Ab Bb C D Eb F", "G# A B C# D# E F#", "A Bb C D E F G", "A# B C# D# E# F# G#", "B C D E F# G A"},
+    {"C D E F# G A B", "Db Eb F G Ab Bb C", "D E F# G# A B C#", "Eb F G A Bb C D", "E F# G# A# B C# D#", "F G A B C D E",
+     "Gb Ab Bb C Db Eb F", "G A B C# D E F#", "Ab Bb C D Eb F G", "A B C# D# E F# G#", "Bb C D E F G A", "B C# D# E# F# G# A#"},
+    {"C D Eb F G Ab B", "C# D# E F# G# A B#", "D E F G A Bb C#", "Eb F Gb Ab Bb Cb D", "E F# G A B C D#", "F G Ab Bb C Db E",
+     "F# G# A B C# D E#", "G A Bb C D Eb F#", "G# A# B C# D# E F##", "A B C D E F G#", "Bb C Db Eb F Gb A", "B C# D E F# G A#"},
+};
+
+static void test_fork_spelling_table(void) {
+    int bad = 0;
+    for (int sc = 0; sc < SCALE_COUNT; sc++)
+        for (int k = 0; k < 12; k++) {
+            char got[64] = "";
+            for (int d = 0; d < 7; d++) {
+                if (d) strcat(got, " ");
+                strcat(got, theory_spelling_text(theory_spell_degree(k, sc, d)));
+            }
+            if (strcmp(got, SPELL_TABLE[sc][k]) || strcmp(theory_key_name_s(k, sc), theory_spelling_text(theory_spell_degree(k, sc, 0)))) {
+                printf("     %s on key %d: '%s', want '%s'\n", theory_scale_name(sc), k, got, SPELL_TABLE[sc][k]);
+                bad++;
+            }
+        }
+    CHECK(!bad, "spelling: the 84 keys and scales against the hand-written table (%d wrong)", bad);
+}
+
+/* Verification 2: chord names, against expected strings. Majors: I..vii, then iv bVI bVII borrowed; minors: i..VII, then IV V bII */
+static void test_fork_chord_names(void) {
+    static const struct { int key, scale; const char *names; } T[] = {
+        {5, SCALE_MAJOR, "F Gm Am Bb C Dm Edim | Bbm Db Eb"},
+        {3, SCALE_MAJOR, "Eb Fm Gm Ab Bb Cm Ddim | Abm B Db"},      /* bVI Cb respelled B (D3: Cb outside the key) */
+        {8, SCALE_MAJOR, "Ab Bbm Cm Db Eb Fm Gdim | Dbm E Gb"},     /* bVI Fb respelled E */
+        {1, SCALE_MAJOR, "Db Ebm Fm Gb Ab Bbm Cdim | Gbm A B"},     /* bVI Bbb respelled A (D3: a double flat), bVII Cb B */
+        {11, SCALE_MAJOR, "B C#m D#m E F# G#m A#dim | Em G A"},
+        {6, SCALE_MAJOR, "F# G#m A#m B C# D#m E#dim | Bm D E"},     /* E#dim kept: E# is in the key */
+        {1, SCALE_MINOR, "C#m D#dim E F#m G#m A B | F# G# D"},
+        {3, SCALE_MINOR, "D#m E#dim F# G#m A#m B C# | G# A# E"},
+        {8, SCALE_MINOR, "G#m A#dim B C#m D#m E F# | C# D# A"},
+    };
+    int bad = 0;
+    for (size_t i = 0; i < sizeof T / sizeof T[0]; i++) {
+        char got[96] = "", nm[24];
+        for (int d = 0; d < 7 + THEORY_NBORROW; d++) {
+            int ss = d < 7 ? T[i].scale : theory_borrow_scale(T[i].scale, d - 6), deg = d < 7 ? d : theory_borrow_degree(T[i].scale, d - 6);
+            theory_chord_name_s(T[i].key, T[i].scale, ss, deg, COL_TRIAD, nm, sizeof nm);
+            strcat(got, d == 7 ? " | " : d ? " " : "");
+            strcat(got, nm);
+        }
+        if (strcmp(got, T[i].names)) printf("     key %d %s: '%s', want '%s'\n", T[i].key, theory_scale_name(T[i].scale), got, T[i].names), bad++;
+    }
+    CHECK(!bad, "spelling: triads and borrowed chords in F, Eb, Ab, Db, B, F# major and C#, D#, G# minor (%d wrong)", bad);
+    static const struct { int key, scale, src, deg, colour; const char *want; } C[] = {
+        {5, SCALE_MAJOR, 0, 0, COL_7TH, "Fmaj7"}, {5, SCALE_MAJOR, 0, 1, COL_7TH, "Gm7"}, {5, SCALE_MAJOR, 0, 4, COL_7TH, "C7"},
+        {5, SCALE_MAJOR, 0, 6, COL_7TH, "Em7b5"}, {5, SCALE_MAJOR, 0, 3, COL_SUS4, "Bbsus4"}, {3, SCALE_MAJOR, 0, 3, COL_7TH, "Abmaj7"},
+        {1, SCALE_MAJOR, 0, 0, COL_9TH, "Dbmaj9"}, {10, SCALE_MINOR, 0, 0, COL_7TH, "Bbm7"}, {6, SCALE_MAJOR, 0, 6, COL_7TH, "E#m7b5"},
+        {0, SCALE_MAJOR, 4 + 1 * CQ_COUNT + CQ_DOM, 0, COL_7TH, "Db7"},   /* C major's chromatic bII7: Db7 beside its numeral */
+        {1, SCALE_MAJOR, 4 + 8 * CQ_COUNT + CQ_MAJOR, 0, COL_TRIAD, "A"},   /* Db major's chromatic bVI: A, not Bbb (D3) */
+        {5, SCALE_MAJOR, 4 + 6 * CQ_COUNT + CQ_DOM, 0, COL_7TH, "B7"},   /* F major, root B: numeral bV, so Cb7, Cb outside the key respelled B (D3) */
+    };
+    for (size_t i = 0; i < sizeof C / sizeof C[0]; i++) {
+        char nm[24], num[16];
+        int ss = theory_slot_scale(C[i].scale, C[i].src);
+        theory_chord_name_s(C[i].key, C[i].scale, ss, C[i].deg, C[i].colour, nm, sizeof nm);
+        theory_numeral(C[i].key, C[i].scale, ss, C[i].deg, num, sizeof num);
+        CHECK(!strcmp(nm, C[i].want), "spelling: %s in key %d %s, numeral %s (got %s)", C[i].want, C[i].key, theory_scale_name(C[i].scale), num, nm);
+    }
+}
+
+/* D4, D5 and the octave of a spelled note */
+static void test_fork_notes(void) {
+    char b[16];
+    theory_chord_t d7 = {theory_slot_scale(SCALE_MAJOR, 4 + 9 * CQ_COUNT + CQ_DOM), 0, COL_7TH};   /* D7 in F major */
+    theory_chord_t dim = {SCALE_HARM_MINOR, 6, COL_7TH};   /* G# harmonic minor's vii (F##, as named Gdim7) */
+    CHECK(!strcmp(theory_pc_text_s(5, SCALE_MAJOR, NULL, 10), "Bb"), "a scale note takes the scale's letter: Bb in F");
+    CHECK(!strcmp(theory_pc_text_s(5, SCALE_MAJOR, &d7, 6), "F#"), "a chord tone takes the chord's letter: D7's F# in F");
+    CHECK(!strcmp(theory_pc_text_s(5, SCALE_MAJOR, NULL, 6), "Gb"), "a passing note leans to the key's side: Gb in F");
+    CHECK(!strcmp(theory_pc_text_s(0, SCALE_MAJOR, NULL, 1), "C#"), "and to sharps in C");
+    theory_note_name_s(6, SCALE_MAJOR, NULL, 65, b, sizeof b);
+    CHECK(!strcmp(b, "E#4"), "MIDI 65 in F# major is E#4 (got %s)", b);
+    theory_note_name_s(1, SCALE_HARM_MINOR, NULL, 60, b, sizeof b);
+    CHECK(!strcmp(b, "B#3"), "MIDI 60 in C# harmonic minor is B#3, the octave of its letter (got %s)", b);
+    theory_note_name_s(0, SCALE_MAJOR, NULL, 0, b, sizeof b);
+    CHECK(!strcmp(b, "C-1"), "MIDI 0 is C-1, as theory_note_name says (got %s)", b);
+    CHECK(!strcmp(theory_spelling_text(theory_spell_degree(8, SCALE_HARM_MINOR, 6)), "F##") &&
+          !strcmp(theory_pc_text_s(8, SCALE_HARM_MINOR, &dim, 7), "G"),
+          "G# harmonic minor: F## in the scale's spelling, shown G (D3's rule for a double accidental)");
+    theory_chord_name_s(8, SCALE_HARM_MINOR, SCALE_HARM_MINOR, 6, COL_TRIAD, b, sizeof b);
+    CHECK(!strcmp(b, "Gdim"), "its vii is Gdim (got %s)", b);
+    int t[THEORY_CHORD_MAX], n = theory_chord_tones(COL_SUS4, t);
+    CHECK(n == 3 && t[0] == 1 && t[1] == 4 && t[2] == 5, "a sus4's tones are 1 4 5");
+    CHECK(!strcmp(theory_spelling_text(theory_spell_tone(0, SCALE_MAJOR, SCALE_MAJOR, 0, 4)), "F"), "Csus4's 4th is F, not E#");
+}
+
 int main(void) {
     test_borrow();
     test_colours();
@@ -437,6 +541,9 @@ int main(void) {
     test_17_drift();
     test_17_names();
     test_18_theory_avoid();
+    test_fork_spelling_table();
+    test_fork_chord_names();
+    test_fork_notes();
     printf(fails ? "\nFAILED: %d\n" : "\nPASSED\n", fails);
     return fails != 0;
 }

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | approved |
+| Status | implemented; over the binary budget, pending the owner's decision |
 | Type | defect |
 | Size | S-M |
 | Depends on | 00 |
@@ -99,4 +99,44 @@ step 3, which that step adds.
 
 ## 8. Implementation notes
 
-Empty until implementation.
+**Blocked on the binary budget.** Step 0 measured 2 556 bytes of headroom (spec 00, §4). An ARM cross-compiler (GCC 13.3,
+the toolchain's flags; the toolchain itself uses GCC 11, so the figure is approximate) puts this step at +4 476 bytes of
+code, 3.4 KB of it the spelling logic, after a rewrite for size (the project scale spelled once per call, one name table
+without pointers). CI's build fails its budget check until the owner decides how to make room: section garbage collection
+in the ARM build (about 45 KB of functions the plugin never calls), a raised budget, or both.
+
+**Interface** ([theory.h](../../../src/theory.h)), differing from §3.1 for size: `theory_spelling_t` (letter, accidental),
+`theory_spelling_text`, `theory_spell_tonic`, `theory_spell_degree`, `theory_spell_root`, `theory_spell_tone` (D4),
+`theory_chord_tones`, `theory_chord_name_s`, `theory_pc_text_s` (a constant string, in place of a `theory_pc_name_s`),
+`theory_note_name_s`, `theory_key_name_s`; `theory_chord_card_s` is left out, the plugin calling no `theory_chord_card`.
+In [seq_core.h](../../../src/seq_core.h): `seq_note_name` and `seq_pc_name`, a note named by the chord sounding at a
+step of a part (D5's context).
+
+**Two rules made precise.** D3 reaches single notes and chord tones too: no double accidental is ever shown, so G♯
+harmonic minor's seventh degree, F𝄪 in the scale's spelling, shows as G, as its vii° is named Gdim. D5's key side is
+flats when the project scale's spelling holds a flat.
+
+**Callers.** The core: `name_slots` and `voice_points` (every slot and change-point label), `chord_word` (the move
+texts), `seq_cell_label` (the grid's Bass and Melody steps, with their chord). The engine: `prog_text` (the PROGRESSIONS
+tiles and field), `fix_labels` (the picker's chord names, the bass keys' note names, Pentatonic's home notes), the PEDAL
+texts (four sites), `page_labels` (the CHORDS strip's names, and the chord-note texts by tone, D4), `slot_labels` (the
+triad names of PLAY's cells, the fs_ texts), the melody bar roles, `add_note` (twelve sites, each with the chord at its
+step), the BASS piano's keys, the bass "ends on" text's root, PLAY's title. The key selector (`kw_label`, `kb_label`)
+is unchanged (D7).
+
+**Measurements** (§4). Over 12 keys, 7 scales and every source, degree and colour, 48 720 chord names: 13 220 change
+(27.1 %); 460 grow by one character (E♯, B♯, C♭ or F♭ where 0.28.1 printed F, C, B or E), the longest stays 9 characters
+(`Dbdimadd9`, as `C#dimadd9` was), so no label exceeds what 0.28.1 could already produce; no double accidental. The
+progression presets' chords: 1 022 of 5 124 change (19.9 %). Pitch classes without a chord: 187 of 1 008.
+
+**Tests.** `tests/test_theory.c`: the 84 keys and scales against a table written by hand from the key signatures
+(verification 1), triads and borrowed chords in F, E♭, A♭, D♭, B, F♯ major and C♯, D♯, G♯ minor, twelve coloured and
+chromatic names (verification 2), single notes, octaves and tones. Three of the author's checks pinned sharp spellings:
+`tests/test_plugin.c` (C minor's `G# D# A#`, now `Ab Eb Bb`; the title `D# DORIAN`, now `Eb DORIAN`, with a new check of
+`D# PHRYGIAN`) and `tests/test_feel.c` (below). The core parity hash and the compatibility harness are unchanged (D8).
+
+**Open point found.** D1 follows `theory_numeral`, which names a chromatic root by the degree above it when it is not a
+scale degree. In D minor, the major chord on F♯ is therefore `bIV`, and D1 spells it `Gb7`, where `F#7` (♯III) is the
+usual reading. Changing it means changing the numeral, an upstream behaviour outside this step: for the owner's review.
+
+**Verification.** 1, 2 and 4 hold; 3 holds natively (CI's build stops at the budget); 5, the device run, waits.

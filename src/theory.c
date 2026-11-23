@@ -74,15 +74,18 @@ int theory_chord_name(int key, int scale, int deg, char *buf, int len) {
     return cat2(buf, len, NOTE[theory_degree_pc(key, scale, deg)], QUALITY[theory_triad_quality(key, scale, deg)]);
 }
 
-int theory_note_name(int note, char *buf, int len) {
+/* name and octave o: "E4" */
+static int note_text(const char *name, int o, char *buf, int len) {
     char oct[12];
-    int o = note / 12 - 1, k = (int)sizeof oct - 1;
+    int k = (int)sizeof oct - 1;
     unsigned u = o < 0 ? 0u - (unsigned)o : (unsigned)o;
     oct[k] = 0;
     do oct[--k] = (char)('0' + u % 10); while ((u /= 10) > 0);
     if (o < 0) oct[--k] = '-';
-    return cat2(buf, len, NOTE[note % 12], oct + k);
+    return cat2(buf, len, name, oct + k);
 }
+
+int theory_note_name(int note, char *buf, int len) { return note_text(NOTE[note % 12], note / 12 - 1, buf, len); }
 
 const char *theory_key_name(int key) { return NOTE[pmod(key, 12)]; }
 
@@ -315,3 +318,139 @@ int theory_drift(int key, int scale, int slot_scale, int deg, int colour, int cl
 }
 
 int theory_drift_level(int score) { return score < 16 ? 0 : score < 40 ? 1 : score < 65 ? 2 : 3; }
+
+/* Key-aware spelling (fork, docs/development/specs/01-key-aware-spelling.md). Written for size: the binary has little room left
+ * (vst/budget.json), so the project scale is spelled once per call (spell_scale) and the names are one table without pointers. */
+static const signed char NATURAL[7] = {0, 2, 4, 5, 7, 9, 11};   /* C D E F G A B */
+static const char SPELLED[7 * 5][4] = {"Cbb", "Cb", "C", "C#", "C##", "Dbb", "Db", "D", "D#", "D##", "Ebb", "Eb", "E", "E#", "E##",
+                                       "Fbb", "Fb", "F", "F#", "F##", "Gbb", "Gb", "G", "G#", "G##", "Abb", "Ab", "A", "A#", "A##",
+                                       "Bbb", "Bb", "B", "B#", "B##"};
+
+const char *theory_spelling_text(theory_spelling_t sp) {
+    int a = sp.acc < -2 ? -2 : sp.acc > 2 ? 2 : sp.acc;
+    return SPELLED[pmod(sp.letter, 7) * 5 + a + 2];
+}
+
+/* pc on letter: the accidental that makes it, -6..5 */
+static theory_spelling_t on_letter(int letter, int pc) {
+    int l = pmod(letter, 7);
+    return (theory_spelling_t){(signed char)l, (signed char)(pmod(pc - NATURAL[l] + 6, 12) - 6)};
+}
+
+static int is_double(theory_spelling_t sp) { return sp.acc <= -2 || sp.acc >= 2; }
+static int pc_of(theory_spelling_t sp) { return pmod(NATURAL[(int)sp.letter] + sp.acc, 12); }
+
+/* The project scale spelled from tonic letter l (into out when not NULL): its accidentals, a double one counting two */
+static int spell_from(int key, int scale, int l, theory_spelling_t *out) {
+    int n = 0;
+    for (int d = 0; d < 7; d++) {
+        theory_spelling_t sp = on_letter(l + d, theory_degree_pc(key, scale, d));
+        if (out) out[d] = sp;
+        n += sp.acc < 0 ? -sp.acc : sp.acc;
+    }
+    return n;
+}
+
+/* The project scale as D2 spells it, into out[7]; returns 1 when the spelling has a flat (D5's key side) */
+static int spell_scale(int key, int scale, theory_spelling_t out[7]) {
+    int k = pmod(key, 12), sc = scale >= 0 && scale < SCALE_COUNT ? scale : SCALE_MAJOR, l = 0, flats = 0;
+    while (l < 6 && NATURAL[l] < k) l++;   /* the letter at or above the key */
+    if (NATURAL[l] != k && spell_from(k, sc, l, NULL) >= spell_from(k, sc, l - 1, NULL)) l--;   /* a black key: the sharp name on a tie */
+    spell_from(k, sc, l, out);
+    for (int d = 0; d < 7; d++) flats |= out[d].acc < 0;
+    return flats;
+}
+
+/* The plainest name of pc: a white key's natural, else one accidental, a flat on the flat side */
+static theory_spelling_t plainest(int pc, int flats) {
+    int p = pmod(pc, 12), l = 0;
+    while (l < 6 && NATURAL[l + 1] <= p) l++;   /* the letter at or below */
+    if (NATURAL[l] == p) return (theory_spelling_t){(signed char)l, 0};
+    return flats ? (theory_spelling_t){(signed char)(l + 1), -1} : (theory_spelling_t){(signed char)l, 1};
+}
+
+theory_spelling_t theory_spell_tonic(int key, int scale) {
+    theory_spelling_t sc7[7];
+    spell_scale(key, scale, sc7);
+    return sc7[0];
+}
+
+theory_spelling_t theory_spell_degree(int key, int scale, int deg) {
+    theory_spelling_t sc7[7];
+    spell_scale(key, scale, sc7);
+    return sc7[pmod(deg, 7)];
+}
+
+/* D1 and D3, with the project scale spelled in sc7 */
+static theory_spelling_t root_in(int key, const theory_spelling_t sc7[7], int flats, int slot_scale, int deg) {
+    int root = theory_degree_pc(key, slot_scale, deg), d = pmod(deg, 7), at = -1, up = -1, down = -1;
+    for (int i = 6; i >= 0; i--) {   /* a chromatic chord: the project degree its root is, else the one a semitone above, else below (theory_numeral) */
+        int pc = pc_of(sc7[i]);
+        if (pc == root) at = i;
+        if (pc == (root + 1) % 12) up = i;
+        if ((pc + 1) % 12 == root) down = i;
+    }
+    if (slot_scale >= SCALE_COUNT) d = at >= 0 ? at : up >= 0 ? up : down >= 0 ? down : 0;
+    theory_spelling_t sp = on_letter(sc7[0].letter + d, root);
+    int odd = (sp.acc == 1 && (sp.letter == 2 || sp.letter == 6)) || (sp.acc == -1 && (sp.letter == 0 || sp.letter == 3));   /* E# B# Cb Fb */
+    return is_double(sp) || (odd && at < 0) ? plainest(root, flats) : sp;
+}
+
+/* D4: tone of the chord whose root is spelled r */
+static theory_spelling_t tone_of(int key, theory_spelling_t r, int flats, int slot_scale, int deg, int tone) {
+    int k = tone < 1 ? 0 : tone - 1, pc = theory_degree_pc(key, slot_scale, deg + k);
+    theory_spelling_t sp = on_letter(r.letter + k, pc);
+    return is_double(sp) ? plainest(pc, flats) : sp;
+}
+
+theory_spelling_t theory_spell_root(int key, int scale, int slot_scale, int deg) {
+    theory_spelling_t sc7[7];
+    int flats = spell_scale(key, scale, sc7);
+    return root_in(key, sc7, flats, slot_scale, deg);
+}
+
+theory_spelling_t theory_spell_tone(int key, int scale, int slot_scale, int deg, int tone) {
+    theory_spelling_t sc7[7];
+    int flats = spell_scale(key, scale, sc7);
+    return tone_of(key, root_in(key, sc7, flats, slot_scale, deg), flats, slot_scale, deg, tone);
+}
+
+int theory_chord_tones(int colour, int out[THEORY_CHORD_MAX]) {
+    const signed char *t = COLOUR_TONES[colour >= 0 && colour < COL_COUNT ? colour : COL_TRIAD];
+    int n = 0;
+    for (; t[n]; n++) out[n] = theory_colour_tone(colour, t[n]);
+    return n;
+}
+
+/* text, whose first NOTE[root] characters name the root, with the spelled root instead */
+static int respell(const char *text, int root, theory_spelling_t sp, char *buf, int len) {
+    return cat2(buf, len, theory_spelling_text(sp), text + strlen(NOTE[root]));
+}
+
+int theory_chord_name_s(int key, int scale, int slot_scale, int deg, int colour, char *buf, int len) {
+    char plain[24];
+    theory_chord_name_c(key, slot_scale, deg, colour, plain, sizeof plain);
+    return respell(plain, theory_degree_pc(key, slot_scale, deg), theory_spell_root(key, scale, slot_scale, deg), buf, len);
+}
+
+static theory_spelling_t spell_pc(int key, int scale, const theory_chord_t *ctx, int pc) {
+    theory_spelling_t sc7[7];
+    int flats = spell_scale(key, scale, sc7), p = pmod(pc, 12), tones[THEORY_CHORD_MAX];
+    for (int d = 0; d < 7; d++)   /* a double accidental (G# harmonic minor's F##) as D3 respells the chord on it */
+        if (pc_of(sc7[d]) == p) return is_double(sc7[d]) ? plainest(p, flats) : sc7[d];
+    if (ctx) {
+        theory_spelling_t r = root_in(key, sc7, flats, ctx->slot_scale, ctx->deg);
+        for (int i = 0, n = theory_chord_tones(ctx->colour, tones); i < n; i++)
+            if (theory_degree_pc(key, ctx->slot_scale, ctx->deg + tones[i] - 1) == p) return tone_of(key, r, flats, ctx->slot_scale, ctx->deg, tones[i]);
+    }
+    return plainest(p, flats);
+}
+
+const char *theory_pc_text_s(int key, int scale, const theory_chord_t *ctx, int pc) { return theory_spelling_text(spell_pc(key, scale, ctx, pc)); }
+
+int theory_note_name_s(int key, int scale, const theory_chord_t *ctx, int note, char *buf, int len) {
+    theory_spelling_t sp = spell_pc(key, scale, ctx, pmod(note, 12));
+    return note_text(theory_spelling_text(sp), (note - sp.acc - NATURAL[(int)sp.letter]) / 12 - 1, buf, len);   /* exact: B#3 is 60 */
+}
+
+const char *theory_key_name_s(int key, int scale) { return theory_spelling_text(theory_spell_tonic(key, scale)); }

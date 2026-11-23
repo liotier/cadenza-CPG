@@ -1082,7 +1082,8 @@ static void test_12_names(void) {
     slots4(e, b);
     display(e, "fc_4", from);
     display(e, "fs_1", to);
-    CHECK(!strcmp(b, "Cm G# D# A#") && !strcmp(from, "Fm") && !strcmp(to, "1.1  Cm"), "in names the key change shows: '%s', '%s', '%s'", b, from, to);
+    /* fork, docs/development/specs/01-key-aware-spelling.md: C minor's VI, III and VII by their degrees' letters (0.28.1: G# D# A#) */
+    CHECK(!strcmp(b, "Cm Ab Eb Bb") && !strcmp(from, "Fm") && !strcmp(to, "1.1  Cm"), "in names the key change shows: '%s', '%s', '%s'", b, from, to);
     e->setP(e, idx("scale"), 0.0f);   /* C major */
     slots4(e, b);
     display(e, "fb_1", from);
@@ -7314,7 +7315,12 @@ int main(void) {
     a->setP(a, idx("key"), 3 / 11.0f);     /* D# */
     a->setP(a, idx("scale"), 2 / 6.0f);    /* Dorian */
     display(a, "title", buf);
-    CHECK(!strncmp(buf, "D# DORIAN", 9), "title follows a non-zero key and scale (got '%s')", buf);
+    /* fork, spec 01 D2 and D7: the key named as its scale spells best, Eb Dorian (5 flats) rather than D# Dorian (7 sharps) */
+    CHECK(!strncmp(buf, "Eb DORIAN", 9), "title follows a non-zero key and scale (got '%s')", buf);
+    a->setP(a, idx("scale"), 4 / 6.0f);    /* Phrygian: D# (5 sharps) rather than Eb (7 flats) */
+    display(a, "title", buf);
+    CHECK(!strncmp(buf, "D# PHRYGIAN", 11), "the title's key follows its scale's spelling (got '%s')", buf);
+    a->setP(a, idx("scale"), 2 / 6.0f);
 
     /* Worst case for the screen: a 2-bar loop in which every cell flips at each bar line, grid on bar 1. */
     a->setP(a, idx("length"), 0.25f);   /* 2 bars */

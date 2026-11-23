@@ -608,7 +608,7 @@ static void prog_text(int key, int scale, int i, int chars, char *buf, int len) 
         if (n) add(&t, " \xC2\xB7");
         for (int k = 0; k < n; k++) {
             char c[16];
-            theory_chord_name(key, scale, r->deg[k], c, sizeof c);
+            theory_chord_name_s(key, scale, scale, r->deg[k], COL_TRIAD, c, sizeof c);
             add(&t, " ");
             add(&t, c);
         }
@@ -627,7 +627,7 @@ static void pedal_labels(inst_t *s) {
     for (int i = 0; i < 3; i++) {
         txt_t t = {s->upd_text[i], sizeof s->upd_text[i], 0};
         add(&t, NAME[i]);
-        if (i) add(&t, i == 2 ? "V" : minor ? "i" : "I"), add(&t, " \xC2\xB7 "), add(&t, theory_key_name(pedal_pc(key, sc, i)));
+        if (i) add(&t, i == 2 ? "V" : minor ? "i" : "I"), add(&t, " \xC2\xB7 "), add(&t, theory_pc_text_s(key, sc, NULL, pedal_pc(key, sc, i)));
     }
 }
 
@@ -640,7 +640,7 @@ static void fix_labels(inst_t *s) {
     if (seq_key(q) == s->fix_key && sc == s->fix_scale && names == s->fix_names) return;
     for (int i = 0; i < 7 + THEORY_NBORROW; i++) {
         int ss = i < 7 ? sc : theory_borrow_scale(sc, i - 6), deg = i < 7 ? i : theory_borrow_degree(sc, i - 6);
-        if (names) theory_chord_name(seq_key(q), ss, deg, s->fix_text[i], sizeof s->fix_text[i]);
+        if (names) theory_chord_name_s(seq_key(q), sc, ss, deg, COL_TRIAD, s->fix_text[i], sizeof s->fix_text[i]);
         else theory_numeral(seq_key(q), sc, ss, deg, s->fix_text[i], sizeof s->fix_text[i]);
     }
     for (int pc = 0; pc < 12; pc++) {   /* the note name, then its scale degree 1..7 when in the scale */
@@ -648,13 +648,13 @@ static void fix_labels(inst_t *s) {
         for (int d = 0; d < 7 && !deg; d++)
             if (theory_degree_pc(seq_key(q), sc, d) == pc) deg = d + 1;
         s->pcdeg[pc] = (unsigned char)deg;
-        if (deg) snprintf(s->bnk_text[pc], sizeof s->bnk_text[pc], "%s %d", theory_key_name(pc), deg);
-        else put(s->bnk_text[pc], (int)sizeof s->bnk_text[pc], theory_key_name(pc));
+        if (deg) snprintf(s->bnk_text[pc], sizeof s->bnk_text[pc], "%s %d", theory_pc_text_s(seq_key(q), sc, NULL, pc), deg);
+        else put(s->bnk_text[pc], (int)sizeof s->bnk_text[pc], theory_pc_text_s(seq_key(q), sc, NULL, pc));
     }
     /* Pentatonic's Home note: "E (minor)", "G (major)", the anchors melody.c plays (a major-third scale's minor one is degree 6) */
     int major = pmod(theory_degree_pc(seq_key(q), sc, 2) - seq_key(q), 12) == 4;
-    snprintf(s->pent_text[0], sizeof s->pent_text[0], "%s (minor)", theory_key_name(theory_degree_pc(seq_key(q), sc, major ? 5 : 0)));
-    snprintf(s->pent_text[1], sizeof s->pent_text[1], "%s (major)", theory_key_name(theory_degree_pc(seq_key(q), sc, major ? 0 : 2)));
+    snprintf(s->pent_text[0], sizeof s->pent_text[0], "%s (minor)", theory_pc_text_s(seq_key(q), sc, NULL, theory_degree_pc(seq_key(q), sc, major ? 5 : 0)));
+    snprintf(s->pent_text[1], sizeof s->pent_text[1], "%s (major)", theory_pc_text_s(seq_key(q), sc, NULL, theory_degree_pc(seq_key(q), sc, major ? 0 : 2)));
     for (int i = 0; i < THEORY_NPRESETS && i < 16; i++) {
         prog_text(seq_key(q), sc, i, BPR_CHARS, s->bpr_text[i], sizeof s->bpr_text[i]);
         prog_text(seq_key(q), sc, i, PROG_CHARS, s->cpr_text[i], sizeof s->cpr_text[i]);
@@ -749,20 +749,22 @@ static void page_labels(inst_t *s, int part, const slot_src_t *slots) {
         char name[16], num[12], where[8];
         txt_t t = {where, sizeof where, 0};
         s->drift[part][i] = (unsigned char)theory_drift(q->key, q->scale, ss, p->prog[i], c, in.vspr < 0, p->vinv);   /* as it plays */
-        theory_chord_name_c(q->key, ss, p->prog[i], c, name, sizeof name);
+        theory_chord_name_s(q->key, q->scale, ss, p->prog[i], c, name, sizeof name);
         theory_numeral(q->key, q->scale, ss, p->prog[i], num, sizeof num);
         slot_bar(p->chord_len, p->bars, i, &t);
         cst_text(s->cst_text[part][i], sizeof s->cst_text[part][i], where, own, (int)(p->slot_lock >> i & 1), name, num);
         t = (txt_t){s->ccd_text[part][i], sizeof s->ccd_text[part][i], 0};
         add(&t, num);
         add(&t, " \xC2\xB7");
-        for (int k = 0; k < n; k++) {   /* the chord's notes from its root; Cluster's 2nd after the root */
+        int tones[THEORY_CHORD_MAX];
+        theory_chord_tones(c, tones);
+        for (int k = 0; k < n; k++) {   /* the chord's notes from its root, each spelled by its tone (fork, spec 01 D4); Cluster's 2nd after the root */
             add(&t, " ");
-            add(&t, theory_key_name(notes[k] % 12));
+            add(&t, theory_spelling_text(theory_spell_tone(q->key, q->scale, ss, p->prog[i], tones[k])));
             if (!k && in.vspr < 0) {
                 int pc = theory_degree_pc(q->key, ss, p->prog[i] + 1), dup = 0;
                 for (int j = 0; j < n; j++) dup |= notes[j] % 12 == pc;
-                if (!dup) add(&t, " "), add(&t, theory_key_name(pc));   /* a sus2's 2nd is there already */
+                if (!dup) add(&t, " "), add(&t, theory_spelling_text(theory_spell_tone(q->key, q->scale, ss, p->prog[i], TONE_2)));   /* a sus2's 2nd is there already */
             }
         }
     }
@@ -787,7 +789,7 @@ static void slot_labels(inst_t *s, int part) {
     if (!memcmp(&in, &s->slot_src[part], sizeof in)) return;
     s->slot_src[part] = in;
     for (int i = 0; i < SEQ_SLOTS_ALL; i++)
-        theory_chord_name(q->key, theory_slot_scale(q->scale, p->src[i]), p->prog[i], s->tri_text[part][i], sizeof s->tri_text[part][i]);
+        theory_chord_name_s(q->key, q->scale, theory_slot_scale(q->scale, p->src[i]), p->prog[i], COL_TRIAD, s->tri_text[part][i], sizeof s->tri_text[part][i]);
     for (int i = 0; i < 8; i++) {
         char *plain = s->fs_text[part][0][i], chord[16];
         int ss = theory_slot_scale(q->scale, p->src[i]), c = in.ecol[i];   /* 0 (Triad) past prog_len, unused */
@@ -797,7 +799,7 @@ static void slot_labels(inst_t *s, int part) {
             put(s->fs_text[part][1][i], t.len, " ");
             continue;
         }
-        if (in.names) theory_chord_name_c(q->key, ss, p->prog[i], c, chord, sizeof chord);
+        if (in.names) theory_chord_name_s(q->key, q->scale, ss, p->prog[i], c, chord, sizeof chord);
         else theory_degree_c(q->key, q->scale, ss, p->prog[i], c, chord, sizeof chord);
         slot_where(p->chord_len, i, &t);
         add(&t, "  ");
@@ -984,7 +986,7 @@ static void rp_open_at(seq_t *q, const rpage_t *P, int bar) {
     else rp_msg_bar(q, P, "You hear bar ", bar, " when the playhead gets there");
 }
 
-static void add_note(txt_t *t, int midi);
+static void add_note(txt_t *t, const seq_t *q, int part, int bar, int step, int midi);
 /* BASS's (P->notes): the note hit i plays, 0 none; polled, so one read of what the setters rendered (the lane's steps, rfill_abs) */
 static int rp_note(const seq_t *q, const rpage_t *P, int bar, int i) {
     const seq_part_t *p = &q->part[seq_part(q)];
@@ -1329,7 +1331,7 @@ static void mbars_part_label(inst_t *s, int part) {
         for (int b = 0; b < n; b++) {
             int slot = ((b * SEQ_STEPS) / p->chord_len) % p->prog_len;
             char name[16];
-            if (plain) theory_chord_name(s->seq.key, theory_slot_scale(s->seq.scale, p->src[slot]), p->prog[slot], name, sizeof name);
+            if (plain) theory_chord_name_s(s->seq.key, s->seq.scale, theory_slot_scale(s->seq.scale, p->src[slot]), p->prog[slot], COL_TRIAD, name, sizeof name);
             add(&t, b ? " \xC2\xB7 " : "");
             add(&t, ROLES[ph][b]);
             add(&t, *ROLES[ph][b] ? " " : "");
@@ -1494,7 +1496,7 @@ static void bass_bar_labels(inst_t *s, int part, int b, const unsigned char note
         n++;
         if (seen[note[i] & 127]++) continue;
         if (n > 1) add(&t, " ");
-        add_note(&t, note[i]);
+        add_note(&t, &s->seq, part, b, i, note[i]);
     }
     if (!n) add(&t, "no notes");
     add(&t, " \xC2\xB7 "), add_int(&t, n), add(&t, n == 1 ? " note" : " notes");
@@ -1660,9 +1662,11 @@ static txt_t umsg_new(seq_t *q) {
     s->msg_at[MSG_BASS] = s->frames;
     return (txt_t){s->umsg, sizeof s->umsg, 0};
 }
-static void add_note(txt_t *t, int midi) {   /* "G1" (theory_note_name; below C0 as octave 0) */
+/* "G1", "Bb1": a note as the chord at step `step` of bar `bar` of part `part` spells it (fork, spec 01 D5: seq_note_name; a bad bar or
+ * step, the key alone); below C0 as octave 0 */
+static void add_note(txt_t *t, const seq_t *q, int part, int bar, int step, int midi) {
     char x[12];
-    theory_note_name(midi < 12 ? midi + 12 : midi, x, sizeof x);
+    seq_note_name(q, part, bar, step, midi < 12 ? midi + 12 : midi, x, sizeof x);
     add(t, x);
 }
 static const seq_part_t *ppart(const seq_t *q) { return &q->part[seq_part(q)]; }
@@ -1780,7 +1784,7 @@ static void upd_tap(seq_t *q, int i, int v) {
     m = umsg_new(q);
     if (!i) add(&m, "PEDAL off: the bass follows the chords again");
     else add(&m, i == 1 ? "PEDAL tonic: every note is " : "PEDAL dominant: every note is "),
-         add(&m, theory_key_name(pedal_pc(seq_key(q), seq_scale(q), i))), add(&m, ", the chords move above");
+         add(&m, theory_pc_text_s(seq_key(q), seq_scale(q), NULL, pedal_pc(seq_key(q), seq_scale(q), i))), add(&m, ", the chords move above");
 }
 static int upd_label(const seq_t *q, int i, char *buf, int len) { return put(buf, len, inst_of(q)->upd_text[i]); }
 static int uoc_on(const seq_t *q, int i) { return ppart(q)->bass.set.octave == i - 1; }
@@ -1904,7 +1908,7 @@ static int uti_label(const seq_t *q, int i, char *buf, int len) {
     for (int form = 0; form < 2; form++) {
         txt_t t = {buf, len, 0};
         add(&t, bass_style_name(st));
-        if (pedal) add(&t, " \xC2\xB7 PEDAL "), add(&t, theory_key_name(pedal_pc(seq_key(q), seq_scale(q), pedal)));
+        if (pedal) add(&t, " \xC2\xB7 PEDAL "), add(&t, theory_pc_text_s(seq_key(q), seq_scale(q), NULL, pedal_pc(seq_key(q), seq_scale(q), pedal)));
         if (!form) add(&t, " \xC2\xB7 "), add(&t, bass_style_feel(st));
         if (theory_text_width(buf) <= UTI_CHARS || form) return t.n;
     }
@@ -1984,7 +1988,7 @@ static int ues_label(const seq_t *q, int i, char *buf, int len) {
     txt_t t = {buf, len, 0};
     if (bar < 0) return put(buf, len, " ");
     note = step_note(q, bar, i), role = ppart(q)->brole[bar * SEQ_STEPS + i];   /* seq_bass_line's, one step */
-    if (note) add_note(&t, note), add(&t, " "), add(&t, (char[2]){role, 0});
+    if (note) add_note(&t, q, seq_part(q), bar, i, note), add(&t, " "), add(&t, (char[2]){role, 0});
     else add(&t, role == '-' ? "-" : "\xC2\xB7");
     if (ppart(q)->bass.fix[bar * SEQ_STEPS + i]) add(&t, "*");
     return t.n;
@@ -2366,7 +2370,7 @@ static int wcend_text(const seq_t *q, char *buf, int len) {
         if (l[i].note) last = i;
     if (last < 0) return put(buf, len, "no notes");
     deg = s->pcdeg[l[last].note % 12], d[0] = (char)('0' + deg);
-    add(&t, "ends on "), add_note(&t, l[last].note);
+    add(&t, "ends on "), add_note(&t, q, seq_part(q), bar, last, l[last].note);
     if (deg) add(&t, " = "), add(&t, d);   /* a chromatic fix has no scale degree */
     add(&t, deg == 1 ? " (home)" : deg == 5 || deg == 2 ? " (open)" : "");
     add(&t, " \xC2\xB7 "), add(&t, bass_level_word(bass_level(seq_mel_score(q, bar))));
@@ -2470,7 +2474,7 @@ static void wes_tap(seq_t *q, int i, int v) {
     x = wes_at(q, bar, i);
     m = mmsg_new(q);
     add(&m, "Step "), add_int(&m, i + 1);
-    if (x->note) add(&m, ": "), add_note(&m, x->note), add(&m, ". Tap a key to change it, or REST.");
+    if (x->note) add(&m, ": "), add_note(&m, q, seq_part(q), bar, i, x->note), add(&m, ". Tap a key to change it, or REST.");
     else add(&m, x->hold ? " holds the note before. Tap a key for a note here." : ": a rest. Tap a key to play a note here.");
 }
 static int wes_label(const seq_t *q, int i, char *buf, int len) {
@@ -2479,7 +2483,7 @@ static int wes_label(const seq_t *q, int i, char *buf, int len) {
     txt_t t = {buf, len, 0};
     if (bar < 0) return put(buf, len, " ");
     x = wes_at(q, bar, i);
-    if (x->note) add_note(&t, x->note);
+    if (x->note) add_note(&t, q, seq_part(q), bar, i, x->note);
     else add(&t, x->hold ? "-" : "\xC2\xB7");
     if (ppart(q)->mjam.fix[bar * SEQ_STEPS + i]) add(&t, "*");
     if (x->note && (deg = inst_of(q)->pcdeg[x->note % 12]) != 0) add(&t, " "), add_int(&t, deg);
@@ -2497,7 +2501,7 @@ static void wnk_tap(seq_t *q, int i, int v) {
     if (bar < 0 || sel < 0) return;
     seq_medit_note(q, UNK_PC[i]);
     m = mmsg_new(q);
-    add(&m, "Bar "), add_int(&m, bar + 1), add(&m, ", step "), add_int(&m, sel + 1), add(&m, ": "), add_note(&m, wes_at(q, bar, sel)->note);
+    add(&m, "Bar "), add_int(&m, bar + 1), add(&m, ", step "), add_int(&m, sel + 1), add(&m, ": "), add_note(&m, q, seq_part(q), bar, sel, wes_at(q, bar, sel)->note);
     add(&m, ". JAM blocks and knobs leave it alone.");
 }
 static int wnk_label(const seq_t *q, int i, char *buf, int len) { return put(buf, len, inst_of(q)->bnk_text[UNK_PC[i]]); }
@@ -2733,7 +2737,7 @@ static void sound_chords_centre(const seq_t *q, int bar, sound_t *n) {   /* cct_
     seq_slot_label(q, slot, n->name[DL_CHORDS], sizeof n->name[DL_CHORDS]);
     for (int i = 0; i < k; i++) {
         if (i) add(&t, " ");
-        add_note(&t, notes[i]);
+        add_note(&t, q, part, bar, 0, notes[i]);
     }
     drift = theory_drift(q->key, q->scale, theory_slot_scale(q->scale, p->src[slot]), p->prog[slot], seq_part_eff_colour(q, part, slot),
                          seq_part_vknob_eff(q, part, VK_SPR) < 0, p->vinv);
@@ -2748,14 +2752,14 @@ static void sound_bass_centre(const inst_t *s, int bar, sound_t *n) {   /* uct_1
     int hits = 0, level = bar_level(q, bar);
     txt_t t = {n->name[DL_BASS], sizeof n->name[DL_BASS], 0};
     add(&t, s->rbar_text[seq_part(q)][bar]);
-    if (p->bass.set.pedal) add(&t, " over "), add(&t, theory_key_name(pedal_pc(q->key, q->scale, p->bass.set.pedal)));
+    if (p->bass.set.pedal) add(&t, " over "), add(&t, theory_pc_text_s(q->key, q->scale, NULL, pedal_pc(q->key, q->scale, p->bass.set.pedal)));
     t = (txt_t){n->nt[DL_BASS], sizeof n->nt[DL_BASS], 0};
     for (int i = 0; i < SEQ_STEPS; i++) {   /* its notes in order as they play, the first 6 */
         int note = seq_abs_note(&p->lane[LANE_BASS].steps[bar * SEQ_STEPS + i]);
         if (!note) continue;
         if (++hits > 6) continue;
         if (hits > 1) add(&t, " ");
-        add_note(&t, note);
+        add_note(&t, q, seq_part(q), bar, i, note);
     }
     add(&t, !hits ? "no notes" : hits > 6 ? " ..." : "");
     t = (txt_t){n->wd[DL_BASS], sizeof n->wd[DL_BASS], 0};
@@ -3031,14 +3035,15 @@ static void ph_centre_end(const seq_t *q, const rpage_t *P, int bar, const phbar
     add(&t, "ends on ");
     if (P->dl == DL_BASS) {
         int root = ph_root(q, slot), level = bar_level(q, bar);
-        add_note(&t, b->note[last]), add(&t, " = "), add(&t, PH_DEG[pmod(b->note[last] - root, 12)]);
-        add(&t, " of "), add(&t, theory_key_name(root)), add(&t, " \xC2\xB7 "), add(&t, level ? bass_level_word(level) : "chord tones");
+        seq_pc_name(q, seq_part(q), bar, last, root, name, sizeof name);
+        add_note(&t, q, seq_part(q), bar, last, b->note[last]), add(&t, " = "), add(&t, PH_DEG[pmod(b->note[last] - root, 12)]);
+        add(&t, " of "), add(&t, name), add(&t, " \xC2\xB7 "), add(&t, level ? bass_level_word(level) : "chord tones");
     } else {   /* the notes the hit plays: its octave, an early hit's chord, CADENCE's voicing on a phrase's last bar */
         int v[THEORY_CHORD_MAX], k = seq_part_step_notes(q, seq_part(q), LANE_CHORDS, bar, last, v), top = 0;
         for (int i = 0; i < k; i++) top = v[i] > top ? v[i] : top;
         seq_slot_label(q, slot, name, sizeof name);
         add(&t, name);
-        if (k) add(&t, " \xC2\xB7 top note "), add_note(&t, top);
+        if (k) add(&t, " \xC2\xB7 top note "), add_note(&t, q, seq_part(q), bar, last, top);
         add(&t, " \xC2\xB7 "), add(&t, DRIFT_WORD[ph_drift(q, slot)]);
     }
 }
@@ -3072,7 +3077,7 @@ static void ph_step_texts(const seq_t *q, const rpage_t *P, int bar, const phbar
         int slot = ph_slot_of(q, P->lane, bar, i, f, &b2, &s2);
         int fixed = P->dl == DL_BASS && p->bass.fix[bar * SEQ_STEPS + i], oct = seq_hit_oct(q, bar, i);
         txt_t w = {c->step[i], sizeof c->step[i], 0}, l = {c->line[i], sizeof c->line[i], 0};
-        if (P->dl == DL_BASS && b->note[i]) add_note(&w, b->note[i]);
+        if (P->dl == DL_BASS && b->note[i]) add_note(&w, q, seq_part(q), bar, i, b->note[i]);
         else if (P->dl != DL_BASS && (hit || change)) ph_chord_text(q, slot, ch, sizeof ch), add(&w, ch);
         else add(&w, o == RC_HOLD ? "-" : "\xC2\xB7");
         if (fixed) add(&w, "*");
@@ -3103,7 +3108,9 @@ static void ph_keys_texts(const seq_t *q, const rpage_t *P, int bar, const phbar
         int root = ph_root(q, ph_slot_of(q, P->lane, bar, at, b->f[at], &b2, &s2));
         for (int i = 0; i < 12; i++) {
             txt_t t = {c->piano[i], sizeof c->piano[i], 0};
-            add(&t, theory_key_name(UNK_PC[i])), add(&t, " "), add(&t, PH_DEG[pmod(UNK_PC[i] - root, 12)]);
+            char pc[8];
+            seq_pc_name(q, seq_part(q), bar, at, UNK_PC[i], pc, sizeof pc);   /* fork, spec 01 D5: as the chord at the step spells it */
+            add(&t, pc), add(&t, " "), add(&t, PH_DEG[pmod(UNK_PC[i] - root, 12)]);
         }
         return;
     }
@@ -3500,7 +3507,7 @@ static void ph_note_msg(seq_t *q) {
         add(&m, " is a rest: paint a hit to give it a note");
         return;
     }
-    add(&m, ": "), add_note(&m, n);
+    add(&m, ": "), add_note(&m, q, seq_part(q), seq_rbar_bar(q, LANE_BASS), sel, n);
     add(&m, ppart(q)->bass.fix[seq_rbar_bar(q, LANE_BASS) * SEQ_STEPS + sel] ? " \xC2\xB7 fixed: knobs and styles leave it" : " follows the chord");
 }
 static int uqk_on(const seq_t *q, int i) { int n = ph_sel_note(q); return ph_editing(q, RP_B) && n && n % 12 == UNK_PC[i]; }
@@ -4549,7 +4556,7 @@ static int pos_text(const seq_t *q, char *buf, int len) {
 }
 
 static int title_text(const seq_t *q, char *buf, int len) {
-    int i = seq_prog_preset(q), n = snprintf(buf, len, "%s ", theory_key_name(seq_key(q)));
+    int i = seq_prog_preset(q), n = snprintf(buf, len, "%s ", theory_key_name_s(seq_key(q), seq_scale(q)));
     if (n >= len) return n;
     for (const char *c = theory_scale_name(seq_scale(q)); *c && n < len - 1; c++) {
         char ch = *c;

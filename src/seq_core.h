@@ -726,6 +726,11 @@ void seq_cp_clear_bar(seq_t *s, int bar);
  * step is off. */
 int seq_step_on(const seq_t *s, int lane, int step);
 int seq_cell_label(const seq_t *s, int lane, int step, char *buf, int len);
+/* fork (docs/development/specs/01-key-aware-spelling.md): a note ("Bb3") or a pitch class ("Bb") named in the key, as the chord
+ * sounding at step `step` of bar `bar` of part `part` spells it (theory_note_name_s, theory_pc_name_s); a bad part, bar or step
+ * names it by the key alone. seq_cell_label names the Bass and Melody lanes' steps this way */
+int seq_note_name(const seq_t *s, int part, int bar, int step, int note, char *buf, int len);
+int seq_pc_name(const seq_t *s, int part, int bar, int step, int pc, char *buf, int len);
 /* 0.10: the note a lane's step plays (on or off) in any part (0..SEQ_NPARTS-1), as seq_cell_label names it (the Chords lane:
  * its lowest); -1 for a bad argument. For labels made in the setters for a part not yet playing (a queued one). */
 int seq_part_step_note(const seq_t *s, int part, int lane, int bar, int step);
