@@ -42,9 +42,11 @@ in `docs/development/specs/` before any code is written.
 
 ### 2.1 Specifications
 
-One file per step, `docs/development/specs/NN-short-title.md`, numbered in the order of §3. A specification names what it
-excludes as clearly as what it does, which keeps parked topics parked. Its status line moves from draft to approved, to
-implemented, to verified on the device.
+One file per step, `docs/development/specs/NN-short-title.md`, numbered in the order of §3 and listed in
+[specs/README.md](specs/README.md). A specification names what it excludes as clearly as what it does, which keeps parked
+topics parked. Its status line moves from draft to approved, to implemented, to verified on the device. Specifications 00
+to 05, phase A, are drafted; the later steps will be specified after milestone M2, once the engine work has taught what it
+will.
 
 ### 2.2 Branches
 
