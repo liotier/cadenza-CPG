@@ -241,4 +241,6 @@ copy of `vst/` (A2) and the toolchain's location (`MPC_VST`, else next to the re
    bytes for the working tree, where CI measured −40 KB between the same pair (650 KB): the right sign and order, the
    cross-compiler's absolute figures larger than the toolchain's. `armsize.sh d9b619d`, whose code is the working tree's,
    gives 0.
-3. CI's summary gains the binary's bytes and headroom: recorded with the run of the commit that adds this.
+3. CI's summary gains the binary's bytes and headroom: the step ran in CI run 10
+   ([45261448699](https://github.com/liotier/cadenza-CPG/actions/runs/45261448699), commit `17bd792`), green on its
+   three jobs; the figures are on that run's summary page.
