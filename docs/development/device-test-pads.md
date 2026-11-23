@@ -1,6 +1,7 @@
 # Device test: can the MPC One's pads reach Cadenza ?
 
-Status: protocol, stage 1 under way (runs 1 and 2, §6); Q1 and Q4 very likely yes by inference. It answers question 2 of the integration study
+Status: closed after three runs (§6). The findings are kept; the direction they opened, MIDI input driving Cadenza, is set
+aside by decision 20 of the study: Cadenza wants harmony sequenced in Cadenza. It answers question 2 of the integration study
 ([§11](cpg-integration-study.md#11-open-questions)): whether the hardware pads can play avenue L's live palette pads.
 Run on the way, it also tells whether notes written in Cadenza's own clip reach Cadenza, which bears on the parked question
 of parts and clips (end of [§7](cpg-integration-study.md#7-integration-avenues)).
@@ -101,10 +102,10 @@ in it. Restore the original file after the test.
 | # | Question | Observation | Evidence (photo, log lines) |
 |---|---|---|---|
 | Q1 | Pad notes reach Cadenza | very likely yes, by inference (run 2) | the toolchain's synths play from the pads; same wrapper code, same synth flag |
-| Q2 | Pad map, channel, velocity, pressure | pending | the event list of a recorded clip |
-| Q3 | Separable from the echo, and how | pending | a recording of Cadenza's track with the pads untouched |
+| Q2 | Pad map, channel, velocity, pressure | not taken: pads record as ordinary notes (run 3); the map was no longer needed | Cadenza's track records like any other |
+| Q3 | Separable from the echo, and how | no echo in recordings: record-armed with nothing played, Cadenza's track records nothing (run 3); whether the echo reaches the plugin live stays unknown | an empty clip |
 | Q4 | Clip notes reach Cadenza | very likely yes, by inference (run 2) | synth tracks play their clips through the same path |
-| Q5 | Pad Perform chords arrive as several notes | pending | a recording of one chord pad |
+| Q5 | Pad Perform chords arrive as several notes | yes: chords from Pad Perform or a MIDI controller record as simultaneous notes (run 3) | recorded clips |
 
 ## 5. What the results decide
 
@@ -148,3 +149,19 @@ default: are Cadenza's own notes recorded, and which input setting avoids it; Q5
 Proposal, pending the owner's word: with Q1 and Q4 settled by inference and Q2, Q3 and Q5 readable from recordings, stage
 2 would only confirm and time what is already known. It is better folded into the implementation of hardware pads, whose
 first step is precisely to give `midi()` something to do, than written as throwaway code now.
+
+### Run 3, 2026-11-23, by the owner, stock Cadenza 0.28.1
+
+| Observation | Reading |
+|---|---|
+| Record-armed while Cadenza plays, with nothing played, Cadenza's track records nothing | No echo of Cadenza's own port in recordings with the track's default input (Q3). Whether MPC routes the echo to the plugin live, as the engine's header comment says it did when written, stays unknown, and no longer matters |
+| Otherwise the track behaves normally: notes record as notes; chords from Pad Perform or from a MIDI controller record as simultaneous notes | Q5 yes; Q2 needs no further work |
+
+### Closure
+
+The owner's question after run 3, why hijack the pads, has a plain answer: nothing in the integration requires them.
+Hardware pads entered the study by analogy with Pad Perform, as an option beside avenue L's on-screen pads, and the clip
+idea of §5 followed from the test itself. Cadenza is designed to have its harmony sequenced inside it: it takes no MIDI
+input, and a part's chords live in its own slots, where they are saved, undone and reloaded as they sound. Chords arriving
+by MIDI would be a second source of harmony beside the slots. Decision 20 of the study keeps the design: no MIDI input,
+avenue L on screen only. Stage 2 is not needed. The findings stay on record for whoever reopens the question.

@@ -1,6 +1,6 @@
 # Cadenza and the Chord Progression Generator: an integration study
 
-Status: study, revision 6. No code has been written; the measurements come from throwaway scripts described in
+Status: study, revision 7. No code has been written; the measurements come from throwaway scripts described in
 [Appendix A](#appendix-a-measurement-method).
 
 - Revision 1 surveyed the three projects and proposed avenues.
@@ -22,6 +22,8 @@ Status: study, revision 6. No code has been written; the measurements come from 
 - Revision 6 records decisions 17 to 19 (live pads, no port, the pads' device test), compares Cadenza with Midicake's ARP
   ([§2.4](#24-a-neighbour-midicakes-arp)), and adds the device test's protocol,
   [device-test-pads.md](device-test-pads.md).
+- Revision 7 records decision 20 after the device test's runs: no MIDI input, harmony being sequenced in Cadenza; avenue
+  L's pads stay on screen, and no question remains open ([§11](#11-open-questions)).
 
 | Project | Version studied | Licence |
 |---|---|---|
@@ -404,11 +406,10 @@ already planned.
    slots read the chord; in [bassline.h](../../src/bassline.h) a passing note is a scale step, only the approach is
    chromatic), so a minor palette in a major project gets correct chords and clashing passing notes (E naturals over Cm
    in C major).
-7. **No MIDI input.** The toolchain's wrapper passes every MIDI event MPC sends to Cadenza's engine, whose handler
-   discards it ([engine.c:362](../../src/engine.c#L362)); among those events is the echo of Cadenza's own port, which MPC
-   routes back into its track ([engine.c](../../src/engine.c), header comment). Whether the hardware pads' notes arrive
-   too, distinguishable from that echo, is what [device-test-pads.md](device-test-pads.md) finds out (decision 19).
-   On-screen pads come first.
+7. **No MIDI input, by design.** The toolchain's wrapper passes every MIDI event MPC sends to Cadenza's engine, whose
+   handler discards it ([engine.c:362](../../src/engine.c#L362)): Cadenza wants harmony sequenced inside Cadenza, not
+   swayed by live input. The device test ([device-test-pads.md](device-test-pads.md)) found that the pads and the notes of
+   Cadenza's own clip could reach it; decision 20 keeps the design as it is.
 8. **One source of truth for harmony: the CPG.** Cadenza consumes generated data, never a hand-kept translation (the
    Ouarpeggiator's drift, §2.3).
 9. **The licence** ([§9](#9-licence-governance-and-branding)).
@@ -827,7 +828,9 @@ Perform's files. Kept for the record:
   harmony overlay that every lane would have to read: the lanes render whole loops in advance. One difference: a JAM block
   swaps one lane, a chord change all three (the Chords' voices and labels, the Bass, the Melody), which must swap together
   at the same boundary.
-- **Physical pads.** After a device probe (§5.7).
+- **On screen only (decision 20).** Hardware pads were considered, by analogy with Pad Perform, and the device test
+  showed them feasible; but driving Cadenza's chords from MIDI input would give the part a second source of harmony beside
+  its own slots, against Cadenza's design of sequencing harmony inside Cadenza.
 - **Size.** M to L.
 
 ### Ranking
@@ -879,6 +882,10 @@ loop into a three-track Standard MIDI File, one track per lane, is a small step 
 four bars rendered, since their fills play every fourth bar. File access is taken as available (decision 13); on an MPC
 One, the user's folders are under `/storage/MPC Documents` on the internal drive (`Sequences` among them), and external
 drives under `/media/<volume>` (avenue J's notes).
+
+All three routes run in one direction, from Cadenza to MPC's clips: the parts are made in Cadenza, then frozen as clips.
+The reverse direction, MPC clips carrying chord changes into Cadenza through MIDI input, was raised by the device test and
+is set aside by decision 20.
 
 ---
 
@@ -943,7 +950,7 @@ MPC One and MPC OS 3.10.1 as untested, and this fork's owner runs that combinati
 ## 10. Decision log
 
 Decisions of the fork's owner, 2026-11-22: 1 to 9 in answer to revision 1, 10 and 11 to revision 2, 12 to 15 to
-revision 3, 16 to revision 4, 17 to 19 to revision 5.
+revision 3, 16 to revision 4, 17 to 19 to revision 5; 2026-11-23: 20, after the device test's runs.
 
 | # | Decision | Consequence in this revision |
 |---|---|---|
@@ -966,6 +973,7 @@ revision 3, 16 to revision 4, 17 to 19 to revision 5.
 | 17 | Live pads take the PROGRESSIONS browser's behaviour for single chords: hold until the next tap, landing at SWITCH AT, the performance kept on KEEP by retrospective capture, CANCEL restoring. | avenue L |
 | 18 | No C port of the palette builder: the part keeps its palette, a part without one gets its scale's palette, a progression built from scratch can take the nearest catalogue palette. | avenue D |
 | 19 | The device test of the physical pads goes ahead, by the protocol of [device-test-pads.md](device-test-pads.md). | §11 |
+| 20 | No MIDI input: Cadenza wants harmony sequenced in Cadenza. Hardware pads and harmony carried by MPC clips are set aside; avenue L's pads stay on screen; the device test closes, its findings kept. | avenue L, §5.7, [device-test-pads.md](device-test-pads.md) |
 
 **To revisit.** Decision 12, the fifth of 11ths and 13ths: when a listener misses the fifth, when a voicing style wants it,
 when `THEORY_CHORD_MAX` is raised for another reason, or when the CPG's 11ths and 13ths change. The trade-off and the ways
@@ -975,15 +983,9 @@ forward are in [avenue H](#h-completing-the-chord-vocabulary).
 
 ## 11. Open questions
 
-For the owner of this fork; the answers will be written into §10 before any specification.
-
-1. **Physical pads (decision 19).** Can the MPC One's pads reach the plugin ? The code settles the plugin's side: the
-   toolchain's wrapper passes every incoming MIDI event to Cadenza's engine, whose handler discards it. The open part is
-   MPC's: which events it sends to Cadenza's track, and whether pad notes can be told apart from the echo of Cadenza's own
-   port. The protocol, [device-test-pads.md](device-test-pads.md), is under way: its runs so far make pads reaching
-   Cadenza very likely, and notes of Cadenza's own clip as well, by inference from the toolchain's synths; the pad map,
-   the echo and Pad Perform chords remain to be read from recordings. Its stage 2, a diagnostic build, is proposed to be
-   folded into the implementation of hardware pads rather than written now.
+None at present: every question of revisions 1 to 6 is answered in §10, the last one (the physical pads) by decision 20.
+The study's next step is the first specification, stage 1 of §8, in the format the CPG's improvement specifications
+established.
 
 ---
 
