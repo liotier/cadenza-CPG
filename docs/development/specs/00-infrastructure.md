@@ -177,3 +177,42 @@ under `src/` or `vst/` (D1).
 more (its implementation notes); the budget is the owner's decision.
 
 **Verification.** 1 to 3 hold (CI run 1). 4, the device run, waits for the first draft release.
+
+---
+
+## Addendum A: local tools
+
+| | |
+|---|---|
+| Status | for approval |
+| Step | 0a |
+| Size | S |
+| Depends on | 00 |
+
+### A.1 Problem
+
+The toolchain's scripts run in Docker, and a cloud session has no Docker daemon: steps 1 and 2 were built and measured
+with two scratch scripts that a later session would have to rewrite. Both proved their worth: the native runner ran the
+whole offline suite in a few minutes, and the size estimate showed step 1 over the budget before CI did (strategy, §3,
+lessons 2 and 9).
+
+### A.2 Decisions
+
+| # | Decision | Rationale |
+|---|---|---|
+| A1 | **`tools/dev/native_tests.sh`** runs `tests/run_tests.sh`'s compile-and-run steps with the host's gcc and the parity check, reading the steps from that script, never copying them. | One list of tests, the author's; the runner follows any change to it. |
+| A2 | **It generates `vst/build/keyflags.h` and `params.h` in a temporary copy of the tree** and copies the two headers back. | `vst/make_skin.py` also rewrites `vst/params.json`, `vst/layout.conf` and `vst/images/`, which are committed: run in place, it would dirty the tree. |
+| A3 | **It sets the LeakSanitizer suppression of `.github/lsan.supp`.** | A host with libasound reports its cached configuration as leaks, as GitHub's runners do (spec 00, deviation 4). |
+| A4 | **`tools/dev/armsize.sh`** builds the plugin with an ARM cross-compiler (`arm-linux-gnueabihf-gcc`), the sources and flags `gen_vst.py --shell` gives, for the working tree and for a commit, and prints the code size of each and the difference. | A step's cost before it is pushed. The cross-compiler is not the toolchain's (GCC 13 against 11): its differences guide, CI's absolute figure decides. Step 1: estimated +4 476 bytes, measured about +4 KB. |
+| A5 | **CI's summary states the binary in bytes and the headroom** against `vst/budget.json`. | The budget check prints whole kilobytes; a step's cost in bytes needs the exact figure. |
+| A6 | **The tools change nothing the plugin or CI depends on.** | Development aids, not part of the build. |
+
+### A.3 Verification
+
+1. On the current commit, `native_tests.sh` passes as CI's offline tests do, and leaves `git status` clean.
+2. `armsize.sh HEAD~1` on a commit that changes code reports a difference of the sign and order CI then measures.
+3. CI's summary shows the bytes and the headroom.
+
+### A.4 Out of scope
+
+Installing the cross-compiler in a setup script: an environment matter, proposed separately if wanted.

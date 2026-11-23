@@ -102,10 +102,12 @@ step 3, which that step adds.
 **The binary budget.** Step 0 measured 2 556 bytes of headroom (spec 00, §4). An ARM cross-compiler (GCC 13.3, the
 toolchain's flags; the toolchain itself uses GCC 11) put this step at +4 476 bytes of code, 3.4 KB of it the spelling
 logic, after a rewrite for size (the project scale spelled once per call, one name table without pointers). The first
-push of this step failed CI's budget check, as expected. The owner chose both remedies (study, decision 21): section
+push of this step failed CI's budget check, as expected: 690 KB against 688 (CI run 4, the toolchain's compiler), so the
+step costs about 4 KB on the device's build. The owner chose both remedies (study, decision 21): section
 garbage collection in the ARM build (`-ffunction-sections -fdata-sections -Wl,--gc-sections` in `vst/vst.json`'s
 `cflags_arm`), which drops about 46 KB of functions the plugin never calls (kept for the other front ends), and a budget
-of 720 KB (`vst/budget.json`). The plugin still exports `VSTPluginMain` alone. Fork builds are no longer byte-identical to
+of 720 KB (`vst/budget.json`). The collected build measures 650 KB (test build 4, commit `d9b619d`): about 40 KB of
+dead code gone, some 70 KB of headroom. The plugin still exports `VSTPluginMain` alone. Fork builds are no longer byte-identical to
 official ones; the device run (verification 5) also confirms that the collected binary loads.
 
 **Interface** ([theory.h](../../../src/theory.h)), differing from §3.1 for size: `theory_spelling_t` (letter, accidental),
