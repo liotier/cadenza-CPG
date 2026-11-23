@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | for approval: S04-D3 answered (2026-11-23); S04-D9 open, with S05-D4 |
+| Status | approved: §2.1 answered by the owner, 2026-11-23 |
 | Type | data, tooling |
 | Size | M |
 | Depends on | 00 (the submodule), 03 (the full vocabulary) |
@@ -34,7 +34,7 @@ decision presupposes, here or elsewhere.
 | # | Question | Proposed answer | Alternatives | Rests on |
 |---|---|---|---|---|
 | S04-D3 | Which of the CPG's six styles fills each catalogue palette, and with which colours? | **Answered (owner, 2026-11-23): Classic, its colours kept** (§2.4, option a): "a solid foundation"; other styles' colourings, the "jazzy frills", to be considered after a first version. COLOUR acts on Classic's triads, 53 % of the pads and 82 % of the starting orders' chords; the rest keep the palette's own colour, as a chord with its own type does in Cadenza today | b, c and d of §2.4; c (a second style, about 9 KB) stays possible later | none |
-| S04-D9 | How does a starting order become bars? Owner's questions, 2026-11-23: *are we thinking of playing the progression in order?* Yes: loading writes the template, in order, into the slots as the palette's starting order (study, decisions 2 and 4; S05-D4); from there the order is anyone's. *Is there a mechanism in Cadenza to reuse, or must one be invented?* One exists; nothing need be invented (§2.4, "What Cadenza already does") | **Feel's preset layout, as it stands** (§2.4, layout 1): a bar a chord, the loop grown to the next length that holds the order, the order repeated into the spare bars. The table then stores no durations. Same as decision 4 for the 145 orders of 1, 2, 4 or 8 chords | Layout 2: decision 4's rule, the spare bars to the tonic, stored as durations that Feel's store already writes; or loading writes nothing (§2.4) | S05-D4, which takes the same choice for the loop's length |
+| S04-D9 | How does a starting order become bars? (The owner asked whether the progression plays in order, which it does as the palette's starting order, and whether Cadenza had a mechanism to reuse, which it has: §2.4.) | **Answered (owner, 2026-11-23): decision 4's rule**, "the established common practices of competent composers", unless it rocked the boat; it does not. The spare bars go to the tonic, held at the end when the order ends on it, at the start when it only starts on it, else to the last chord. The rule hands out whole bars only, so a laid-out order is one chord a bar, in a loop of 1, 2, 4, 8 or 16 bars: the shape of Cadenza's own presets, one of which, *2-5-1-1 Jazz* (`{1, 4, 0, 0}`), is this very layout of ii-V-I. Loading writes it as Feel's presets write theirs (S05-D4); Feel's store is not needed | Feel's preset layout (the order repeated into the spare bars); loading writes nothing | decision 4; S05-D4 |
 
 ### 2.2 For the owner: after a further step
 
@@ -124,6 +124,11 @@ Of the 184 orders, 145 lay out the same either way; the 39 others (3 chords: 23;
 of them ending on the tonic, 21 starting on it, 2 neither. Layout 1 is Cadenza's way and needs nothing new; layout 2 is
 the musician's preference recorded as decision 4. Both are only starting orders.
 
+**Chosen: layout 2** (S04-D9, owner, 2026-11-23), and it needs less than the table above says. Decision 4 hands out whole
+bars only (checked over all 184 orders: every layout is whole bars in a loop of 1, 2, 4, 8 or 16), so the generator
+stores each laid-out order as one palette index a bar, and the loader writes it as Feel's presets write theirs: no
+durations, no Feel store. Cadenza's own *2-5-1-1 Jazz* preset already lays ii-V-I out this way.
+
 The loop's length (S05-D4) has the same two existing answers: PHRASE's presets keep it, Feel's grow it until the order
 fits, never shrinking it. Layout 1 goes with Feel's growth; the two questions are one choice of which existing preset a
 palette load behaves like.
@@ -148,7 +153,7 @@ Per catalogue entry:
 | nickname | S04-D10 |
 | tonality | major or minor, from the CPG's `templateTonality`: the browser's family filter (decision 6) |
 | palette | 16 chords as S04-D4, three bytes each: root (4 bits), quality (4: the four first-range and five second-range qualities), colour (4), spice (2), category (3), in the starting order (1) |
-| starting order | up to 16 pairs of palette index (4 bits) and quarter bars (6 bits), S04-D9 |
+| starting order | laid out by S04-D9: one palette index a bar of its loop (1, 2, 4, 8 or 16 bars), 4 bits each. The order is the CPG parser's (`parseProgression`), never the template text split: the catalogue writes the 12-bar blues as the single token `12-bar-blues`, which the parser expands to twelve chords |
 
 Plus the 22 genre names and seven scale palettes of 16 chords as S04-D5.
 
@@ -173,7 +178,7 @@ step 5's verbs.
 | Quantity | Expected |
 |---|---|
 | Entries, genres, palettes | 184, 22, 191 (184 and the seven scale palettes) |
-| Table size | 184 × 16 × 3 bytes of chords, about 3 KB of starting orders, about 3 KB of nicknames: 12 to 15 KB of binary |
+| Table size | 184 × 16 × 3 bytes of chords (8.8 KB), 184 × 8 bytes of starting orders (1.5 KB), about 3 KB of nicknames: 12 to 14 KB of binary |
 | Binary | 650 KB before; within 720 (estimated locally, measured in CI) |
 | Root spellings differing from the CPG's | reported (13 of 2 804 Classic pads in C, before step 3) |
 | Nicknames over 19 characters | 10 of 184, the longest 24 |
@@ -197,7 +202,7 @@ tiles shorten long nicknames (step 6).
 
 ## 7. Open points, to settle while implementing
 
-None: the two questions the draft left open are S04-D3 and S04-D9 of §2.1.
+None: the two questions the draft left open are S04-D3 and S04-D9 of §2.1, both answered.
 
 ## 8. Implementation notes
 

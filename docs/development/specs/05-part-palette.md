@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | S05-D2 and S05-D9 answered by the owner, 2026-11-23; S05-D4 open with S04-D9; approved once spec 04 is, which it rests on |
+| Status | approved: §2.1 answered by the owner, 2026-11-23 |
 | Type | engine, save format |
 | Size | M |
 | Depends on | 02, 03, 04 |
@@ -31,14 +31,14 @@ questioned. *Rests on*: what a decision presupposes, here or elsewhere.
 
 ### 2.1 For the owner: decidable now
 
-S05-D2 and S05-D9 answered by the owner, 2026-11-23, as proposed (study, decisions 22 and 23); S05-D4 open, to answer
-with S04-D9.
+All three answered by the owner, 2026-11-23: S05-D2 and S05-D9 as proposed (study, decisions 22 and 23), S05-D4 with
+S04-D9.
 
 | # | Question | Answer | Alternatives considered | Rests on |
 |---|---|---|---|---|
 | S05-D2 | Does a project keep the palette it was made with, or follow the catalogue? | **It keeps it** (owner: the principle of least surprise, respect for the composer, and a cleaner boundary between the CPG and Cadenza): saved by value in a new field `<P>.pl=` (hex), only for a part that holds one, about 95 bytes a part. A later CPG revision never changes a saved project, as Cadenza's rule is for everything else. 0.28.1 ignores the unknown field: the slots play as written, the palette is dropped there. | Save only the catalogue identifier: a few bytes, and the project's palette follows CPG updates, which may then reshape a song's harmonic space without the user doing anything | S05-D1 |
 | S05-D9 | Do the six genre presets get palettes? | **No** (owner: Cadenza's genres are about time, the CPG's are palettes; orthogonal dimensions): their parts hold none, and show their scale's palette (S05-D3). Presets are baked states (`presets_data.h`) whose building tool is not in the release export; they keep sounding the same. | Give each preset's parts the nearest catalogue palette: re-baking the presets, without the author's tool | none |
-| S05-D4 | When a palette loads, does the loop keep its length, or grow until the starting order fits? Open, to answer with S04-D9 | **As S04-D9's layout goes:** with Feel's preset layout, Feel's rule, the loop doubled until the order fits, never shrunk; with decision 4's layout, the same growth, the order's durations written through Feel's store. Either way `seq_palette_load` sets the part's palette and writes the starting order into the slots in one undo step, keeping locked slots | PHRASE's preset rule: the loop keeps its length, the order repeated or cut to fit it | S04-D9 |
+| S05-D4 | When a palette loads, does the loop keep its length, or grow until the starting order fits? | **Answered with S04-D9 (owner, 2026-11-23): Feel's preset rule.** The loop doubles until the laid-out order fits, never shrinks; a longer loop repeats the order, as a preset's phrase repeats. `seq_palette_load` sets the part's palette and writes the order, one chord a bar, through the whole-loop progression path in one undo step, keeping locked slots | PHRASE's preset rule: the loop keeps its length, the order repeated or cut to fit it | S04-D9 |
 
 ### 2.2 For the owner: after a further step
 

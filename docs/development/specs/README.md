@@ -14,7 +14,7 @@ taken or from the code, to be read and questioned, needing no answer of their ow
 its §2.1. Specifications 00 to 02, implemented before these rules, keep their tables as they were; addendum A of spec 00
 marks each decision's kind.
 
-Approvals pending are in the [strategy's list](../implementation-strategy.md#81-decidable-now): O6, spec 04.
+No approval is pending: specifications 03 to 05 were approved on 2026-11-23 ([strategy, §8.3](../implementation-strategy.md#83-taken-since-the-list-was-made)).
 
 | # | Specification | Status | Depends on |
 |---|---|---|---|
@@ -23,8 +23,8 @@ Approvals pending are in the [strategy's list](../implementation-strategy.md#81-
 | 01 | [Key-aware chord spelling](01-key-aware-spelling.md) | implemented; device run pending | 00 |
 | 02 | [Chromatic chords through the progression path](02-chromatic-progression-path.md) | implemented; device run pending | 00 |
 | 03 | [The missing sonorities](03-missing-sonorities.md) | approved | 02 |
-| 04 | [The palette table, generated from the CPG](04-palette-table.md) | S04-D3 answered; S04-D9 open | 00, 03 |
-| 05 | [The part's palette](05-part-palette.md) | S05-D2, S05-D9 answered; S05-D4 open with S04-D9 | 02, 03, 04 |
+| 04 | [The palette table, generated from the CPG](04-palette-table.md) | approved | 00, 03 |
+| 05 | [The part's palette](05-part-palette.md) | approved | 02, 03, 04 |
 
 ## How far the drafting goes, and why
 

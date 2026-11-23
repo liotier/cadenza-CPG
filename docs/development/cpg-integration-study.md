@@ -1,6 +1,6 @@
 # Cadenza and the Chord Progression Generator: an integration study
 
-Status: study, revision 11 (the [revision history](#revision-history) closes the document). No code has been written; the
+Status: study, revision 12 (the [revision history](#revision-history) closes the document). No code has been written; the
 measurements come from throwaway scripts described in [Appendix A](#appendix-a-measurement-method).
 
 | Project | Version studied | Licence |
@@ -467,7 +467,9 @@ For the 38 others (the 12-bar blues aside), the tonic decides: 15 end on it (ii-
 I-IV-I-IV-I-V-I...), 21 start on it without ending on it (i-♭VI-♭VII, i-iv-v, I-V-vi-iii-IV...), 2 do neither. The
 default, adopted (decision 4): **the spare time goes to the tonic**, held at the end when the order ends on it, at the
 start when it only starts on it, and to the last chord otherwise. A three-chord ii-V-I thus becomes ii, V, I held two bars,
-as jazz writes it; i-♭VI-♭VII becomes i held two bars, then ♭VI and ♭VII.
+as jazz writes it; i-♭VI-♭VII becomes i held two bars, then ♭VI and ♭VII. Cadenza already writes ii-V-I so: its own
+progression preset *2-5-1-1 Jazz* is `{1, 4, 0, 0}`. The rule hands out whole bars only, so every laid-out order is one
+chord a bar in a loop of 1, 2, 4, 8 or 16 bars, as Cadenza's presets are (spec 04, S04-D9).
 
 The 12-bar blues starts on I7 and ends on its V7 turnaround, so the rule gives its four spare bars to the opening tonic:
 eight bars of I7, then the usual eight. That is one of the layouts of the
@@ -1055,3 +1057,5 @@ All scripts were written in the session scratchpad and are not committed.
   orthogonal, so genre presets get no palettes. Decision 23 puts avenue G, the genre crosswalk, in question: a question
   for the owner (strategy, §8.1, O14).
 - Revision 11 recorded decision 24: avenue G, the genre crosswalk, dropped.
+- Revision 12 noted in §6.4 that Cadenza's own *2-5-1-1 Jazz* preset already lays ii-V-I out by decision 4's rule, which
+  the owner confirmed for the palettes' starting orders (spec 04, S04-D9).

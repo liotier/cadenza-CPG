@@ -32,8 +32,7 @@ gets its own specification in `docs/development/specs/` before any code is writt
 | 2. Chromatic chords through the progression path | implemented; device run pending | [spec 02](specs/02-chromatic-progression-path.md); CI run 3 green |
 | Decision 21 | room in the binary: dead code dropped, budget 720 KB | test build 4 (commit `d9b619d`): 650 KB |
 | 0a. Local tools | implemented | [spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools) |
-| 3 | approved, to be built | [spec 03](specs/03-missing-sonorities.md) |
-| 4 and 5 | specified; one question open for both, S04-D9 with S05-D4 (§8.1, O6) | [specs 04 and 05](specs/README.md) |
+| 3 to 5 | approved, to be built in that order | [specs 03 to 05](specs/README.md) |
 
 The draft release *Cadenza 0.28.1-cpg.1 (test build)* holds steps 0 to 2 and the collected binary: one device run
 checks all four at once (§8.1, O1).
@@ -203,8 +202,8 @@ decision can rest on the fork's own figures.
 | 1 | Key-aware chord spelling | avenue A | 0 | labels | S-M | implemented |
 | 2 | Chromatic chords through the progression path | §6.2 | 0 | no | S-M | implemented |
 | 3 | The missing sonorities: the catalogue's eight and Scale Mode's 7sus4 | avenue H | 2 | no | M | approved |
-| 4 | The palette table, generated from the CPG | avenues B, K | 0, 3 | no | M | S04-D3 answered; S04-D9 open (O6) |
-| 5 | The part's palette in the engine | §4.3, avenue D | 2, 4 | no | M | answered; approved with step 4 |
+| 4 | The palette table, generated from the CPG | avenues B, K | 0, 3 | no | M | approved |
+| 5 | The part's palette in the engine | §4.3, avenue D | 2, 4 | no | M | approved |
 | 6 | The palette browser | avenue C | 5 | yes | M-L | after M2 |
 | 7 | The palette in the bar editor | avenue D | 5 | yes | M | after M2 |
 | 8 | Live palette pads | avenue L | 5 | yes | M-L | after M2 |
@@ -296,7 +295,6 @@ for the record below it, and the ones concerning the integration as a whole go t
 | # | Decision | Options | Rests on | Informs | Needed before |
 |---|---|---|---|---|---|
 | O1 | Run the draft *Cadenza 0.28.1-cpg.1 (test build)* on the MPC One, and say whether it passes (checks in §9, item 1). Postponed by the owner, 2026-11-23: no MPC at hand | pass, or what failed | none | O2, O3 | the release branch; M1 |
-| O6 | Step 4's last question, with step 5's: **S04-D9 and S05-D4**, how a palette's starting order becomes bars and whether the loop grows to fit it. Cadenza already has the mechanisms; the choice is which existing preset a palette load behaves like: Feel's (a bar a chord, the loop grown to fit, the order repeated into spare bars; nothing new) or decision 4's rule (the spare bars to the tonic, written through Feel's store). Both set out in [spec 04, §2.4](specs/04-palette-table.md#24-background-to-s04-d3-and-s04-d9-colour-the-cpgs-styles-and-starting-orders) | Feel's layout; decision 4's; or loading writes nothing | spec 03 (approved) | the approval of specs 04 and 05 | step 4 |
 | O11 | Whether to raise with the author the numerals that spell D minor's F♯ major as `Gb7` ([spec 01](specs/01-key-aware-spelling.md), open point) | raise it, leave it | none | | nothing in the fork. The message sent on 2026-11-23 raised it as drafted; if that paragraph was cut, it stays open |
 
 ### 8.2 Depend on a further step or event
@@ -317,6 +315,7 @@ for the record below it, and the ones concerning the integration as a whole go t
 | O8 | The web simulation's route: ask the author for upstream's `web/` folder first | 2026-11-23 | §4.7 |
 | O9 | The message to the author, introducing the fork and asking for `web/`: sent | 2026-11-23 | §4.7 |
 | O5 | Step 3 approved: the new sonorities stay off every control (S03-D3), the fallbacks computed at save time (S03-D6; the answer ended on a colon, read as accepting them), the CPG's names (S03-D7) | 2026-11-23 | [spec 03, §2.1](specs/03-missing-sonorities.md#21-for-the-owner-decidable-now) |
+| O6 | S04-D9 and S05-D4: a starting order is laid out by decision 4's rule ("the established common practices of competent composers"), one chord a bar, and loading writes it as Feel's presets do, the loop grown to fit. Specs 04 and 05 approved | 2026-11-23 | [spec 04, §2.1](specs/04-palette-table.md#21-for-the-owner-decidable-now), [spec 05, §2.1](specs/05-part-palette.md#21-for-the-owner-decidable-now) |
 | O14 | Step 12, the genre crosswalk: dropped. "No need to constrain the user: they'll choose coherent options, maybe, or they'll be free to get weird" | 2026-11-23 | study, decision 24 |
 | O6, S04-D3 | The palette table takes the Classic style, its colours kept: "a solid foundation"; other styles' colourings ("jazzy frills") to be considered after a first version | 2026-11-23 | [spec 04, §2.1](specs/04-palette-table.md#21-for-the-owner-decidable-now) |
 | O7 | Step 5's questions: a project keeps its palette by value (S05-D2); the genre presets get no palettes (S05-D9). Its approval follows step 4's, which it rests on | 2026-11-23 | [spec 05, §2.1](specs/05-part-palette.md#21-for-the-owner-decidable-now); study, decisions 22 and 23 |
@@ -331,8 +330,7 @@ In order:
    E♭, A♭ and D♭ major and C♯ and D♯ minor (PLAY's title: `Eb MAJOR`, `D# MINOR`). Step 2 shows nothing.
 2. **If it passes:** the release branch and its pull request (O2); `versions.json` to `0.28.1-cpg.2`; M1's offer (O3).
 3. **Step 0a**: done (spec 00, addendum A); its tools serve every later step.
-4. **Step 3** (approved), then **step 4** once O6 is answered, then **step 5**, each pushed with CI green before the
-   next starts. Step 4 can begin its generator while step 3 is built; it cannot pass its strictness check before step 3
+4. **Step 3**, then **step 4**, then **step 5**, all approved, each pushed with CI green before the next starts. Step 4 can begin its generator while step 3 is built; it cannot pass its strictness check before step 3
    lands.
 5. **The web simulation**, once the author answers (O8 and O9 taken; O8b if he declines).
 6. **At M2:** the MPC memory probe over root SSH, the skin budget (O10), the design note to the author, then
@@ -383,4 +381,5 @@ polymeter, the Chord Matcher (study, §7).
   and his question on S04-D9 answered (O6); O14 asks whether step 12 survives decision 23. Then: decision identifiers
   made global (§4.1), `S04-D3` for specification 04's decision 3, in every document and code comment. Then: S04-D3
   answered (Classic, its colours kept); O14 answered (step 12 dropped, study decision 24); S04-D9 shown to need no new
-  mechanism, and S05-D4 found to be the same choice, both now O6; O13 merged into it.
+  mechanism, and S05-D4 found to be the same choice, both now O6; O13 merged into it. Then O6 answered: decision 4's
+  rule, one chord a bar, the loop grown as Feel's presets grow it; specs 03 to 05 all approved.
