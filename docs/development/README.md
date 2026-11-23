@@ -3,6 +3,10 @@
 Studies and specifications for work on this fork of Cadenza. Nothing here is user documentation: the manual is
 [MANUAL.md](../../MANUAL.md).
 
+**Decisions waiting for the owner:** all of them, with their dependencies, in one table:
+[implementation strategy, §8](implementation-strategy.md#8-decisions-for-the-owner). Decisions already taken are in the
+study's [decision log](cpg-integration-study.md#10-decision-log).
+
 | Document | Status | Subject |
 |---|---|---|
 | [cpg-integration-study.md](cpg-integration-study.md) | study, revision 9 | What the MPC Chord Progression Generator's palettes (and the Ouarpeggiator's palette walk) can bring to Cadenza, measured against Cadenza's engine, budgets and licence; the palette model; avenues ranked and staged; decision log; open questions |

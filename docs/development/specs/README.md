@@ -8,6 +8,8 @@ last column, *Rests on*, naming what each decision presupposes (here or in anoth
 independent choices, and the column shows which can be judged alone and which change with another. Specifications 00 to
 02, implemented before the rule, keep their tables as they were; addendum A of spec 00 follows it.
 
+Approvals pending are decisions O4 to O7 of the [strategy's list](../implementation-strategy.md#8-decisions-for-the-owner).
+
 | # | Specification | Status | Depends on |
 |---|---|---|---|
 | 00 | [Infrastructure: CI, compatibility harness, the CPG submodule, test builds](00-infrastructure.md) | implemented; device run pending | |

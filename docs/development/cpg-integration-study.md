@@ -966,9 +966,10 @@ forward are in [avenue H](#h-completing-the-chord-vocabulary).
 
 ## 11. Open questions
 
-None at present: every question of revisions 1 to 6 is answered in §10, the last one (the physical pads) by decision 20.
-The work now proceeds by the [implementation strategy](implementation-strategy.md): its step 0, then one specification
-per step, in the format the CPG's improvement specifications established.
+The study's own questions are all answered in §10, the last one (the physical pads) by decision 20. The work proceeds by
+the [implementation strategy](implementation-strategy.md), which keeps the one list of decisions waiting for the owner,
+with their dependencies: [its §8](implementation-strategy.md#8-decisions-for-the-owner). Once taken, a decision that
+concerns the integration as a whole is recorded in §10; one that concerns a step, in that step's specification.
 
 ---
 
@@ -1044,4 +1045,4 @@ All scripts were written in the session scratchpad and are not committed.
   first CI measurement (step 0): the binary has 2.5 KB of headroom, not 22 KB, the earlier figure coming from a budget
   note written for 0.24.
 - Revision 9 recorded decision 21: section garbage collection in the ARM build and a budget of 720 KB, after step 1
-  measured over the old one.
+  measured over the old one. Amended: §11 points to the strategy's single list of the owner's pending decisions.
