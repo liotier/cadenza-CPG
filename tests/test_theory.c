@@ -490,7 +490,7 @@ static void test_fork_chord_names(void) {
         {1, SCALE_MAJOR, 0, 0, COL_9TH, "Dbmaj9"}, {10, SCALE_MINOR, 0, 0, COL_7TH, "Bbm7"}, {6, SCALE_MAJOR, 0, 6, COL_7TH, "E#m7b5"},
         {0, SCALE_MAJOR, 4 + 1 * CQ_COUNT + CQ_DOM, 0, COL_7TH, "Db7"},   /* C major's chromatic bII7: Db7 beside its numeral */
         {1, SCALE_MAJOR, 4 + 8 * CQ_COUNT + CQ_MAJOR, 0, COL_TRIAD, "A"},   /* Db major's chromatic bVI: A, not Bbb (S01-D3) */
-        {5, SCALE_MAJOR, 4 + 6 * CQ_COUNT + CQ_DOM, 0, COL_7TH, "B7"},   /* F major, root B: numeral bV, so Cb7, Cb outside the key respelled B (S01-D3) */
+        {5, SCALE_MAJOR, 4 + 6 * CQ_COUNT + CQ_DOM, 0, COL_7TH, "B7"},   /* F major, root B: the tritone, #IV (S01-A1) */
     };
     for (size_t i = 0; i < sizeof C / sizeof C[0]; i++) {
         char nm[24], num[16];
@@ -499,6 +499,38 @@ static void test_fork_chord_names(void) {
         theory_numeral(C[i].key, C[i].scale, ss, C[i].deg, num, sizeof num);
         CHECK(!strcmp(nm, C[i].want), "spelling: %s in key %d %s, numeral %s (got %s)", C[i].want, C[i].key, theory_scale_name(C[i].scale), num, nm);
     }
+}
+
+/* S01-A1: a chromatic root's degree, by the harmonic chromatic scale (1 b2 2 b3 3 4 #4 5 b6 6 b7 7 above the tonic) and, for a chord
+ * whose triad is diminished (a leading-tone chord), the raised degree below its target; names and numerals agree (S01-A2). Textbook
+ * cases, written by hand */
+static void test_fork_chromatic_degrees(void) {
+    static const struct { int key, scale, root, q, colour; const char *name, *num; } T[] = {
+        {2, SCALE_MINOR, 4, CQ_DOM, COL_7TH, "F#7", "#III"},          /* D minor's major chord a major third up: 0.28.1 read bIV, Gb7 */
+        {0, SCALE_MAJOR, 1, CQ_MAJOR, COL_TRIAD, "Db", "bII"},        /* the Neapolitan */
+        {0, SCALE_MAJOR, 1, CQ_DIM, COL_7TH, "C#dim7", "#i" THEORY_DIM},   /* vii dim7 of ii */
+        {0, SCALE_MAJOR, 3, CQ_MAJOR, COL_TRIAD, "Eb", "bIII"},
+        {0, SCALE_MAJOR, 3, CQ_DIM, COL_7TH, "D#dim7", "#ii" THEORY_DIM},  /* vii dim7 of iii */
+        {0, SCALE_MAJOR, 6, CQ_DIM, COL_7TH, "F#dim7", "#iv" THEORY_DIM},  /* vii dim7 of V */
+        {0, SCALE_MAJOR, 6, CQ_DOM, COL_7TH, "F#7", "#IV"},           /* the tritone: #4 in the harmonic chromatic scale */
+        {0, SCALE_MAJOR, 8, CQ_MAJOR, COL_TRIAD, "Ab", "bVI"},
+        {0, SCALE_MAJOR, 8, CQ_DIM, COL_7TH, "G#dim7", "#v" THEORY_DIM},   /* vii dim7 of vi */
+        {0, SCALE_MAJOR, 10, CQ_MAJOR, COL_TRIAD, "Bb", "bVII"},
+        {9, SCALE_MINOR, 1, CQ_MAJOR, COL_TRIAD, "Bb", "bII"},        /* A minor's Neapolitan */
+        {9, SCALE_MINOR, 11, CQ_DIM, COL_7TH, "G#dim7", "#vii" THEORY_DIM},   /* A minor's leading-tone seventh */
+        {9, SCALE_MINOR, 4, CQ_MAJOR, COL_TRIAD, "C#", "#III"},
+        {0, SCALE_HARM_MINOR, 10, CQ_DIM, COL_TRIAD, "Bbdim", "bvii" THEORY_DIM},   /* no degree below: the one above */
+    };
+    int bad = 0;
+    for (size_t i = 0; i < sizeof T / sizeof T[0]; i++) {
+        char nm[24], nu[16];
+        int ss = theory_slot_scale(T[i].scale, theory_chroma_src(T[i].root, T[i].q));
+        theory_chord_name_s(T[i].key, T[i].scale, ss, 0, T[i].colour, nm, sizeof nm);
+        theory_numeral(T[i].key, T[i].scale, ss, 0, nu, sizeof nu);
+        if (strcmp(nm, T[i].name) || strcmp(nu, T[i].num)) printf("     key %d root +%d: %s %s, want %s %s\n", T[i].key, T[i].root, nm, nu, T[i].name, T[i].num), bad++;
+    }
+    CHECK(!bad, "chromatic roots by the harmonic chromatic scale, leading-tone chords raised: %d textbook cases (%d wrong)",
+          (int)(sizeof T / sizeof T[0]), bad);
 }
 
 /* S01-D4, S01-D5 and the octave of a spelled note */
@@ -544,6 +576,7 @@ int main(void) {
     test_fork_spelling_table();
     test_fork_chord_names();
     test_fork_notes();
+    test_fork_chromatic_degrees();
     printf(fails ? "\nFAILED: %d\n" : "\nPASSED\n", fails);
     return fails != 0;
 }

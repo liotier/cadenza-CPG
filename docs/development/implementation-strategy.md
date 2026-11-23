@@ -73,7 +73,7 @@ checks all four at once (§8.1, O1).
 | 4 | 0.28.1's save, loaded and saved again, is not always the same bytes: a loop shortened after its drawn bars were filled saves the hidden bars once. | Round-trip tests compare chords and points and require the re-save to be a fixed point; the harness compares the official re-save with the fork's own. |
 | 5 | The author's tests pin behaviour: steps 1 and 2 each moved three checks. | Principle 9. |
 | 6 | One engine serves several front ends: some functions have no caller in the Force plugin (`seq_tweak_point_ok`, `theory_chord_card`) and serve the iOS app or the browser version. | Each specification lists its effects on other front ends, for the conversation with the author. With dead code dropped, an API's completeness no longer costs the plugin anything. |
-| 7 | Names follow Cadenza's numerals, and `theory_numeral` prefers the flat of the degree above: D minor's major chord on F♯ reads `Gb7`. Of the 2 804 Classic pads Cadenza can voice, 13 are spelled differently from the CPG in C (F♯→G♭ 5, D♯→E♭ 5, C♯→D♭ 3). | An open point for the author (numerals are upstream behaviour); step 4 measures the disagreement for the whole table. |
+| 7 | Names follow Cadenza's numerals, and `theory_numeral` preferred the flat of the degree above: D minor's major chord on F♯ read `Gb7`. Of the 2 804 Classic pads Cadenza can voice, 13 were spelled differently from the CPG in C (F♯→G♭ 5, D♯→E♭ 5, C♯→D♭ 3). | Fixed at the owner's request (O11; spec 01, addendum A): chromatic roots by the harmonic chromatic scale, leading-tone chords raised; no difference remains. A change to upstream's numerals, for the design note; step 4's report keeps measuring. |
 | 8 | Old builds trust some fields: 0.28.1 decodes a Feel base code without checking its colour against the colour tables, and a change point's source is a `signed char` (127 at most). | Principle 4's "use, not parse"; step 3's save design follows from it. |
 | 9 | This cloud session has no Docker daemon: the toolchain's scripts run only in CI. A native test runner and an ARM cross-compiler did the local work. | Step 0a commits both as tools (§4.6). |
 | 10 | GitHub offers manual runs only for workflows on the default branch, and `main` holds upstream's tree. | Test builds start from a commit message marker (§4.4). |
@@ -295,7 +295,6 @@ for the record below it, and the ones concerning the integration as a whole go t
 | # | Decision | Options | Rests on | Informs | Needed before |
 |---|---|---|---|---|---|
 | O1 | Run the draft *Cadenza 0.28.1-cpg.1 (test build)* on the MPC One, and say whether it passes (checks in §9, item 1). Postponed by the owner, 2026-11-23: no MPC at hand | pass, or what failed | none | O2, O3 | the release branch; M1 |
-| O11 | Whether to raise with the author the numerals that spell D minor's F♯ major as `Gb7` ([spec 01](specs/01-key-aware-spelling.md), open point) | raise it, leave it | none | | nothing in the fork. The message sent on 2026-11-23 raised it as drafted; if that paragraph was cut, it stays open |
 
 ### 8.2 Depend on a further step or event
 
@@ -316,6 +315,7 @@ for the record below it, and the ones concerning the integration as a whole go t
 | O9 | The message to the author, introducing the fork and asking for `web/`: sent | 2026-11-23 | §4.7 |
 | O5 | Step 3 approved: the new sonorities stay off every control (S03-D3), the fallbacks computed at save time (S03-D6; the answer ended on a colon, read as accepting them), the CPG's names (S03-D7) | 2026-11-23 | [spec 03, §2.1](specs/03-missing-sonorities.md#21-for-the-owner-decidable-now) |
 | O6 | S04-D9 and S05-D4: a starting order is laid out by decision 4's rule ("the established common practices of competent composers"), one chord a bar, and loading writes it as Feel's presets do, the loop grown to fit. Specs 04 and 05 approved | 2026-11-23 | [spec 04, §2.1](specs/04-palette-table.md#21-for-the-owner-decidable-now), [spec 05, §2.1](specs/05-part-palette.md#21-for-the-owner-decidable-now) |
+| O11 | The numerals that read D minor's F♯ major as `bIV`, `Gb7`: "fix it in the musically most correct way". Done in the fork: chromatic roots by the harmonic chromatic scale, leading-tone chords raised (S01-A1, S01-A2); upstream's numerals change, for the design note | 2026-11-23 | [spec 01, addendum A](specs/01-key-aware-spelling.md#addendum-a-chromatic-roots) |
 | O14 | Step 12, the genre crosswalk: dropped. "No need to constrain the user: they'll choose coherent options, maybe, or they'll be free to get weird" | 2026-11-23 | study, decision 24 |
 | O6, S04-D3 | The palette table takes the Classic style, its colours kept: "a solid foundation"; other styles' colourings ("jazzy frills") to be considered after a first version | 2026-11-23 | [spec 04, §2.1](specs/04-palette-table.md#21-for-the-owner-decidable-now) |
 | O7 | Step 5's questions: a project keeps its palette by value (S05-D2); the genre presets get no palettes (S05-D9). Its approval follows step 4's, which it rests on | 2026-11-23 | [spec 05, §2.1](specs/05-part-palette.md#21-for-the-owner-decidable-now); study, decisions 22 and 23 |
@@ -382,4 +382,5 @@ polymeter, the Chord Matcher (study, §7).
   made global (§4.1), `S04-D3` for specification 04's decision 3, in every document and code comment. Then: S04-D3
   answered (Classic, its colours kept); O14 answered (step 12 dropped, study decision 24); S04-D9 shown to need no new
   mechanism, and S05-D4 found to be the same choice, both now O6; O13 merged into it. Then O6 answered: decision 4's
-  rule, one chord a bar, the loop grown as Feel's presets grow it; specs 03 to 05 all approved.
+  rule, one chord a bar, the loop grown as Feel's presets grow it; specs 03 to 05 all approved. Then O11 answered:
+  chromatic roots fixed (spec 01, addendum A); lesson 7 updated; only O1 remains decidable now.

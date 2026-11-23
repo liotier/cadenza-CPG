@@ -140,8 +140,52 @@ chromatic names (verification 2), single notes, octaves and tones. Three of the 
 `tests/test_plugin.c` (C minor's `G# D# A#`, now `Ab Eb Bb`; the title `D# DORIAN`, now `Eb DORIAN`, with a new check of
 `D# PHRYGIAN`) and `tests/test_feel.c` (below). The core parity hash and the compatibility harness are unchanged (S01-D8).
 
-**Open point found.** S01-D1 follows `theory_numeral`, which names a chromatic root by the degree above it when it is not a
-scale degree. In D minor, the major chord on F♯ is therefore `bIV`, and S01-D1 spells it `Gb7`, where `F#7` (♯III) is the
-usual reading. Changing it means changing the numeral, an upstream behaviour outside this step: for the owner's review.
+**Open point found, then settled.** S01-D1 follows `theory_numeral`, which named a chromatic root by the degree above it
+when it is not a scale degree: in D minor the major chord on F♯ read `bIV`, and S01-D1 spelt it `Gb7`, where `F#7` (♯III)
+is the usual reading. The owner asked for the musically most correct fix (strategy, O11): [addendum A](#addendum-a-chromatic-roots).
 
 **Verification.** 1 to 4 hold; 5, the device run, waits.
+
+---
+
+## Addendum A: chromatic roots
+
+| | |
+|---|---|
+| Status | implemented; the owner asked for "the musically most correct way" (strategy, §8.3, O11), the rule is Claude's, for review |
+| Type | defect, display only |
+| Size | S |
+
+### A.1 Problem
+
+A chromatic chord's root is not a scale degree, so it must be written as the degree above it, flattened, or the degree
+below, sharpened. 0.28.1's `theory_numeral` took the flat whenever it could, whatever the chord: D minor's F♯ major read
+`bIV`, and with S01-D1 the name followed, `Gb7`. In C major it read F♯ diminished, the leading-tone chord of V, as `bV°`,
+`Gbdim`.
+
+### A.2 Decisions
+
+| # | Decision | Rationale | Rests on |
+|---|---|---|---|
+| S01-A1 | **A chromatic root takes the degree the harmonic chromatic scale names** (1 ♭2 2 ♭3 3 4 ♯4 5 ♭6 6 ♭7 7 above the tonic, whatever the mode), **except a chord whose triad is diminished, which takes the raised degree below its target** (the leading-tone chord: C♯°7 is vii°7 of ii in C). When the named degree is not in the project scale, the other one. | The harmonic chromatic scale is the conventional spelling of chromatic notes relative to a tonic, the same ascending and descending: the major and minor scales' notes plus the flattened second and the sharpened fourth. It gives the Neapolitan ♭II, the mixture chords ♭III, ♭VI, ♭VII, the major third ♯III in minor. A secondary leading-tone chord is built on the raised degree a half step below the chord it tonicises. | S01-D1; owner, O11 |
+| S01-A2 | **The numeral and the name use the same degree:** `theory_numeral` and the spelling share one helper, `chroma_degree`. | S01-D1's agreement between name and numeral holds; `theory_numeral` is upstream's, so this changes what the author's numerals print for chromatic chords: display only, for the design note to the author. | S01-A1 |
+
+Sources: the harmonic chromatic scale as "the same whether rising or falling", holding "all the notes in the major,
+harmonic minor or melodic minor scales plus flattened second and sharpened fourth degrees"
+([Wikipedia, Talk: Chromatic scale](https://en.wikipedia.org/wiki/Talk:Chromatic_scale); a talk page, so a secondary
+source; the same definition in [these chromatic scale rules](https://www.scribd.com/document/458942220/Chromatic-scale-rules-pdf));
+secondary leading-tone chords on the raised degree below their target
+([Wikipedia, Secondary chord](https://en.wikipedia.org/wiki/Secondary_chord);
+[Wikipedia, Leading tone](https://en.wikipedia.org/wiki/Leading_tone)).
+
+### A.3 Measurements and verification
+
+- 14 textbook cases written by hand in `tests/test_theory.c` (`test_fork_chromatic_degrees`): D minor's `F#7`, `#III`;
+  C major's Neapolitan `Db`, `bII`; the leading-tone sevenths `C#dim7`, `D#dim7`, `F#dim7`, `G#dim7`; `bIII`, `bVI`,
+  `bVII`; the tritone dominant `F#7`, `#IV`; A minor's Neapolitan `Bb` and `G#dim7`; C harmonic minor's diminished chord
+  on B♭, whose raised degree below is not a degree (`Bbdim`, `bvii°`).
+- `tests/test_feel.c` expects `F#7` again for D minor's chord, as 0.28.1's own test did, now through the numeral `#III`.
+- Agreement with the CPG's spelling: of the 2 804 Classic pads Cadenza can voice, 13 were spelled differently in C
+  (F♯→G♭ 5, D♯→E♭ 5, C♯→D♭ 3); none are now.
+- The offline suite passes, the core parity hash and the compatibility harness are unchanged; the binary grows by about
+  416 bytes (the ARM estimate).

@@ -19,8 +19,9 @@ What steps 0 to 2 measured, and this revision uses:
 - With step 3, every Classic pad has a chromatic form (164 have none before it), so catalogue chords can be stored
   independently of the project scale. Scale Mode's chords are all chords of their own scale, the 7sus4 included once
   step 3 gives its colour (spec 03, §1).
-- Cadenza spells a palette chord by its numeral (S01-D1); in C, 13 of the 2 804 Classic pads Cadenza can voice today
-  are spelled differently from the CPG, all by the numeral's preference for flats (strategy, §3, lesson 7).
+- Cadenza spells a palette chord by its numeral (S01-D1). In C, 13 of the 2 804 Classic pads Cadenza could voice were
+  spelled differently from the CPG, all by the numeral's old preference for flats; since spec 01's addendum A none are
+  (strategy, §3, lesson 7).
 - The binary has about 70 KB of headroom (strategy, §5); `tests/run_tests.sh` links the core in fifteen command lines.
 
 ## 2. Decisions
@@ -180,7 +181,7 @@ step 5's verbs.
 | Entries, genres, palettes | 184, 22, 191 (184 and the seven scale palettes) |
 | Table size | 184 × 16 × 3 bytes of chords (8.8 KB), 184 × 8 bytes of starting orders (1.5 KB), about 3 KB of nicknames: 12 to 14 KB of binary |
 | Binary | 650 KB before; within 720 (estimated locally, measured in CI) |
-| Root spellings differing from the CPG's | reported (13 of 2 804 Classic pads in C, before step 3) |
+| Root spellings differing from the CPG's | reported (none of the 2 804 Classic pads Cadenza can voice in C, since spec 01's addendum A; the whole table once step 3 lands) |
 | Nicknames over 19 characters | 10 of 184, the longest 24 |
 
 ## 5. Verification

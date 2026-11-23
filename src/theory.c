@@ -181,23 +181,31 @@ int theory_chord_name_c(int key, int scale, int deg, int colour, char *buf, int 
     return cat2(buf, len, NOTE[root], SEV[q][q == 2 ? sev == 10 : sev == 11]);
 }
 
+/* fork (docs/development/specs/01-key-aware-spelling.md, S01-A1 and S01-A2): the project degree a chromatic chord's root is written
+ * on. The degree it is, if it is one; else, of the degree a semitone above (the root as its flat) and the one a semitone below (its
+ * sharp), the one the harmonic chromatic scale names (1 b2 2 b3 3 4 #4 5 b6 6 b7 7 above the tonic, whatever the mode), or, for a chord
+ * whose triad is diminished, a leading-tone chord, the one below (F#dim7 in C, vii dim7 of V); the other when that one is not a degree.
+ * *diff: 0, 11 (written flat) or 1 (written sharp). 0.28.1 took the flat whenever it could: D minor's F# major read bIV, Gb */
+static int chroma_degree(int key, int scale, int slot_scale, int deg, int *diff) {
+    static const signed char NAMED[12] = {0, 1, 1, 2, 2, 3, 3, 4, 5, 5, 6, 6}, RAISED[12] = {0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6};
+    int root = theory_degree_pc(key, slot_scale, deg), up = -1, down = -1, want;
+    for (int i = 6; i >= 0; i--) {
+        int pc = theory_degree_pc(key, scale, i);
+        if (pc == root) return *diff = 0, i;
+        if (pc == (root + 1) % 12) up = i;
+        if ((pc + 1) % 12 == root) down = i;
+    }
+    want = (theory_triad_quality(key, slot_scale, deg) == 2 ? RAISED : NAMED)[pmod(root - key, 12)];
+    if (down >= 0 && (want == down || up < 0)) return *diff = 1, down;
+    return *diff = up >= 0 ? 11 : 0, up >= 0 ? up : 0;
+}
+
 int theory_numeral(int key, int scale, int slot_scale, int deg, char *buf, int len) {
     static const char *const UP[7] = {"I", "II", "III", "IV", "V", "VI", "VII"};
     static const char *const LO[7] = {"i", "ii", "iii", "iv", "v", "vi", "vii"};
     int d = pmod(deg, 7), q = theory_triad_quality(key, slot_scale, d);
     int diff = pmod(theory_degree_pc(key, slot_scale, d) - theory_degree_pc(key, scale, d), 12);
-    if (slot_scale >= SCALE_COUNT) {   /* 0.28 a chromatic chord: the project degree its root is, else the one a semitone from it */
-        int root = theory_degree_pc(key, slot_scale, deg), up = -1, down = -1;
-        d = -1;
-        for (int i = 6; i >= 0; i--) {
-            int pc = theory_degree_pc(key, scale, i);
-            if (pc == root) d = i;
-            if (pc == (root + 1) % 12) up = i;     /* its flat */
-            if ((pc + 1) % 12 == root) down = i;   /* its sharp */
-        }
-        diff = d >= 0 ? 0 : up >= 0 ? 11 : 1;
-        d = d >= 0 ? d : up >= 0 ? up : down >= 0 ? down : 0;
-    }
+    if (slot_scale >= SCALE_COUNT) d = chroma_degree(key, scale, slot_scale, deg, &diff);   /* 0.28 a chromatic chord */
     return cat4(buf, len, diff == 11 ? "b" : diff == 1 ? "#" : "", q == 0 || q == 3 ? UP[d] : LO[d], q == 2 ? THEORY_DIM : q == 3 ? "+" : "",
                 NULL);
 }
@@ -382,15 +390,12 @@ theory_spelling_t theory_spell_degree(int key, int scale, int deg) {
 }
 
 /* S01-D1 and S01-D3, with the project scale spelled in sc7 */
-static theory_spelling_t root_in(int key, const theory_spelling_t sc7[7], int flats, int slot_scale, int deg) {
-    int root = theory_degree_pc(key, slot_scale, deg), d = pmod(deg, 7), at = -1, up = -1, down = -1;
-    for (int i = 6; i >= 0; i--) {   /* a chromatic chord: the project degree its root is, else the one a semitone above, else below (theory_numeral) */
-        int pc = pc_of(sc7[i]);
-        if (pc == root) at = i;
-        if (pc == (root + 1) % 12) up = i;
-        if ((pc + 1) % 12 == root) down = i;
-    }
-    if (slot_scale >= SCALE_COUNT) d = at >= 0 ? at : up >= 0 ? up : down >= 0 ? down : 0;
+static theory_spelling_t root_in(int key, int scale, const theory_spelling_t sc7[7], int flats, int slot_scale, int deg) {
+    int root = theory_degree_pc(key, slot_scale, deg), d = pmod(deg, 7), at = -1, diff;
+    scale = scale >= 0 && scale < SCALE_COUNT ? scale : SCALE_MAJOR;
+    for (int i = 0; i < 7; i++)
+        if (pc_of(sc7[i]) == root) at = i;
+    if (slot_scale >= SCALE_COUNT) d = chroma_degree(key, scale, slot_scale, deg, &diff);   /* the numeral's degree (S01-A2) */
     theory_spelling_t sp = on_letter(sc7[0].letter + d, root);
     int odd = (sp.acc == 1 && (sp.letter == 2 || sp.letter == 6)) || (sp.acc == -1 && (sp.letter == 0 || sp.letter == 3));   /* E# B# Cb Fb */
     return is_double(sp) || (odd && at < 0) ? plainest(root, flats) : sp;
@@ -406,13 +411,13 @@ static theory_spelling_t tone_of(int key, theory_spelling_t r, int flats, int sl
 theory_spelling_t theory_spell_root(int key, int scale, int slot_scale, int deg) {
     theory_spelling_t sc7[7];
     int flats = spell_scale(key, scale, sc7);
-    return root_in(key, sc7, flats, slot_scale, deg);
+    return root_in(key, scale, sc7, flats, slot_scale, deg);
 }
 
 theory_spelling_t theory_spell_tone(int key, int scale, int slot_scale, int deg, int tone) {
     theory_spelling_t sc7[7];
     int flats = spell_scale(key, scale, sc7);
-    return tone_of(key, root_in(key, sc7, flats, slot_scale, deg), flats, slot_scale, deg, tone);
+    return tone_of(key, root_in(key, scale, sc7, flats, slot_scale, deg), flats, slot_scale, deg, tone);
 }
 
 int theory_chord_tones(int colour, int out[THEORY_CHORD_MAX]) {
@@ -439,7 +444,7 @@ static theory_spelling_t spell_pc(int key, int scale, const theory_chord_t *ctx,
     for (int d = 0; d < 7; d++)   /* a double accidental (G# harmonic minor's F##) as S01-D3 respells the chord on it */
         if (pc_of(sc7[d]) == p) return is_double(sc7[d]) ? plainest(p, flats) : sc7[d];
     if (ctx) {
-        theory_spelling_t r = root_in(key, sc7, flats, ctx->slot_scale, ctx->deg);
+        theory_spelling_t r = root_in(key, scale, sc7, flats, ctx->slot_scale, ctx->deg);
         for (int i = 0, n = theory_chord_tones(ctx->colour, tones); i < n; i++)
             if (theory_degree_pc(key, ctx->slot_scale, ctx->deg + tones[i] - 1) == p) return tone_of(key, r, flats, ctx->slot_scale, ctx->deg, tones[i]);
     }

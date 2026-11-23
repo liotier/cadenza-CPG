@@ -82,9 +82,9 @@ static void test_followers(seq_t *s) {
     seq_set_key(s, 2);
     CHECK(!strcmp(name_of(s, 1), "F#7"), "a key change moves it (got %s)", name_of(s, 1));
     seq_set_scale(s, SCALE_MINOR);
-    /* fork, docs/development/specs/01-key-aware-spelling.md, S01-D1: the name follows the numeral, which in D minor is bIV7 (theory_numeral
-     * prefers the flat of the degree above), so the same chord reads Gb7 (0.28.1: F#7 in every scale) */
-    CHECK(!strcmp(name_of(s, 1), "Gb7"), "a scale change respells it by its numeral (got %s)", name_of(s, 1));
+    /* fork, docs/development/specs/01-key-aware-spelling.md, S01-D1 and S01-A1: the name follows the numeral, which in D minor reads the
+     * major third above the tonic as #III (0.28.1's numeral took the flat of the degree above, bIV) */
+    CHECK(!strcmp(name_of(s, 1), "F#7"), "a scale change keeps it, spelled by its numeral #III (got %s)", name_of(s, 1));
 }
 
 static void test_verbs(seq_t *s) {
