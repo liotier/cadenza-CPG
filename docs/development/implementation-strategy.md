@@ -73,7 +73,7 @@ checks all four at once (§8).
 | 8 | Old builds trust some fields: 0.28.1 decodes a Feel base code without checking its colour against the colour tables, and a change point's source is a `signed char` (127 at most). | Principle 4's "use, not parse"; step 3's save design follows from it. |
 | 9 | This cloud session has no Docker daemon: the toolchain's scripts run only in CI. A native test runner and an ARM cross-compiler did the local work. | Step 0a commits both as tools (§4.6). |
 | 10 | GitHub offers manual runs only for workflows on the default branch, and `main` holds upstream's tree. | Test builds start from a commit message marker (§4.4). |
-| 11 | The CPU bench needs root SSH on the device (`tools/bench.sh`), which an unmodded MPC One under MPC OS 3.10.1 does not offer. | CPU budgets are checked by offline proxies (§5), and screens keep polled parameters few; a device bench only if the owner has SSH. |
+| 11 | The CPU bench needs root SSH on the device (`tools/bench.sh`). I assumed the owner's MPC One had none; it has (owner, 2026-11-23). | The device bench and an MPC memory probe are possible: the CPU and skin budgets can be measured on the device, not only by offline proxies (§5). Ask before assuming what the owner's setup allows. |
 | 12 | 30 Classic pads exist in Cadenza only as some scale's own chord (24 half-diminished sevenths, 3 minor-major sevenths, 3 minor sixths), not as chromatic chords. | Step 3's new qualities serve twice: the 134 Classic pads Cadenza cannot voice at all, and the palette table's storage independent of the scale (step 4). |
 | 13 | The scale palettes of decision 18 (the CPG's Scale Mode) hold a chord the catalogue does not: the tonic's dominant 7sus4 with its fifth, in Minor, Dorian, Mixolydian and Phrygian. | A ninth sonority in step 3, as a colour; measure every source of data a step will use before specifying it. |
 
@@ -84,6 +84,11 @@ checks all four at once (§8).
 One file per step, `docs/development/specs/NN-short-title.md`, listed in [specs/README.md](specs/README.md). Status:
 draft → approved → implemented → verified on the device. Steps 3 to 5 are specified for approval; steps 6 onwards will be
 specified after milestone M2 (§6.3).
+
+Decisions put to the owner come with their dependencies: which decision another presupposes, which one's answer
+informs another, and which are independent, so that they can be taken in a sensible order and none is taken on a
+premise a pending one may overturn. A list of decisions given without that structure (as at the end of revision 2's
+first presentation) reads as independent when it is not.
 
 ### 4.2 Branches
 
@@ -129,6 +134,16 @@ under `tools/dev/` ([spec 00, addendum A](specs/00-infrastructure.md#addendum-a-
 executes `tests/run_tests.sh`'s steps with the host's gcc, and an ARM size estimate that builds the plugin with a
 cross-compiler and the toolchain's flags, before and after a change. Their figures guide; CI's decide.
 
+### 4.7 A web simulation (proposed)
+
+Upstream's browser version (cadenzajam.com/try, built from upstream commit `2b2862a` with the toolchain at `8fbeffc`)
+runs the release's own engine and wrapper as a standalone WebAssembly module (`chordseq.wasm`: two imports, MIDI out and
+a clock; fifteen `wh_*` exports) behind a small C host, `web/web_host.c`, built by `web/build.sh`; the page draws the
+built skin (`TUI.json` and its images) with a renderer its comment calls not specific to Cadenza, and plays the lanes
+with SoundFonts in an AudioWorklet. None of `web/`, `tests/web_*` or `tools/release_web.sh` is in the release export;
+the page's JavaScript is readable on the site but carries no licence granting its use; `web_host.c` and `build.sh` are
+not published. Routes, for the owner (§8, item 6).
+
 ## 5. Budgets
 
 | Budget | Limit | Now | Headroom | Checked by |
@@ -136,7 +151,7 @@ cross-compiler and the toolchain's flags, before and after a change. Their figur
 | Binary | 720 KB (decision 21) | 650 KB (test build 4, `d9b619d`) | about 70 KB | CI, every build |
 | Skin images, decoded | 80 MB | 79.1 MB | **0.9 MB** | CI, every build |
 | Parameters | none set | 2 037 | n/a | each costs about 110 bytes of binary (0.22: 152 parameters, about 17 KB) and, when polled, audio-thread time |
-| Audio p99, worst block | 49 %, 80 % | 24.2 %, 65.5 % (the last device bench, [vst/bench.txt](../../vst/bench.txt)) | | the device only, with root SSH |
+| Audio p99, worst block | 49 %, 80 % | 24.2 %, 65.5 % (the last device bench, [vst/bench.txt](../../vst/bench.txt), the author's Force) | | `tools/bench.sh` over the owner's root SSH, on the MPC One |
 | Screen updates | 80 a second | 71 a second at 160 BPM with FOLLOW on (the plugin test) | | offline |
 | Saved state | 8 KB | about 1.6 KB for a six-part genre preset | | offline |
 
@@ -144,7 +159,8 @@ cross-compiler and the toolchain's flags, before and after a change. Their figur
 of the 70. The screens of phase B cost parameters and images. The skin is now the binding budget: 0.9 MB, where a new
 full-panel view has cost 1.6 MB or more. Phase B's screens therefore reuse existing views, and any new view needs a
 decision on the fork's skin budget first (§8). The skin budget rests on a device probe ("MPC decodes the visible page
-only", VST-9), so raising it is a measured risk, not a blind one.
+only", VST-9); with root SSH, MPC's memory can be measured on the owner's MPC One before and after a new view, so that
+decision can rest on the fork's own figures.
 
 ## 6. Main steps
 
@@ -253,8 +269,13 @@ In order:
    before the next starts. Step 4 can begin its generator while step 3 is reviewed; it cannot pass its strictness check
    before step 3 lands.
 5. **Decisions before phase B,** for the owner at M2: whether the fork may raise its skin budget for new views, and by how
-   much; whether a device bench is possible (root SSH); the design note to the author.
-6. **Specifications 06 and 07**, from the budgets measured at M2.
+   much, measured first over root SSH (MPC's memory with and without a new view); the design note to the author.
+6. **A web simulation** (owner, 2026-11-23: "starting with the web simulation would be expedient"): the fork's engine and
+   skin in a browser, as upstream's browser version runs 0.28.1 at cadenzajam.com/try. It would check screens and sound
+   in minutes, and let CI and a headless browser check labels on every page; it cannot check what only the device shows
+   (the ARM binary loading, MPC's own drawing, CPU and memory). Its route is the owner's decision: upstream's `web/`
+   folder, which the release export omits, is needed or must be rewritten (§4.7).
+7. **Specifications 06 and 07**, from the budgets measured at M2.
 
 ## 9. Risks
 
@@ -262,7 +283,7 @@ In order:
 |---|---|
 | The skin budget runs out: 0.9 MB of headroom, a full-panel view costing 1.6 MB or more | views reused; a decision on the fork's skin budget before any new view (§8); the gauge in every CI build |
 | The binary budget runs out again | 70 KB of headroom after decision 21; each step estimated locally, measured in CI; further raises are the owner's |
-| CPU costs invisible offline: no bench without root SSH | few polled parameters; the plugin test's screen-update count and the core tests' setter timings as proxies |
+| CPU costs invisible offline | the device bench over root SSH at each step with screens; offline, few polled parameters and the plugin test's screen-update count |
 | A save-format change breaks projects in older builds | principle 4 (old fields hold usable values only); the harness at every step touching the state |
 | Upstream releases reshape `seq_core` | small, local changes; upstream releases merged promptly; generated data kept apart from logic |
 | Changes reach front ends the fork does not build | each specification lists them (lesson 6); the design note to the author |
@@ -287,4 +308,6 @@ polymeter, the Chord Matcher (study, §7).
   builds and versions as built (§4.4, §4.5); local tools as step 0a (§4.6); a budgets table from CI's measurements, with
   the skin as the binding budget (§5); steps 3 to 5 restated from their revised specifications, and the budget each later
   screen is known to need (§6); M1 as two patches (§7); next steps in order (§8); risks for the skin, the CPU bench and
-  other front ends (§9).
+  other front ends (§9). Amended the same day: root SSH is available (lesson 11 corrected; the device bench and a memory
+  probe become the measures of CPU and skin); decisions are put with their dependencies (§4.1); the web simulation the
+  owner proposed, with what upstream's browser version is made of (§4.7, §8).
