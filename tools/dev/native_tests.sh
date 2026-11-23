@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # tests/run_tests.sh without Docker (docs/development/specs/00-infrastructure.md, addendum A): the author's offline suite,
 # every step of it, compiled and run with the host's gcc instead of the gcc:12 image, for a machine with no Docker daemon
-# (a cloud session). The steps are read from tests/run_tests.sh, never copied (A1): three edits turn its Docker call into a
+# (a cloud session). The steps are read from tests/run_tests.sh, never copied (S00-A1): three edits turn its Docker call into a
 # plain bash one, and the runner stops if any no longer applies exactly once. The generated headers are made in a copy of
-# vst/ (A2); LeakSanitizer is told about libasound's cached configuration, as CI is (A3). CI's run stays the reference.
+# vst/ (S00-A2); LeakSanitizer is told about libasound's cached configuration, as CI is (S00-A3). CI's run stays the reference.
 #   tools/dev/native_tests.sh      MPC_VST: the toolchain checkout (default: next to this repo). Needs gcc, g++, Python 3
 #                                  with Pillow. Exit status: run_tests.sh's.
 set -euo pipefail

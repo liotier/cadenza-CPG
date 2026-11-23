@@ -7315,7 +7315,7 @@ int main(void) {
     a->setP(a, idx("key"), 3 / 11.0f);     /* D# */
     a->setP(a, idx("scale"), 2 / 6.0f);    /* Dorian */
     display(a, "title", buf);
-    /* fork, spec 01 D2 and D7: the key named as its scale spells best, Eb Dorian (5 flats) rather than D# Dorian (7 sharps) */
+    /* fork, S01-D2 and S01-D7: the key named as its scale spells best, Eb Dorian (5 flats) rather than D# Dorian (7 sharps) */
     CHECK(!strncmp(buf, "Eb DORIAN", 9), "title follows a non-zero key and scale (got '%s')", buf);
     a->setP(a, idx("scale"), 4 / 6.0f);    /* Phrygian: D# (5 sharps) rather than Eb (7 flats) */
     display(a, "title", buf);

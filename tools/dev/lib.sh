@@ -3,7 +3,7 @@
 
 # dev_headers TREE MPC_VST: TREE/vst/build/keyflags.h and params.h, as vst/build.sh and tests/run_tests.sh would make them,
 # generated in a temporary copy of TREE/vst: vst/make_skin.py also rewrites vst/params.json, vst/layout.conf and vst/images/,
-# which are committed, so run in place it would dirty the tree (A2). Needs Python 3 with Pillow.
+# which are committed, so run in place it would dirty the tree (S00-A2). Needs Python 3 with Pillow.
 dev_headers() {
   local tree="$1" mv="$2" w
   w="$(mktemp -d)"

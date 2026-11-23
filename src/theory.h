@@ -114,29 +114,29 @@ int theory_drift_level(int score);
 typedef struct { signed char letter, acc; } theory_spelling_t;
 /* The chord a single note sounds under (theory_note_name_s's ctx): its own scale (theory_slot_scale), degree and colour */
 typedef struct { int slot_scale, deg, colour; } theory_chord_t;
-/* "C", "Bb", "F#", "Ebb", "C##": a spelling's name (ASCII, D6), a constant string */
+/* "C", "Bb", "F#", "Ebb", "C##": a spelling's name (ASCII, S01-D6), a constant string */
 const char *theory_spelling_text(theory_spelling_t sp);
-/* The tonic (D2): a white key's natural name; of a black key's two names, the one whose spelling of the project scale needs
+/* The tonic (S01-D2): a white key's natural name; of a black key's two names, the one whose spelling of the project scale needs
  * fewer accidentals (a double one counting two), the sharp one on a tie. Eb major, but D# Phrygian */
 theory_spelling_t theory_spell_tonic(int key, int scale);
 /* A degree of the project scale in that scale's spelling: the tonic's letter plus deg */
 theory_spelling_t theory_spell_degree(int key, int scale, int deg);
-/* A chord's root (D1, D3): a diatonic chord its degree's letter, a borrowed or chromatic one the letter of the project degree its
+/* A chord's root (S01-D1, S01-D3): a diatonic chord its degree's letter, a borrowed or chromatic one the letter of the project degree its
  * numeral names (theory_numeral); respelled to its plainest name only for a double accidental, or for E#, B#, Cb or Fb on a
  * note outside the project scale */
 theory_spelling_t theory_spell_root(int key, int scale, int slot_scale, int deg);
-/* A chord's tone (D4): tone 1..13 of the chord on deg of slot_scale takes the letter tone - 1 steps above the root's; a double
+/* A chord's tone (S01-D4): tone 1..13 of the chord on deg of slot_scale takes the letter tone - 1 steps above the root's; a double
  * accidental is respelled to the plainest name */
 theory_spelling_t theory_spell_tone(int key, int scale, int slot_scale, int deg, int tone);
 /* The tones of colour's chord in theory_chord_notes' order (sus2 / sus4's 2 or 4 for the 3): 1 3 5 7 for a 7th; returns the count */
 int theory_chord_tones(int colour, int out[THEORY_CHORD_MAX]);
 /* theory_chord_name_c's text with the spelled root: "Bb", "Db7", "Ebmaj7" */
 int theory_chord_name_s(int key, int scale, int slot_scale, int deg, int colour, char *buf, int len);
-/* A single pitch class (D5): a note of the project scale takes the scale's letter; else, when ctx (may be NULL) holds it, the
+/* A single pitch class (S01-D5): a note of the project scale takes the scale's letter; else, when ctx (may be NULL) holds it, the
  * chord's letter for that tone; else the plainest name on the key's side (flats when the project scale's spelling has a flat,
- * sharps otherwise). A double accidental is respelled to the plainest name, as D3 respells a root. A constant string;
+ * sharps otherwise). A double accidental is respelled to the plainest name, as S01-D3 respells a root. A constant string;
  * theory_note_name_s adds the octave, of the spelled name: B#3 is MIDI 60 */
 const char *theory_pc_text_s(int key, int scale, const theory_chord_t *ctx, int pc);
 int theory_note_name_s(int key, int scale, const theory_chord_t *ctx, int note, char *buf, int len);
-/* The key's name (D2, D7): "Eb", "D#" */
+/* The key's name (S01-D2, S01-D7): "Eb", "D#" */
 const char *theory_key_name_s(int key, int scale);

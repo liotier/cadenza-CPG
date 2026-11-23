@@ -767,7 +767,7 @@ Perform's files. Kept for the record:
 - **What.** CPG nicknames on tiles ("Axis of Awesome", "Andalusian", "Hotel California"); the CPG's plain-language chord
   phrase ("Dominant seventh chord on the flattened second degree") on the message line when a chord is picked. The
   descriptions are too long for a line that fades after four seconds. English only: Cadenza has no localisation, and the
-  CPG's exports are canonical English anyway (D2 of its export specification).
+  CPG's exports are canonical English anyway (the CPG's export specification, D2).
 - **Size.** S, once B exists.
 
 ### L. Live palette pads
@@ -957,8 +957,8 @@ revision 3, 16 to revision 4, 17 to 19 to revision 5; 2026-11-23: 20, after the 
 | 19 | The device test of the physical pads goes ahead, by the protocol of [device-test-pads.md](device-test-pads.md). | §11 |
 | 20 | No MIDI input: Cadenza wants harmony sequenced in Cadenza. Hardware pads and harmony carried by MPC clips are set aside; avenue L's pads stay on screen; the device test closes, its findings kept. | avenue L, §5.7, [device-test-pads.md](device-test-pads.md) |
 | 21 | Room in the binary, both ways: the ARM build drops the functions the plugin never calls (section garbage collection, about 46 KB), and the fork's budget goes from 688 to 720 KB. The budget is upstream's own discipline, with no device limit cited for it. | §5, [spec 01](specs/01-key-aware-spelling.md) |
-| 22 | A project keeps the palette it was made with, saved by value: the principle of least surprise, respect for the composer, and a cleaner boundary between the CPG and Cadenza (a CPG revision never reaches into a saved song). | [spec 05](specs/05-part-palette.md), D2 |
-| 23 | Cadenza's genres and the CPG's are orthogonal: Cadenza's (its genre presets, its JAM columns) are about time, rhythm and arrangement; the CPG's are palettes, harmony. The genre presets get no palettes, and neither kind of genre implies the other. | [spec 05](specs/05-part-palette.md), D9; avenue G |
+| 22 | A project keeps the palette it was made with, saved by value: the principle of least surprise, respect for the composer, and a cleaner boundary between the CPG and Cadenza (a CPG revision never reaches into a saved song). | [spec 05](specs/05-part-palette.md), S05-D2 |
+| 23 | Cadenza's genres and the CPG's are orthogonal: Cadenza's (its genre presets, its JAM columns) are about time, rhythm and arrangement; the CPG's are palettes, harmony. The genre presets get no palettes, and neither kind of genre implies the other. | [spec 05](specs/05-part-palette.md), S05-D9; avenue G |
 
 **To revisit.** Decision 12, the fifth of 11ths and 13ths: when a listener misses the fifth, when a voicing style wants it,
 when `THEORY_CHORD_MAX` is raised for another reason, or when the CPG's 11ths and 13ths change. The trade-off and the ways

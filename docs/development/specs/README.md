@@ -5,7 +5,9 @@ One specification per step of the [implementation strategy](../implementation-st
 a header, the problem, a decisions table, the specification, measurements, verification, what is out of scope, open
 points, and implementation notes filled in as the step is built. Since revision 2 of the strategy, a decisions table has a
 last column, *Rests on*, naming what each decision presupposes (here or in another specification): numbered rows are not
-independent choices, and the column shows which can be judged alone and which change with another. The decisions are
+independent choices, and the column shows which can be judged alone and which change with another. Decision identifiers
+are global: `SNN-Dk` is specification NN's decision k (`S04-D3`), `S00-Ak` one of spec 00's addendum A (strategy,
+§4.1). The decisions are
 split in three: §2.1, the owner's questions decidable now, each with a proposed answer and its alternatives; §2.2, the
 owner's questions that wait for a later step, with what holds meanwhile; §2.3, decisions that follow from ones already
 taken or from the code, to be read and questioned, needing no answer of their own. Approving a specification is answering
@@ -21,7 +23,7 @@ Approvals pending are in the [strategy's list](../implementation-strategy.md#81-
 | 01 | [Key-aware chord spelling](01-key-aware-spelling.md) | implemented; device run pending | 00 |
 | 02 | [Chromatic chords through the progression path](02-chromatic-progression-path.md) | implemented; device run pending | 00 |
 | 03 | [The missing sonorities](03-missing-sonorities.md) | approved | 02 |
-| 04 | [The palette table, generated from the CPG](04-palette-table.md) | for approval: D3 studied, D9 asked | 00, 03 |
+| 04 | [The palette table, generated from the CPG](04-palette-table.md) | for approval: S04-D3 studied, S04-D9 asked | 00, 03 |
 | 05 | [The part's palette](05-part-palette.md) | §2.1 answered; approved with 04 | 02, 03, 04 |
 
 ## How far the drafting goes, and why

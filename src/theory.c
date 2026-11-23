@@ -351,7 +351,7 @@ static int spell_from(int key, int scale, int l, theory_spelling_t *out) {
     return n;
 }
 
-/* The project scale as D2 spells it, into out[7]; returns 1 when the spelling has a flat (D5's key side) */
+/* The project scale as S01-D2 spells it, into out[7]; returns 1 when the spelling has a flat (S01-D5's key side) */
 static int spell_scale(int key, int scale, theory_spelling_t out[7]) {
     int k = pmod(key, 12), sc = scale >= 0 && scale < SCALE_COUNT ? scale : SCALE_MAJOR, l = 0, flats = 0;
     while (l < 6 && NATURAL[l] < k) l++;   /* the letter at or above the key */
@@ -381,7 +381,7 @@ theory_spelling_t theory_spell_degree(int key, int scale, int deg) {
     return sc7[pmod(deg, 7)];
 }
 
-/* D1 and D3, with the project scale spelled in sc7 */
+/* S01-D1 and S01-D3, with the project scale spelled in sc7 */
 static theory_spelling_t root_in(int key, const theory_spelling_t sc7[7], int flats, int slot_scale, int deg) {
     int root = theory_degree_pc(key, slot_scale, deg), d = pmod(deg, 7), at = -1, up = -1, down = -1;
     for (int i = 6; i >= 0; i--) {   /* a chromatic chord: the project degree its root is, else the one a semitone above, else below (theory_numeral) */
@@ -396,7 +396,7 @@ static theory_spelling_t root_in(int key, const theory_spelling_t sc7[7], int fl
     return is_double(sp) || (odd && at < 0) ? plainest(root, flats) : sp;
 }
 
-/* D4: tone of the chord whose root is spelled r */
+/* S01-D4: tone of the chord whose root is spelled r */
 static theory_spelling_t tone_of(int key, theory_spelling_t r, int flats, int slot_scale, int deg, int tone) {
     int k = tone < 1 ? 0 : tone - 1, pc = theory_degree_pc(key, slot_scale, deg + k);
     theory_spelling_t sp = on_letter(r.letter + k, pc);
@@ -436,7 +436,7 @@ int theory_chord_name_s(int key, int scale, int slot_scale, int deg, int colour,
 static theory_spelling_t spell_pc(int key, int scale, const theory_chord_t *ctx, int pc) {
     theory_spelling_t sc7[7];
     int flats = spell_scale(key, scale, sc7), p = pmod(pc, 12), tones[THEORY_CHORD_MAX];
-    for (int d = 0; d < 7; d++)   /* a double accidental (G# harmonic minor's F##) as D3 respells the chord on it */
+    for (int d = 0; d < 7; d++)   /* a double accidental (G# harmonic minor's F##) as S01-D3 respells the chord on it */
         if (pc_of(sc7[d]) == p) return is_double(sc7[d]) ? plainest(p, flats) : sc7[d];
     if (ctx) {
         theory_spelling_t r = root_in(key, sc7, flats, ctx->slot_scale, ctx->deg);

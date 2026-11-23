@@ -20,12 +20,12 @@ path must accept the chromatic range first.
 
 | # | Decision | Rationale |
 |---|---|---|
-| D1 | **Open exactly the seven checks of §3.1 to the existing chromatic range**, `src` 0 to `THEORY_SRC_MAX` (51). Nothing beyond it. | The second range belongs to step 3, with its own save design. |
-| D2 | **A chromatic chord's degree is 0.** Every writer forces it, as `load_cx` already does. | The chromatic pseudo-scale's degree 0 is the chord's root (theory.h); any other degree would be a different chord. |
-| D3 | **No new saved field.** The 0.28 field `.cx` saves a chromatic source for any slot, whichever path wrote it ([seq_core.c:3935](../../../src/seq_core.c#L3935)), and `.ch` and `.pq` keep their fallback (`old_src`). | Already designed and released in 0.28. |
-| D4 | **Change points keep their one-character encoding**, `'0' + src`, which reaches `c` at 51 and never a separator (`\|` or `,`). | No format change for the existing range. |
-| D5 | **No screen change.** The Force's pickers still offer the scale's chords and the three borrowed ones. | Opening the engine's path is what steps 5 to 8 need; offering chromatic chords on screen is theirs. |
-| D6 | **Saved sound unchanged.** No existing path writes chromatic sources through these checks, so the parity hash cannot move. | Principle 3 of the strategy. |
+| S02-D1 | **Open exactly the seven checks of §3.1 to the existing chromatic range**, `src` 0 to `THEORY_SRC_MAX` (51). Nothing beyond it. | The second range belongs to step 3, with its own save design. |
+| S02-D2 | **A chromatic chord's degree is 0.** Every writer forces it, as `load_cx` already does. | The chromatic pseudo-scale's degree 0 is the chord's root (theory.h); any other degree would be a different chord. |
+| S02-D3 | **No new saved field.** The 0.28 field `.cx` saves a chromatic source for any slot, whichever path wrote it ([seq_core.c:3935](../../../src/seq_core.c#L3935)), and `.ch` and `.pq` keep their fallback (`old_src`). | Already designed and released in 0.28. |
+| S02-D4 | **Change points keep their one-character encoding**, `'0' + src`, which reaches `c` at 51 and never a separator (`\|` or `,`). | No format change for the existing range. |
+| S02-D5 | **No screen change.** The Force's pickers still offer the scale's chords and the three borrowed ones. | Opening the engine's path is what steps 5 to 8 need; offering chromatic chords on screen is theirs. |
+| S02-D6 | **Saved sound unchanged.** No existing path writes chromatic sources through these checks, so the parity hash cannot move. | Principle 3 of the strategy. |
 
 ## 3. Specification
 
@@ -65,7 +65,7 @@ Binary size before and after; no other budget moves.
    with chromatic chords surviving a round trip.
 2. A randomised sweep: progressions drawing on the whole chromatic range, played through the plugin test under ASan and
    UBSan, to catch a reader the audit missed.
-3. The core parity hash unchanged (D6).
+3. The core parity hash unchanged (S02-D6).
 4. The compatibility harness, two new scenarios: a state with chromatic slots loads in 0.28.1 and saves back identically
    (0.28.1 reads `.cx`); a state with chromatic change points loads in 0.28.1 with those points dropped, the slot's chord
    playing there instead, as `tests/compat/expected.txt` records.
@@ -94,12 +94,12 @@ from 4 on); `seq_set_slot`, `cp_set` and `seq_rbar_chord` already took the degre
 | Reader | How it reads the source | Chromatic |
 |---|---|---|
 | `slot_scale`, `slot_notes`, `eff_colour`, `lock_colour`, `chord_word`, `chord_level` (the COLOUR ranking), `theory_drift`, `theory_avoid`, Feel's `root_pc`, `quality`, its offers | through `theory_slot_scale` | handled since 0.28 |
-| `borrow_degrees` (every revoice) | `theory_borrow_degree` | degree 0, as D2 requires |
+| `borrow_degrees` (every revoice) | `theory_borrow_degree` | degree 0, as S02-D2 requires |
 | `copy_slot`, `repeats`, `part_view`, `cp_sync`'s mirror, the slot comparisons of the Feel runs, the change test of `cp_sync` and `seq_chord_change_at` | equality | indifferent |
 | `feel_code_of` | `1 + deg + 7 x (src + 52 x colour)` | sized for 0..51 since 0.28 |
 | the preset match (`seq_prog_preset`) | a non-zero source is no preset's | indifferent |
-| the save (`.pq`, `.ch` with `old_src`, `.cx`) and the load (`.cx` over the fallbacks) | 0.28's design | unchanged (D3) |
-| `out_cp` and `load_cp` | `'0' + src`, `'4'` to `'c'` | the load opened here (D4) |
+| the save (`.pq`, `.ch` with `old_src`, `.cx`) and the load (`.cx` over the fallbacks) | 0.28's design | unchanged (S02-D3) |
+| `out_cp` and `load_cp` | `'0' + src`, `'4'` to `'c'` | the load opened here (S02-D4) |
 | Feel's `base.src` tests (its sus and add9 suggestions) | a non-zero source is not the scale's | as for a borrowed chord |
 | the engine's caches (`fix_src_t`, `slot_src_t`, `bass_src_t`) | `memcmp` of the arrays | indifferent |
 | the engine's labels (`page_labels`, `slot_labels`, the bar texts) | through `theory_slot_scale` | handled; swept (below) |
@@ -123,5 +123,5 @@ checks that a chromatic point is accepted.
 `.cx`; `chroma-points` comes back without its two chromatic points (0.28.1's `load_cp` skips sources above 3) and with
 its diatonic one, pinned in `tests/compat/expected.txt`.
 
-**Measurements.** The core parity hash is unchanged (D6). The binary grows by about 210 bytes (an ARM cross-compiler's
+**Measurements.** The core parity hash is unchanged (S02-D6). The binary grows by about 210 bytes (an ARM cross-compiler's
 figure; CI's exact one goes with the commit's run).

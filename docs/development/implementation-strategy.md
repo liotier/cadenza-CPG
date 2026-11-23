@@ -90,6 +90,11 @@ One file per step, `docs/development/specs/NN-short-title.md`, listed in [specs/
 draft → approved → implemented → verified on the device. Steps 3 to 5 are specified for approval; steps 6 onwards will be
 specified after milestone M2 (§6.3).
 
+Decision identifiers are global, so that no two decisions share a name: `SNN-Dk` is specification NN's decision k
+(`S04-D3`), `S00-Ak` a decision of spec 00's addendum A; `On` is the owner's list in §8; *decision N* is the study's
+[decision log](cpg-integration-study.md#10-decision-log); the CPG's own specifications are cited by name ("the CPG's spec
+13, D1"). The fork's code comments cite them the same way.
+
 Decisions put to the owner come with their dependencies: which decision another presupposes, which one's answer
 informs another, and which are independent, so that they can be taken in a sensible order and none is taken on a
 premise a pending one may overturn. A list of decisions given without that structure (as at the end of revision 2's
@@ -198,7 +203,7 @@ decision can rest on the fork's own figures.
 | 1 | Key-aware chord spelling | avenue A | 0 | labels | S-M | implemented |
 | 2 | Chromatic chords through the progression path | §6.2 | 0 | no | S-M | implemented |
 | 3 | The missing sonorities: the catalogue's eight and Scale Mode's 7sus4 | avenue H | 2 | no | M | approved |
-| 4 | The palette table, generated from the CPG | avenues B, K | 0, 3 | no | M | for approval (D3 studied, D9 asked) |
+| 4 | The palette table, generated from the CPG | avenues B, K | 0, 3 | no | M | for approval (S04-D3 studied, S04-D9 asked) |
 | 5 | The part's palette in the engine | §4.3, avenue D | 2, 4 | no | M | answered; approved with step 4 |
 | 6 | The palette browser | avenue C | 5 | yes | M-L | after M2 |
 | 7 | The palette in the bar editor | avenue D | 5 | yes | M | after M2 |
@@ -292,7 +297,7 @@ for the record below it, and the ones concerning the integration as a whole go t
 | # | Decision | Options | Rests on | Informs | Needed before |
 |---|---|---|---|---|---|
 | O1 | Run the draft *Cadenza 0.28.1-cpg.1 (test build)* on the MPC One, and say whether it passes (checks in §9, item 1). Postponed by the owner, 2026-11-23: no MPC at hand | pass, or what failed | none | O2, O3 | the release branch; M1 |
-| O6 | Approve step 4, the palette table: two questions, [spec 04, §2.1](specs/04-palette-table.md#21-for-the-owner-decidable-now). D3, the CPG style and its colours: the owner asked first how the COLOUR control interacts with the styles; the analysis is [spec 04, §2.4](specs/04-palette-table.md#24-background-to-d3-and-d9-colour-the-cpgs-styles-and-starting-orders). D9, spare bars in starting orders: the owner asked whether the progression plays in order; it does, as the palette's starting order, and the alternative (loading writes nothing) is set out there too | answer each, or accept the proposed answers | spec 03 (approved) | O7's approval | step 4 |
+| O6 | Approve step 4, the palette table: two questions, [spec 04, §2.1](specs/04-palette-table.md#21-for-the-owner-decidable-now). S04-D3, the CPG style and its colours: the owner asked first how the COLOUR control interacts with the styles; the analysis is [spec 04, §2.4](specs/04-palette-table.md#24-background-to-s04-d3-and-s04-d9-colour-the-cpgs-styles-and-starting-orders). S04-D9, spare bars in starting orders: the owner asked whether the progression plays in order; it does, as the palette's starting order, and the alternative (loading writes nothing) is set out there too | answer each, or accept the proposed answers | spec 03 (approved) | O7's approval | step 4 |
 | O11 | Whether to raise with the author the numerals that spell D minor's F♯ major as `Gb7` ([spec 01](specs/01-key-aware-spelling.md), open point) | raise it, leave it | none | | nothing in the fork. The message sent on 2026-11-23 raised it as drafted; if that paragraph was cut, it stays open |
 | O14 | Step 12, the genre crosswalk (loading a palette offers a voicing style and a bass style of a matching genre): keep it, or drop it now that Cadenza's genres and the CPG's are orthogonal (study, decision 23) | keep as a suggestion, drop | decision 23 | | step 12 |
 
@@ -311,11 +316,11 @@ for the record below it, and the ones concerning the integration as a whole go t
 
 | # | Decision | Taken | Recorded in |
 |---|---|---|---|
-| O4 | Step 0a, the local tools: A1 (the native runner) and A4 (the ARM size estimate), "as you see fit" | 2026-11-23 | [spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools) |
+| O4 | Step 0a, the local tools: S00-A1 (the native runner) and S00-A4 (the ARM size estimate), "as you see fit" | 2026-11-23 | [spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools) |
 | O8 | The web simulation's route: ask the author for upstream's `web/` folder first | 2026-11-23 | §4.7 |
 | O9 | The message to the author, introducing the fork and asking for `web/`: sent | 2026-11-23 | §4.7 |
-| O5 | Step 3 approved: the new sonorities stay off every control (D3), the fallbacks computed at save time (D6; the answer ended on a colon, read as accepting them), the CPG's names (D7) | 2026-11-23 | [spec 03, §2.1](specs/03-missing-sonorities.md#21-for-the-owner-decidable-now) |
-| O7 | Step 5's questions: a project keeps its palette by value (D2); the genre presets get no palettes (D9). Its approval follows step 4's, which it rests on | 2026-11-23 | [spec 05, §2.1](specs/05-part-palette.md#21-for-the-owner-decidable-now); study, decisions 22 and 23 |
+| O5 | Step 3 approved: the new sonorities stay off every control (S03-D3), the fallbacks computed at save time (S03-D6; the answer ended on a colon, read as accepting them), the CPG's names (S03-D7) | 2026-11-23 | [spec 03, §2.1](specs/03-missing-sonorities.md#21-for-the-owner-decidable-now) |
+| O7 | Step 5's questions: a project keeps its palette by value (S05-D2); the genre presets get no palettes (S05-D9). Its approval follows step 4's, which it rests on | 2026-11-23 | [spec 05, §2.1](specs/05-part-palette.md#21-for-the-owner-decidable-now); study, decisions 22 and 23 |
 
 ## 9. Next steps
 
@@ -374,5 +379,6 @@ polymeter, the Chord Matcher (study, §7).
   (§8.3: step 0a approved, the message to the author sent). Then: O5 to O7 name the questions of their specifications,
   whose decisions are split the same way (§2.1 decidable now, §2.2 after a further step, §2.3 following from
   decisions taken); the two deferred ones join §8.2 as O12 and O13; O1 postponed by the owner. Then the owner's answers:
-  step 3 approved (O5), step 5's questions answered (O7; study, decisions 22 and 23), step 4's D3 studied at his request
-  and his question on D9 answered (O6); O14 asks whether step 12 survives decision 23.
+  step 3 approved (O5), step 5's questions answered (O7; study, decisions 22 and 23), step 4's S04-D3 studied at his request
+  and his question on S04-D9 answered (O6); O14 asks whether step 12 survives decision 23. Then: decision identifiers
+  made global (§4.1), `S04-D3` for specification 04's decision 3, in every document and code comment.

@@ -423,7 +423,7 @@ static void test_18_theory_avoid(void) {
 }
 
 /* fork, docs/development/specs/01-key-aware-spelling.md, verification 1: the tonic and seven letters of every key and scale, written
- * by hand from the key signatures (each mode read from its relative major), not derived from the code under test. D2 picks a black
+ * by hand from the key signatures (each mode read from its relative major), not derived from the code under test. S01-D2 picks a black
  * key's name by the fewer accidentals in that scale, the sharp one on a tie: Eb major but D# Phrygian, F# major (6 against 6) */
 static const char *const SPELL_TABLE[SCALE_COUNT][12] = {
     {"C D E F G A B", "Db Eb F Gb Ab Bb C", "D E F# G A B C#", "Eb F G Ab Bb C D", "E F# G# A B C# D#", "F G A Bb C D E",
@@ -463,9 +463,9 @@ static void test_fork_spelling_table(void) {
 static void test_fork_chord_names(void) {
     static const struct { int key, scale; const char *names; } T[] = {
         {5, SCALE_MAJOR, "F Gm Am Bb C Dm Edim | Bbm Db Eb"},
-        {3, SCALE_MAJOR, "Eb Fm Gm Ab Bb Cm Ddim | Abm B Db"},      /* bVI Cb respelled B (D3: Cb outside the key) */
+        {3, SCALE_MAJOR, "Eb Fm Gm Ab Bb Cm Ddim | Abm B Db"},      /* bVI Cb respelled B (S01-D3: Cb outside the key) */
         {8, SCALE_MAJOR, "Ab Bbm Cm Db Eb Fm Gdim | Dbm E Gb"},     /* bVI Fb respelled E */
-        {1, SCALE_MAJOR, "Db Ebm Fm Gb Ab Bbm Cdim | Gbm A B"},     /* bVI Bbb respelled A (D3: a double flat), bVII Cb B */
+        {1, SCALE_MAJOR, "Db Ebm Fm Gb Ab Bbm Cdim | Gbm A B"},     /* bVI Bbb respelled A (S01-D3: a double flat), bVII Cb B */
         {11, SCALE_MAJOR, "B C#m D#m E F# G#m A#dim | Em G A"},
         {6, SCALE_MAJOR, "F# G#m A#m B C# D#m E#dim | Bm D E"},     /* E#dim kept: E# is in the key */
         {1, SCALE_MINOR, "C#m D#dim E F#m G#m A B | F# G# D"},
@@ -489,8 +489,8 @@ static void test_fork_chord_names(void) {
         {5, SCALE_MAJOR, 0, 6, COL_7TH, "Em7b5"}, {5, SCALE_MAJOR, 0, 3, COL_SUS4, "Bbsus4"}, {3, SCALE_MAJOR, 0, 3, COL_7TH, "Abmaj7"},
         {1, SCALE_MAJOR, 0, 0, COL_9TH, "Dbmaj9"}, {10, SCALE_MINOR, 0, 0, COL_7TH, "Bbm7"}, {6, SCALE_MAJOR, 0, 6, COL_7TH, "E#m7b5"},
         {0, SCALE_MAJOR, 4 + 1 * CQ_COUNT + CQ_DOM, 0, COL_7TH, "Db7"},   /* C major's chromatic bII7: Db7 beside its numeral */
-        {1, SCALE_MAJOR, 4 + 8 * CQ_COUNT + CQ_MAJOR, 0, COL_TRIAD, "A"},   /* Db major's chromatic bVI: A, not Bbb (D3) */
-        {5, SCALE_MAJOR, 4 + 6 * CQ_COUNT + CQ_DOM, 0, COL_7TH, "B7"},   /* F major, root B: numeral bV, so Cb7, Cb outside the key respelled B (D3) */
+        {1, SCALE_MAJOR, 4 + 8 * CQ_COUNT + CQ_MAJOR, 0, COL_TRIAD, "A"},   /* Db major's chromatic bVI: A, not Bbb (S01-D3) */
+        {5, SCALE_MAJOR, 4 + 6 * CQ_COUNT + CQ_DOM, 0, COL_7TH, "B7"},   /* F major, root B: numeral bV, so Cb7, Cb outside the key respelled B (S01-D3) */
     };
     for (size_t i = 0; i < sizeof C / sizeof C[0]; i++) {
         char nm[24], num[16];
@@ -501,7 +501,7 @@ static void test_fork_chord_names(void) {
     }
 }
 
-/* D4, D5 and the octave of a spelled note */
+/* S01-D4, S01-D5 and the octave of a spelled note */
 static void test_fork_notes(void) {
     char b[16];
     theory_chord_t d7 = {theory_slot_scale(SCALE_MAJOR, 4 + 9 * CQ_COUNT + CQ_DOM), 0, COL_7TH};   /* D7 in F major */
@@ -518,7 +518,7 @@ static void test_fork_notes(void) {
     CHECK(!strcmp(b, "C-1"), "MIDI 0 is C-1, as theory_note_name says (got %s)", b);
     CHECK(!strcmp(theory_spelling_text(theory_spell_degree(8, SCALE_HARM_MINOR, 6)), "F##") &&
           !strcmp(theory_pc_text_s(8, SCALE_HARM_MINOR, &dim, 7), "G"),
-          "G# harmonic minor: F## in the scale's spelling, shown G (D3's rule for a double accidental)");
+          "G# harmonic minor: F## in the scale's spelling, shown G (S01-D3's rule for a double accidental)");
     theory_chord_name_s(8, SCALE_HARM_MINOR, SCALE_HARM_MINOR, 6, COL_TRIAD, b, sizeof b);
     CHECK(!strcmp(b, "Gdim"), "its vii is Gdim (got %s)", b);
     int t[THEORY_CHORD_MAX], n = theory_chord_tones(COL_SUS4, t);

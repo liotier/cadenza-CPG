@@ -27,15 +27,15 @@ Today:
 
 | # | Decision | Rationale |
 |---|---|---|
-| D1 | **No change to Cadenza's behaviour.** Step 0 adds files under `.github/`, `tests/compat/`, `tools/cpg/`, `third_party/` and `docs/development/measurements/`, and edits `versions.json`; nothing under `src/` or `vst/` changes. | Infrastructure must be proven on unchanged code, so that later differences belong to later steps. |
-| D2 | **CI runs the existing scripts unchanged:** `vst/build.sh`, then `tests/run_tests.sh`, on GitHub's Ubuntu runners with Docker and QEMU. | The scripts are the author's own definition of a passing build; running them as they are keeps the fork comparable with upstream. The plugin test needs `vst/build.sh` first: it includes `keyflags.h`, which the skin build generates. |
-| D3 | **The toolchain is pinned** to [Shrekage2024/mpc-vst-plugins](https://github.com/Shrekage2024/mpc-vst-plugins/tree/chordseq/open-mpc) commit `8fbeffc`, branch `chordseq/open-mpc`, named in one place. | The README requires that branch; `8fbeffc`'s own message names Cadenza 0.28.1. One place means one edit to move it. |
-| D4 | **The compatibility harness builds two engines:** the fork's, and the official one from upstream commit `56e95a0`, as two separate programs. | The engine is host-free, so both build natively in seconds; two programs avoid every symbol clash. |
-| D5 | **Its baseline is byte identity:** a state saved by the fork, loaded by the official engine and saved again, gives the same bytes. Later steps add scenarios whose permitted differences their specifications list. | On unchanged code, anything but identity is a fault of the harness. |
-| D6 | **The CPG is a git submodule:** `third_party/AkaiMPC`, from `https://github.com/liotier/AkaiMPC`, pinned to `c84a306`, the commit the study measured; `shallow = true`. The plugin build never needs it. | Decision 10. Pinning the studied commit makes the first measurement reproduce the study's figures. |
-| D7 | **The study's coverage measurement becomes a tool:** `tools/cpg/enumerate.c` lists every chord Cadenza's theory layer can voice; `tools/cpg/coverage.mjs` classifies the CPG's catalogue against it; the output is committed as `docs/development/measurements/coverage.txt` and compared by CI. | It makes the study's figures reproducible, and gives steps 3 and 4 their measure: the count of missing sonorities, which they drive to zero. |
-| D8 | **Test builds go through the toolchain's reusable workflow** ([vst-release.yml](https://github.com/Shrekage2024/mpc-vst-plugins/blob/8fbeffc/.github/workflows/vst-release.yml)) at the pinned commit, **as draft releases only.** | It builds and packages exactly as releases are made, the MPC OS 3.10.1 `VST2 Plugins` folder included. A draft is visible to the repository's collaborators only, whereas run artifacts of a public repository can be downloaded by any signed-in user; builds of a personal fork stay private (study, §9). |
-| D9 | **Versions carry a suffix:** the Claude branch holds the next release's version, `0.28.1-cpg.N`; a release branch `release/0.28.1-cpg.N` freezes it; the Claude branch then moves to `N + 1`. The series starts at `0.28.1-cpg.1`. | The plugin shows no version on screen, so the zips' and drafts' names are what tell builds apart. |
+| S00-D1 | **No change to Cadenza's behaviour.** Step 0 adds files under `.github/`, `tests/compat/`, `tools/cpg/`, `third_party/` and `docs/development/measurements/`, and edits `versions.json`; nothing under `src/` or `vst/` changes. | Infrastructure must be proven on unchanged code, so that later differences belong to later steps. |
+| S00-D2 | **CI runs the existing scripts unchanged:** `vst/build.sh`, then `tests/run_tests.sh`, on GitHub's Ubuntu runners with Docker and QEMU. | The scripts are the author's own definition of a passing build; running them as they are keeps the fork comparable with upstream. The plugin test needs `vst/build.sh` first: it includes `keyflags.h`, which the skin build generates. |
+| S00-D3 | **The toolchain is pinned** to [Shrekage2024/mpc-vst-plugins](https://github.com/Shrekage2024/mpc-vst-plugins/tree/chordseq/open-mpc) commit `8fbeffc`, branch `chordseq/open-mpc`, named in one place. | The README requires that branch; `8fbeffc`'s own message names Cadenza 0.28.1. One place means one edit to move it. |
+| S00-D4 | **The compatibility harness builds two engines:** the fork's, and the official one from upstream commit `56e95a0`, as two separate programs. | The engine is host-free, so both build natively in seconds; two programs avoid every symbol clash. |
+| S00-D5 | **Its baseline is byte identity:** a state saved by the fork, loaded by the official engine and saved again, gives the same bytes. Later steps add scenarios whose permitted differences their specifications list. | On unchanged code, anything but identity is a fault of the harness. |
+| S00-D6 | **The CPG is a git submodule:** `third_party/AkaiMPC`, from `https://github.com/liotier/AkaiMPC`, pinned to `c84a306`, the commit the study measured; `shallow = true`. The plugin build never needs it. | Decision 10. Pinning the studied commit makes the first measurement reproduce the study's figures. |
+| S00-D7 | **The study's coverage measurement becomes a tool:** `tools/cpg/enumerate.c` lists every chord Cadenza's theory layer can voice; `tools/cpg/coverage.mjs` classifies the CPG's catalogue against it; the output is committed as `docs/development/measurements/coverage.txt` and compared by CI. | It makes the study's figures reproducible, and gives steps 3 and 4 their measure: the count of missing sonorities, which they drive to zero. |
+| S00-D8 | **Test builds go through the toolchain's reusable workflow** ([vst-release.yml](https://github.com/Shrekage2024/mpc-vst-plugins/blob/8fbeffc/.github/workflows/vst-release.yml)) at the pinned commit, **as draft releases only.** | It builds and packages exactly as releases are made, the MPC OS 3.10.1 `VST2 Plugins` folder included. A draft is visible to the repository's collaborators only, whereas run artifacts of a public repository can be downloaded by any signed-in user; builds of a personal fork stay private (study, §9). |
+| S00-D9 | **Versions carry a suffix:** the Claude branch holds the next release's version, `0.28.1-cpg.N`; a release branch `release/0.28.1-cpg.N` freezes it; the Claude branch then moves to `N + 1`. The series starts at `0.28.1-cpg.1`. | The plugin shows no version on screen, so the zips' and drafts' names are what tell builds apart. |
 
 ## 3. Specification
 
@@ -136,12 +136,12 @@ Implemented in commit `8561054` and the commit that adds these notes. CI run 1,
 **Files.** `.github/workflows/ci.yml`, `.github/workflows/build.yml`, `.github/toolchain`, `.github/lsan.supp`,
 `.gitmodules` and `third_party/AkaiMPC`, `tests/compat/` (`run.sh`, `writer.c`, `loader.c`, `expected.txt`), `tools/cpg/`
 (`enumerate.c`, `coverage.mjs`, `coverage.sh`), `docs/development/measurements/coverage.txt`, `versions.json`. Nothing
-under `src/` or `vst/` (D1).
+under `src/` or `vst/` (S00-D1).
 
 **Deviations from the specification.**
 
-1. *Test builds do not call the reusable workflow* (D8, §3.5). At `8fbeffc`, `vst-release.yml` uploads the zips as run
-   artifacts on every run (its upload step has no condition), which is what D8 rules out for a public repository; it
+1. *Test builds do not call the reusable workflow* (S00-D8, §3.5). At `8fbeffc`, `vst-release.yml` uploads the zips as run
+   artifacts on every run (its upload step has no condition), which is what S00-D8 rules out for a public repository; it
    also checks out `open-mpc/mpc-vst-plugins` where the README names `Shrekage2024`'s branch. `build.yml` runs the same
    tools (`vst/build.sh`, the toolchain's `release.py` and `sdk_zip.py`) and creates the draft itself, with no
    artifacts. Inputs: `--license PolyForm-Shield-1.0.0`, an `--about` line calling the build a test build of a personal
@@ -149,13 +149,13 @@ under `src/` or `vst/` (D1).
 2. *Test builds are started by a commit message.* GitHub offers manual runs only for workflows on the default branch,
    and `main` holds upstream's tree. `build.yml` therefore also runs on a push to the Claude branch whose head commit
    message holds `[test build]`; manual runs become available if the workflow ever reaches `main`.
-3. *The harness compares with the fork's own re-save* (D5, §3.2). Its first run on unchanged code found two scenarios
+3. *The harness compares with the fork's own re-save* (S00-D5, §3.2). Its first run on unchanged code found two scenarios
    whose save, loaded and saved again, differs from itself in 0.28.1: a loop shortened after its drawn bars were filled
    saves the hidden bars' rhythms (`.rb` up to `seq_part_t.filled`) once, and a reload saves the loop's bars only. So
    the writer also saves its own engine's re-save, checks that it is a fixed point, and the official re-save is
    compared with it: the official engine must read the state as the fork does. An upstream quirk, harmless (hidden bars
    only), worth a line to the author.
-4. *Three files beyond the specification:* `.github/toolchain` holds D3's pin, read by both workflows; `.github/lsan.supp`
+4. *Three files beyond the specification:* `.github/toolchain` holds S00-D3's pin, read by both workflows; `.github/lsan.supp`
    suppresses the leaks reported under `engine.c`'s `alsa_open` on GitHub's runners, which have libasound where the
    offline test container has none (`snd_seq_open` fails for want of `/dev/snd/seq`, and libasound's cached
    configuration is reported once the library is closed); `tools/cpg/coverage.sh` builds, runs and compares (`--check`
@@ -198,18 +198,18 @@ lessons 2 and 9).
 
 ### A.2 Decisions
 
-Not six independent decisions: two choices for the owner (A1, A4), one change to CI (A5), two ways of building A1 (A2,
-A3) and a constraint on all the tools (A6). The last column names what each presupposes; a decision resting on none can be
+Not six independent decisions: two choices for the owner (S00-A1, S00-A4), one change to CI (S00-A5), two ways of building S00-A1 (S00-A2,
+S00-A3) and a constraint on all the tools (S00-A6). The last column names what each presupposes; a decision resting on none can be
 judged alone.
 
 | # | Kind | Decision | Rationale | Rests on |
 |---|---|---|---|---|
-| A1 | owner's choice | **`tools/dev/native_tests.sh`** runs `tests/run_tests.sh`'s compile-and-run steps with the host's gcc and the parity check, reading the steps from that script, never copying them. | One list of tests, the author's; the runner follows any change to it. | none |
-| A2 | how A1 is built | **It generates `vst/build/keyflags.h` and `params.h` in a temporary copy of the tree** and copies the two headers back. | `vst/make_skin.py` also rewrites `vst/params.json`, `vst/layout.conf` and `vst/images/`, which are committed: run in place, it would dirty the tree. | A1 |
-| A3 | how A1 is built | **It sets the LeakSanitizer suppression of `.github/lsan.supp`.** | A host with libasound reports its cached configuration as leaks, as GitHub's runners do (spec 00, deviation 4). | A1; spec 00, deviation 4 |
-| A4 | owner's choice | **`tools/dev/armsize.sh`** builds the plugin with an ARM cross-compiler (`arm-linux-gnueabihf-gcc`), the sources and flags `gen_vst.py --shell` gives, for the working tree and for a commit, and prints the code size of each and the difference. | A step's cost before it is pushed. The cross-compiler is not the toolchain's (GCC 13 against 11): its differences guide, CI's absolute figure decides. Step 1: estimated +4 476 bytes, measured about +4 KB. | A2 (the engine includes the generated headers) |
-| A5 | CI change | **CI's summary states the binary in bytes and the headroom** against `vst/budget.json`. | The budget check prints whole kilobytes; comparing A4's estimates with CI needs the exact figure. | none; its use comes from A4 |
-| A6 | constraint | **The tools change nothing the plugin or CI depends on.** | Development aids, not part of the build. | applies to A1 to A4 |
+| S00-A1 | owner's choice | **`tools/dev/native_tests.sh`** runs `tests/run_tests.sh`'s compile-and-run steps with the host's gcc and the parity check, reading the steps from that script, never copying them. | One list of tests, the author's; the runner follows any change to it. | none |
+| S00-A2 | how S00-A1 is built | **It generates `vst/build/keyflags.h` and `params.h` in a temporary copy of the tree** and copies the two headers back. | `vst/make_skin.py` also rewrites `vst/params.json`, `vst/layout.conf` and `vst/images/`, which are committed: run in place, it would dirty the tree. | S00-A1 |
+| S00-A3 | how S00-A1 is built | **It sets the LeakSanitizer suppression of `.github/lsan.supp`.** | A host with libasound reports its cached configuration as leaks, as GitHub's runners do (spec 00, deviation 4). | S00-A1; spec 00, deviation 4 |
+| S00-A4 | owner's choice | **`tools/dev/armsize.sh`** builds the plugin with an ARM cross-compiler (`arm-linux-gnueabihf-gcc`), the sources and flags `gen_vst.py --shell` gives, for the working tree and for a commit, and prints the code size of each and the difference. | A step's cost before it is pushed. The cross-compiler is not the toolchain's (GCC 13 against 11): its differences guide, CI's absolute figure decides. Step 1: estimated +4 476 bytes, measured about +4 KB. | S00-A2 (the engine includes the generated headers) |
+| S00-A5 | CI change | **CI's summary states the binary in bytes and the headroom** against `vst/budget.json`. | The budget check prints whole kilobytes; comparing S00-A4's estimates with CI needs the exact figure. | none; its use comes from S00-A4 |
+| S00-A6 | constraint | **The tools change nothing the plugin or CI depends on.** | Development aids, not part of the build. | applies to S00-A1 to S00-A4 |
 
 ### A.3 Verification
 
@@ -224,7 +224,7 @@ Installing the cross-compiler in a setup script: an environment matter, proposed
 ### A.5 Implementation notes
 
 `tools/dev/native_tests.sh`, `tools/dev/armsize.sh`, and `tools/dev/lib.sh` for what they share: the headers made in a
-copy of `vst/` (A2) and the toolchain's location (`MPC_VST`, else next to the repository, as the author's scripts look).
+copy of `vst/` (S00-A2) and the toolchain's location (`MPC_VST`, else next to the repository, as the author's scripts look).
 
 - **The runner** writes a temporary copy of `tests/run_tests.sh` with three edits, each required to apply: its `cd` to
   the repository, its `docker run ... gcc:12 bash -euc '` to a plain `bash -euc '` with the toolchain in `MV`, and `/mv/`

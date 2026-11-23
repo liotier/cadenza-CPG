@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The plugin's ARM size before it is pushed (docs/development/specs/00-infrastructure.md, addendum A, A4): builds cadenza.so
+# The plugin's ARM size before it is pushed (docs/development/specs/00-infrastructure.md, addendum A, S00-A4): builds cadenza.so
 # for armhf with a cross-compiler, the sources and flags gen_vst.py --shell gives for each tree (vst/vst.json), once for the
 # working tree and once for commit REF, and prints the code (text), data and stripped file size of each and the difference.
 # The cross-compiler is not the toolchain's (arm32v7/gcc:11-bullseye): the differences guide, CI's figures decide.

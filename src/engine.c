@@ -758,7 +758,7 @@ static void page_labels(inst_t *s, int part, const slot_src_t *slots) {
         add(&t, " \xC2\xB7");
         int tones[THEORY_CHORD_MAX];
         theory_chord_tones(c, tones);
-        for (int k = 0; k < n; k++) {   /* the chord's notes from its root, each spelled by its tone (fork, spec 01 D4); Cluster's 2nd after the root */
+        for (int k = 0; k < n; k++) {   /* the chord's notes from its root, each spelled by its tone (fork, S01-D4); Cluster's 2nd after the root */
             add(&t, " ");
             add(&t, theory_spelling_text(theory_spell_tone(q->key, q->scale, ss, p->prog[i], tones[k])));
             if (!k && in.vspr < 0) {
@@ -1662,7 +1662,7 @@ static txt_t umsg_new(seq_t *q) {
     s->msg_at[MSG_BASS] = s->frames;
     return (txt_t){s->umsg, sizeof s->umsg, 0};
 }
-/* "G1", "Bb1": a note as the chord at step `step` of bar `bar` of part `part` spells it (fork, spec 01 D5: seq_note_name; a bad bar or
+/* "G1", "Bb1": a note as the chord at step `step` of bar `bar` of part `part` spells it (fork, S01-D5: seq_note_name; a bad bar or
  * step, the key alone); below C0 as octave 0 */
 static void add_note(txt_t *t, const seq_t *q, int part, int bar, int step, int midi) {
     char x[12];
@@ -3109,7 +3109,7 @@ static void ph_keys_texts(const seq_t *q, const rpage_t *P, int bar, const phbar
         for (int i = 0; i < 12; i++) {
             txt_t t = {c->piano[i], sizeof c->piano[i], 0};
             char pc[8];
-            seq_pc_name(q, seq_part(q), bar, at, UNK_PC[i], pc, sizeof pc);   /* fork, spec 01 D5: as the chord at the step spells it */
+            seq_pc_name(q, seq_part(q), bar, at, UNK_PC[i], pc, sizeof pc);   /* fork, S01-D5: as the chord at the step spells it */
             add(&t, pc), add(&t, " "), add(&t, PH_DEG[pmod(UNK_PC[i] - root, 12)]);
         }
         return;

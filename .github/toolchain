@@ -1,4 +1,4 @@
-# The mpc-vst-plugins toolchain this fork builds with (docs/development/specs/00-infrastructure.md, D3): the branch
+# The mpc-vst-plugins toolchain this fork builds with (docs/development/specs/00-infrastructure.md, S00-D3): the branch
 # chordseq/open-mpc that the README requires, at the commit whose message names Cadenza 0.28.1. Read by both workflows;
 # moving it is one edit here.
 repo=Shrekage2024/mpc-vst-plugins

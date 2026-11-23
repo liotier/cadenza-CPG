@@ -11,7 +11,7 @@
 ## 1. Purpose
 
 **Scope against spec 04's style question** (measured 2026-11-23): every CPG style uses seven of the eight sonorities;
-the Italian sixth appears only in Classic (98 pads) and Jazz (26). Whichever style the palette table takes (spec 04, D3),
+the Italian sixth appears only in Classic (98 pads) and Jazz (26). Whichever style the palette table takes (S04-D3),
 the seven are needed; the seventh-without-fifth colour that gives the Italian sixth would go unused only if the table
 took neither Classic nor Jazz. The step does not wait for that answer.
 
@@ -49,30 +49,30 @@ questioned. *Rests on*: what a decision presupposes, here or elsewhere.
 
 ### 2.1 For the owner: decidable now
 
-All three answered by the owner, 2026-11-23, as proposed. D6's answer, "the fallbacks computed at save time:", ended on a
+All three answered by the owner, 2026-11-23, as proposed. S03-D6's answer, "the fallbacks computed at save time:", ended on a
 colon; it is read as accepting the proposed fallbacks, the owner to say if anything was cut off.
 
 | # | Question | Answer | Alternatives considered | Rests on |
 |---|---|---|---|---|
-| D3 | Do the new sonorities stay off every control, reachable only as palette chords? | **Yes** (owner). The colours are appended outside the controls' set: `COL_QUARTAL` (10), `COL_7NO5` (11), `COL_7SUS4` (12) after `COL_COUNT`, which stays 10, with `COL_ALL` (13) closing the set. `COL_COUNT` validates the saved digits of `.ch` and is what a front end may iterate to offer colours (lesson 6). | Offer some on the bar editor's TYPE list: more choice on screen, a type and a screen change for each, and the burden the study's avenue H warned against | D1 |
-| D6 | Which chord does an older Cadenza play in place of each new one? | **The fallbacks of §3.3, computed by one rule at save time** (owner): a new colour on an old source keeps its source and degree and takes the old colour that scores best on that chord's own scale; a second-range source takes the first-range quality and old colour, on the same root, that score best. The score: pitch classes shared with the exact chord less those added; ties to the more shared, then to the fewer notes. | Amend any row of §3.3 by hand (for instance the quartal's 11th, which keeps the whole stack, against sus4, which keeps two of its three notes) | D5 |
-| D7 | What are the new chords called? | **The CPG's names** (owner) (`CHORD_NAME_SUFFIX`), from the quality and colour, never from intervals (§3.2); the Italian sixth `Ab7`, as the CPG writes it and as Cadenza already names its fifthless 11ths and 13ths by the full chord (decision 12). | `Ab7(no5)` for the Italian sixth, which tells it from a full dominant seventh on screen at the cost of differing from the CPG | D1, D3; spec 01 |
+| S03-D3 | Do the new sonorities stay off every control, reachable only as palette chords? | **Yes** (owner). The colours are appended outside the controls' set: `COL_QUARTAL` (10), `COL_7NO5` (11), `COL_7SUS4` (12) after `COL_COUNT`, which stays 10, with `COL_ALL` (13) closing the set. `COL_COUNT` validates the saved digits of `.ch` and is what a front end may iterate to offer colours (lesson 6). | Offer some on the bar editor's TYPE list: more choice on screen, a type and a screen change for each, and the burden the study's avenue H warned against | S03-D1 |
+| S03-D6 | Which chord does an older Cadenza play in place of each new one? | **The fallbacks of §3.3, computed by one rule at save time** (owner): a new colour on an old source keeps its source and degree and takes the old colour that scores best on that chord's own scale; a second-range source takes the first-range quality and old colour, on the same root, that score best. The score: pitch classes shared with the exact chord less those added; ties to the more shared, then to the fewer notes. | Amend any row of §3.3 by hand (for instance the quartal's 11th, which keeps the whole stack, against sus4, which keeps two of its three notes) | S03-D5 |
+| S03-D7 | What are the new chords called? | **The CPG's names** (owner) (`CHORD_NAME_SUFFIX`), from the quality and colour, never from intervals (§3.2); the Italian sixth `Ab7`, as the CPG writes it and as Cadenza already names its fifthless 11ths and 13ths by the full chord (decision 12). | `Ab7(no5)` for the Italian sixth, which tells it from a full dominant seventh on screen at the cost of differing from the CPG | S03-D1, S03-D3; spec 01 |
 
 ### 2.2 For the owner: after a further step
 
 | # | Question | Waits for | Until then |
 |---|---|---|---|
-| D6, heard | Do the fallbacks sound acceptable when a fork-saved project is opened in the official 0.28.1? | step 5's device run, the first that saves such chords from the screen | D6's table |
+| S03-D6, heard | Do the fallbacks sound acceptable when a fork-saved project is opened in the official 0.28.1? | step 5's device run, the first that saves such chords from the screen | S03-D6's table |
 
 ### 2.3 Following from decisions already taken
 
 | # | Decision | Rationale | Rests on |
 |---|---|---|---|
-| D1 | **Five new chromatic qualities and three new colours** give the nine exactly (§3.1). | Cadenza builds a chord from a degree, a source and a colour, its tones taken from the chord's own seven-note scale. A quality is such a scale; a colour picks tones from it. | decision 5: no approximation |
-| D2 | **The qualities form a second chromatic range of sources**, 52 to 111: `52 + 5 × root + quality`. `THEORY_SRC_MAX` (51) keeps its meaning, the first range; `THEORY_SRC2_MAX` (111) closes the second. | Enlarging the first range would renumber every saved chromatic chord. 111 stays within a change point's `signed char` source (lesson 8): one more range of twelve would still fit (112 to 123), beyond which the field widens. | D1; strategy, principle 3 |
-| D4 | **The engine accepts the new values wherever it accepts chords:** `theory_src_ok` covers 0 to 111; the slot, phrase, change-point and Feel setters take colours up to `COL_ALL`; change points gain the types that name the new colours. No control produces them. | Step 5 writes palette chords through these paths, as step 2 opened them for the first range. | D2, D3; spec 02 |
-| D5 | **Old fields hold only values old builds can use:** each new value has an exact form in a new field and a fallback in the old one; a Feel base code naming a new value is saved as its fallback's code in `.cx`, exact in the new field. | 0.28.1 ignores unknown fields, skips out-of-range sources in `.cx` and `.cp`, refuses a whole `.ch` for one character outside its alphabet, and decodes a Feel base code with no check of its colour against its tables. | D2, D3; decision 11; strategy, principle 4 |
-| D8 | **The fifthless 11ths and 13ths stay as they are.** | Recorded with its trade-off in the study, avenue H. | decision 12 |
+| S03-D1 | **Five new chromatic qualities and three new colours** give the nine exactly (§3.1). | Cadenza builds a chord from a degree, a source and a colour, its tones taken from the chord's own seven-note scale. A quality is such a scale; a colour picks tones from it. | decision 5: no approximation |
+| S03-D2 | **The qualities form a second chromatic range of sources**, 52 to 111: `52 + 5 × root + quality`. `THEORY_SRC_MAX` (51) keeps its meaning, the first range; `THEORY_SRC2_MAX` (111) closes the second. | Enlarging the first range would renumber every saved chromatic chord. 111 stays within a change point's `signed char` source (lesson 8): one more range of twelve would still fit (112 to 123), beyond which the field widens. | S03-D1; strategy, principle 3 |
+| S03-D4 | **The engine accepts the new values wherever it accepts chords:** `theory_src_ok` covers 0 to 111; the slot, phrase, change-point and Feel setters take colours up to `COL_ALL`; change points gain the types that name the new colours. No control produces them. | Step 5 writes palette chords through these paths, as step 2 opened them for the first range. | S03-D2, S03-D3; spec 02 |
+| S03-D5 | **Old fields hold only values old builds can use:** each new value has an exact form in a new field and a fallback in the old one; a Feel base code naming a new value is saved as its fallback's code in `.cx`, exact in the new field. | 0.28.1 ignores unknown fields, skips out-of-range sources in `.cx` and `.cp`, refuses a whole `.ch` for one character outside its alphabet, and decodes a Feel base code with no check of its colour against its tables. | S03-D2, S03-D3; decision 11; strategy, principle 4 |
+| S03-D8 | **The fifthless 11ths and 13ths stay as they are.** | Recorded with its trade-off in the study, avenue H. | decision 12 |
 
 ## 3. Specification
 
@@ -108,7 +108,7 @@ the 7♭5's lowered one reach them unchanged.
 | seventh without fifth, on dominant | `C7` | `I7` |
 | 7sus4, on the minor tonic | `C7sus4` | `i 7sus4` |
 
-Roots are spelled by step 1's rules; chord tones by degree (D4 of spec 01): C quartal reads C F B♭. Other combinations of
+Roots are spelled by step 1's rules; chord tones by degree (S01-D4): C quartal reads C F B♭. Other combinations of
 a new quality and a colour, which no catalogue chord uses, take the generic names of `theory_chord_name_c` on the chord's
 own scale; the tests check that every combination has a name of at most 15 characters, the slot labels' room.
 
@@ -124,7 +124,7 @@ New builds read the old fields first, then let the new ones override. A Feel `pi
 saved: it takes the second form in memory only. The first code form stays unique for the new colours on first-range
 sources.
 
-The fallbacks by D6's rule, computed for the combinations the catalogue and Scale Mode use (the tests compute and check
+The fallbacks by S03-D6's rule, computed for the combinations the catalogue and Scale Mode use (the tests compute and check
 every combination):
 
 | Exact | Fallback (first-range quality, colour) | Pitch classes | Shared, added |

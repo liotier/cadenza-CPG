@@ -19,7 +19,7 @@ What steps 0 to 2 measured, and this revision uses:
 
 - Step 2's path writes any chromatic chord through every writer, undo, chord-length change, COPY TO and save; step 3's
   extends it to the full vocabulary. The verbs of this step write through those paths.
-- The table of step 4 stays out of the core (its D11). The core holds a part's palette by value; the catalogue, the scale
+- The table of step 4 stays out of the core (S04-D11). The core holds a part's palette by value; the catalogue, the scale
   palettes and the nearest-palette query belong to the plugin's front end.
 - A six-part genre preset saves in about 1.6 KB of the 8 KB state.
 
@@ -35,25 +35,25 @@ Both answered by the owner, 2026-11-23, as proposed (study, decisions 22 and 23)
 
 | # | Question | Answer | Alternatives considered | Rests on |
 |---|---|---|---|---|
-| D2 | Does a project keep the palette it was made with, or follow the catalogue? | **It keeps it** (owner: the principle of least surprise, respect for the composer, and a cleaner boundary between the CPG and Cadenza): saved by value in a new field `<P>.pl=` (hex), only for a part that holds one, about 95 bytes a part. A later CPG revision never changes a saved project, as Cadenza's rule is for everything else. 0.28.1 ignores the unknown field: the slots play as written, the palette is dropped there. | Save only the catalogue identifier: a few bytes, and the project's palette follows CPG updates, which may then reshape a song's harmonic space without the user doing anything | D1 |
-| D9 | Do the six genre presets get palettes? | **No** (owner: Cadenza's genres are about time, the CPG's are palettes; orthogonal dimensions): their parts hold none, and show their scale's palette (D3). Presets are baked states (`presets_data.h`) whose building tool is not in the release export; they keep sounding the same. | Give each preset's parts the nearest catalogue palette: re-baking the presets, without the author's tool | none |
+| S05-D2 | Does a project keep the palette it was made with, or follow the catalogue? | **It keeps it** (owner: the principle of least surprise, respect for the composer, and a cleaner boundary between the CPG and Cadenza): saved by value in a new field `<P>.pl=` (hex), only for a part that holds one, about 95 bytes a part. A later CPG revision never changes a saved project, as Cadenza's rule is for everything else. 0.28.1 ignores the unknown field: the slots play as written, the palette is dropped there. | Save only the catalogue identifier: a few bytes, and the project's palette follows CPG updates, which may then reshape a song's harmonic space without the user doing anything | S05-D1 |
+| S05-D9 | Do the six genre presets get palettes? | **No** (owner: Cadenza's genres are about time, the CPG's are palettes; orthogonal dimensions): their parts hold none, and show their scale's palette (S05-D3). Presets are baked states (`presets_data.h`) whose building tool is not in the release export; they keep sounding the same. | Give each preset's parts the nearest catalogue palette: re-baking the presets, without the author's tool | none |
 
 ### 2.2 For the owner: after a further step
 
 | # | Question | Waits for | Until then |
 |---|---|---|---|
-| D4 | When a palette loads, does the loop keep its length, or take the starting order's? | step 6's device run, where loading is first felt | **Keep the loop's length**, as the progression presets do: `seq_palette_load` sets the part's palette and writes the starting order into the slots in one undo step, keeping locked slots, the order repeating over a longer loop as a preset's phrase does |
+| S05-D4 | When a palette loads, does the loop keep its length, or take the starting order's? | step 6's device run, where loading is first felt | **Keep the loop's length**, as the progression presets do: `seq_palette_load` sets the part's palette and writes the starting order into the slots in one undo step, keeping locked slots, the order repeating over a longer loop as a preset's phrase does |
 
 ### 2.3 Following from decisions already taken
 
 | # | Decision | Rationale | Rests on |
 |---|---|---|---|
-| D1 | **Each part may hold a palette:** up to 16 chords as step 4 represents them (`cpg_chord_t`) and the identifier of the catalogue entry it came from. | The palette is the part's property, the slots its current order. | study §4.3 (decision 2); spec 04, D4 |
-| D3 | **A part without a palette holds none in the core;** the front end shows its scale's palette (`cpg_scale_palette`), following key and scale changes. | The implied palette, at no cost in the state and with no catalogue in the core. | decision 18; spec 04, D11 |
-| D5 | **Each chord maps to the project scale when written:** a degree of the scale if one voices it exactly, else one of the three borrowed chords, else a chromatic source (first range, then second); the colour carried over. | Numerals, names and the bar editor then read the chord as any other. A scale change afterwards keeps each chord's sound (its representation may change) and the palette unchanged. | study §6.1; specs 02 and 03 |
-| D6 | **Editing never removes the palette;** `seq_palette_clear` does, as its own undo step. | The palette is the part's harmonic space; the order is only its current path. | decision 18 |
-| D7 | **The nearest catalogue palette is the front end's query,** over the part's distinct chords and the table, within the project scale's family; ties to catalogue order. Loading it is a separate act. | A suggestion for the screens; never a silent change of the part. It needs the catalogue, which the core does not link. | decisions 6 and 18; spec 04, D11 |
-| D8 | **A part used for the first time copies the Verse's palette,** with everything else it copies. | Today's rule for parts. | D1, D2 |
+| S05-D1 | **Each part may hold a palette:** up to 16 chords as step 4 represents them (`cpg_chord_t`) and the identifier of the catalogue entry it came from. | The palette is the part's property, the slots its current order. | study §4.3 (decision 2); S04-D4 |
+| S05-D3 | **A part without a palette holds none in the core;** the front end shows its scale's palette (`cpg_scale_palette`), following key and scale changes. | The implied palette, at no cost in the state and with no catalogue in the core. | decision 18; S04-D11 |
+| S05-D5 | **Each chord maps to the project scale when written:** a degree of the scale if one voices it exactly, else one of the three borrowed chords, else a chromatic source (first range, then second); the colour carried over. | Numerals, names and the bar editor then read the chord as any other. A scale change afterwards keeps each chord's sound (its representation may change) and the palette unchanged. | study §6.1; specs 02 and 03 |
+| S05-D6 | **Editing never removes the palette;** `seq_palette_clear` does, as its own undo step. | The palette is the part's harmonic space; the order is only its current path. | decision 18 |
+| S05-D7 | **The nearest catalogue palette is the front end's query,** over the part's distinct chords and the table, within the project scale's family; ties to catalogue order. Loading it is a separate act. | A suggestion for the screens; never a silent change of the part. It needs the catalogue, which the core does not link. | decisions 6 and 18; S04-D11 |
+| S05-D8 | **A part used for the first time copies the Verse's palette,** with everything else it copies. | Today's rule for parts. | S05-D1, S05-D2 |
 
 ## 3. Specification
 
@@ -61,14 +61,14 @@ Both answered by the owner, 2026-11-23, as proposed (study, decisions 22 and 23)
 
 | Verb or query | Behaviour |
 |---|---|
-| `seq_palette_load(s, id, chords, n, order, n_order)` | D4, D5; one undo step; nothing for bad arguments. The front end passes the table's row (`cpg_find(id)`) |
-| `seq_palette_clear(s)` | D6 |
-| `seq_palette(s, out)` | the playing part's palette, its count (0: none, D3) |
+| `seq_palette_load(s, id, chords, n, order, n_order)` | S05-D4, S05-D5; one undo step; nothing for bad arguments. The front end passes the table's row (`cpg_find(id)`) |
+| `seq_palette_clear(s)` | S05-D6 |
+| `seq_palette(s, out)` | the playing part's palette, its count (0: none, S05-D3) |
 | `seq_palette_id(s)` | the loaded entry's identifier, 0 for none |
 
 ### 3.2 Front end (`src/palette.c`, linked with `src/cpg_palettes.c` by the plugin and its test)
 
-`palette_shown(s, out)`: the part's palette, else its scale's (D3). `palette_nearest(s)`: D7, deterministic.
+`palette_shown(s, out)`: the part's palette, else its scale's (S05-D3). `palette_nearest(s)`: S05-D7, deterministic.
 
 ### 3.3 Saved state
 
@@ -107,7 +107,7 @@ Every screen (steps 6 to 10); editing a palette's chords, which nothing has aske
 ## 7. Open points, to settle while implementing
 
 - How Feel's `base` field should record a palette load (as the chord first written, presumably: 0). A question of
-  implementation, not for the owner; D4 is in §2.2.
+  implementation, not for the owner; S05-D4 is in §2.2.
 
 ## 8. Implementation notes
 
