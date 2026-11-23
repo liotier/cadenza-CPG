@@ -980,9 +980,10 @@ For the owner of this fork; the answers will be written into §10 before any spe
 1. **Physical pads (decision 19).** Can the MPC One's pads reach the plugin ? The code settles the plugin's side: the
    toolchain's wrapper passes every incoming MIDI event to Cadenza's engine, whose handler discards it. The open part is
    MPC's: which events it sends to Cadenza's track, and whether pad notes can be told apart from the echo of Cadenza's own
-   port. The protocol, [device-test-pads.md](device-test-pads.md), runs a stage without code and a stage with a diagnostic
-   build; its results table will answer this question. Its stage 2 needs code outside `docs/development`, and waits for
-   the owner's go-ahead.
+   port. The protocol, [device-test-pads.md](device-test-pads.md), is under way: its runs so far make pads reaching
+   Cadenza very likely, and notes of Cadenza's own clip as well, by inference from the toolchain's synths; the pad map,
+   the echo and Pad Perform chords remain to be read from recordings. Its stage 2, a diagnostic build, is proposed to be
+   folded into the implementation of hardware pads rather than written now.
 
 ---
 

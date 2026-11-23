@@ -1,6 +1,6 @@
 # Device test: can the MPC One's pads reach Cadenza ?
 
-Status: protocol, not yet run. It answers question 2 of the integration study
+Status: protocol, stage 1 under way (runs 1 and 2, §6); Q1 and Q4 very likely yes by inference. It answers question 2 of the integration study
 ([§11](cpg-integration-study.md#11-open-questions)): whether the hardware pads can play avenue L's live palette pads.
 Run on the way, it also tells whether notes written in Cadenza's own clip reach Cadenza, which bears on the parked question
 of parts and clips (end of [§7](cpg-integration-study.md#7-integration-avenues)).
@@ -100,11 +100,11 @@ in it. Restore the original file after the test.
 
 | # | Question | Observation | Evidence (photo, log lines) |
 |---|---|---|---|
-| Q1 | Pad notes reach Cadenza | | |
-| Q2 | Pad map, channel, velocity, pressure | | |
-| Q3 | Separable from the echo, and how | | |
-| Q4 | Clip notes reach Cadenza | | |
-| Q5 | Pad Perform chords arrive as several notes | | |
+| Q1 | Pad notes reach Cadenza | very likely yes, by inference (run 2) | the toolchain's synths play from the pads; same wrapper code, same synth flag |
+| Q2 | Pad map, channel, velocity, pressure | pending | the event list of a recorded clip |
+| Q3 | Separable from the echo, and how | pending | a recording of Cadenza's track with the pads untouched |
+| Q4 | Clip notes reach Cadenza | very likely yes, by inference (run 2) | synth tracks play their clips through the same path |
+| Q5 | Pad Perform chords arrive as several notes | pending | a recording of one chord pad |
 
 ## 5. What the results decide
 
@@ -132,3 +132,19 @@ Next: steps 1.1 to 1.3 (a synth built on the same toolchain, played from the pad
 Cadenza's track), then stage 2. Step 1.1 carries the most weight: Cadenza is registered as an instrument, as the synths
 are, and receives MIDI through the same wrapper code, so a synth of the same toolchain that plays from the pads makes Q1
 very likely for Cadenza too; only stage 2 makes it certain and answers Q2 to Q4.
+
+### Run 2, 2026-11-23, by the owner, stock Cadenza 0.28.1
+
+| Observation | Reading |
+|---|---|
+| Synths built on the same toolchain (OB-Xd, Dexed) play from the pads: their basic function (step 1.1) | MPC hands pad notes to plugins through VST2, and this toolchain's wrapper passes them to the engine. Cadenza links the same wrapper code and carries the same synth flag (`effFlagsIsSynth`, [vst2_wrap.c](https://github.com/Shrekage2024/mpc-vst-plugins/blob/8fbeffc/wrapper/vst2_wrap.c#L1063)): **Q1 very likely yes**, the pads reaching `midi()`, which discards them |
+| Record-armed, Cadenza's track records input events into its clip (steps 1.4 to 1.6, in part) | MPC routes the pads and the track's input device to Cadenza's track |
+| During that recording, and during the clip's playback, Cadenza plays on entirely unaffected | Expected, its handler discarding everything. Two consequences: a synth track plays its clip by receiving the clip's notes, so **Q4 very likely yes** by the same inference as Q1; and notes recorded into the clip that drives Cadenza do not disturb its playing, so one clip could carry both Cadenza's transport and chord changes |
+
+Remaining without code: Q2, read from the event list of a recorded clip (the note each pad sends, in each bank and pad
+mode); Q3, by recording Cadenza's track with the pads untouched while Cadenza plays, with the track's MIDI input on its
+default: are Cadenza's own notes recorded, and which input setting avoids it; Q5, by recording one Pad Perform chord pad.
+
+Proposal, pending the owner's word: with Q1 and Q4 settled by inference and Q2, Q3 and Q5 readable from recordings, stage
+2 would only confirm and time what is already known. It is better folded into the implementation of hardware pads, whose
+first step is precisely to give `midi()` something to do, than written as throwaway code now.
