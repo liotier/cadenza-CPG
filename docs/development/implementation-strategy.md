@@ -48,15 +48,23 @@ implemented, to verified on the device.
 
 ### 2.2 Branches
 
-Proposed, to be set up with the owner's agreement:
+The owner's usual model, adopted 2026-11-23:
 
 | Branch | Role |
 |---|---|
-| `main` | mirrors upstream releases ([Shrekage2024/cadenza-force](https://github.com/Shrekage2024/cadenza-force)), nothing else |
-| an integration branch, for instance `cpg` | collects the merged steps and `docs/development`; takes each new upstream release by merge |
-| one branch per step | carries one specification's implementation, merged into the integration branch by pull request after review |
+| `main` | takes pull requests from tested release branches only |
+| one Claude branch, at present `claude/gifted-carson-j102ab` | the development line: specifications, code, tests, CI; steps follow each other on it as series of focused commits |
+| a release branch per tested build, for instance `release/0.28.1-cpg.1` | cut from the Claude branch once a build has passed its device run; merged into `main` by pull request |
 
-Until then, the documents stay on the present working branch.
+A separate integration branch and a branch per step were considered and dropped. They would serve parallel work, which
+this sequential plan does not have, and pull requests to upstream, which its release-export model makes unlikely
+(study, §9): upstream separability comes from focused commits per step, from which a patch series can be extracted
+(`git format-patch`) for the author. Upstream releases are fetched from
+[Shrekage2024/cadenza-force](https://github.com/Shrekage2024/cadenza-force) and merged into the Claude branch; the fork's
+difference from upstream is measured against upstream's release commit, with no mirror branch needed.
+
+Each new Claude session receives a branch name of its own by default. To keep a single Claude branch, a new session is
+told to continue on the existing one.
 
 ### 2.3 Tests
 
@@ -71,8 +79,10 @@ Until then, the documents stay on the present working branch.
 
 The export carries no CI; the fork adds it:
 
-- **On every push:** the engine and compatibility tests, the core parity check, the generator check.
-- **Test builds:** through the toolchain's reusable release workflow
+- **On every push to the Claude branch, and on every pull request:** the engine and compatibility tests, the core parity
+  check, the generator check.
+- **Test builds, on demand from the Claude branch and on every release branch:** through the toolchain's reusable release
+  workflow
   ([vst-release.yml](https://github.com/Shrekage2024/mpc-vst-plugins/blob/8fbeffc/.github/workflows/vst-release.yml)),
   which builds on Ubuntu runners with QEMU for ARM and packages with `release.py`, including the MPC OS 3.10.1
   `VST2 Plugins` folder, then attaches the zip to a draft release. The owner installs that zip on the MPC One. This settles
@@ -81,8 +91,8 @@ The export carries no CI; the fork adds it:
 ### 2.5 Versions and identity
 
 Fork builds keep Cadenza's plugin identity (decision 11) and so replace the official plugin on the device; their version in
-[versions.json](../../versions.json) gains a suffix (for instance `0.28.1-cpg.1`), which names the zips and release notes
-and tells builds apart. The official release's folder is kept on the side for restoring.
+[versions.json](../../versions.json) gains a suffix (for instance `0.28.1-cpg.1`), which names the zips, the release
+branches and the release notes, and tells builds apart. The official release's folder is kept on the side for restoring.
 
 ## 3. Main steps
 
@@ -197,7 +207,7 @@ and the GLOBAL selector to match (study, avenue I).
 
 | Risk | Mitigation |
 |---|---|
-| Upstream releases reshape `seq_core` | changes kept small and local; each upstream release merged promptly into the integration branch; generated data apart from logic |
+| Upstream releases reshape `seq_core` | changes kept small and local; each upstream release merged promptly into the Claude branch; generated data apart from logic |
 | A save-format change breaks projects | the compatibility harness against 0.28.1 at every step touching the state; the never-refused rule |
 | The skin budget runs out | existing views reused; the gauge run in every CI build |
 | Faults visible only on the device | a device run per step with screens or timing; CI zips that install as they are |

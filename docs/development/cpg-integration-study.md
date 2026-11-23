@@ -1,29 +1,7 @@
 # Cadenza and the Chord Progression Generator: an integration study
 
-Status: study, revision 7. No code has been written; the measurements come from throwaway scripts described in
-[Appendix A](#appendix-a-measurement-method).
-
-- Revision 1 surveyed the three projects and proposed avenues.
-- Revision 2 recorded the owner's first decisions ([§10](#10-decision-log)), rebuilt the integration around palettes
-  rather than progressions ([§4](#4-palettes-not-progressions)), and answered three questions: whether the progression
-  path can accept any chord ([§6.2](#62-lifting-the-borrowed-only-clamp)), how turnaround chords can be found in a palette
-  ([avenue D](#d-the-palette-in-the-bar-editor-and-turnarounds)), and whether Cadenza's voice leading needs the CPG's
-  ([§6.6](#66-voice-leading-what-cadenza-already-does-what-the-cpg-would-add)).
-- Revision 3 recorded how the CPG is pinned and which identity test builds carry (decisions 10 and 11), and recommended
-  answers on the fifth of 11ths and 13ths ([avenue H](#h-completing-the-chord-vocabulary)) and on how live pads behave
-  ([avenue L](#l-live-palette-pads)).
-- Revision 4 records decisions 12 to 15 (the fifth of 11ths and 13ths, with its trade-off kept for review; file access;
-  Q-Link banks; the deferred probe of physical pads), corrects avenue J's risk, and notes the owner's routes from parts to
-  clips in the parked topic at the end of [§7](#7-integration-avenues).
-- Revision 5 drops avenue J (decision 16), grounds the live pads' recommendation in Cadenza's current behaviour
-  ([avenue L](#l-live-palette-pads)), answers what a C port of the palette builder would give the user and recommends
-  against it ([avenue D](#d-the-palette-in-the-bar-editor-and-turnarounds)), and records where an MPC One keeps its
-  progression files.
-- Revision 6 records decisions 17 to 19 (live pads, no port, the pads' device test), compares Cadenza with Midicake's ARP
-  ([§2.4](#24-a-neighbour-midicakes-arp)), and adds the device test's protocol,
-  [device-test-pads.md](device-test-pads.md).
-- Revision 7 records decision 20 after the device test's runs: no MIDI input, harmony being sequenced in Cadenza; avenue
-  L's pads stay on screen, and no question remains open ([§11](#11-open-questions)).
+Status: study, revision 7 (the [revision history](#revision-history) closes the document). No code has been written; the
+measurements come from throwaway scripts described in [Appendix A](#appendix-a-measurement-method).
 
 | Project | Version studied | Licence |
 |---|---|---|
@@ -47,7 +25,8 @@ passage quotes Cadenza. Links to Cadenza files are relative to this repository.
 9. [Licence, governance and branding](#9-licence-governance-and-branding)
 10. [Decision log](#10-decision-log)
 11. [Open questions](#11-open-questions)
-12. [Appendix A: measurement method](#appendix-a-measurement-method) · [Appendix B: source map](#appendix-b-source-map)
+12. [Appendix A: measurement method](#appendix-a-measurement-method) · [Appendix B: source map](#appendix-b-source-map) ·
+    [Revision history](#revision-history)
 
 ---
 
@@ -1032,3 +1011,28 @@ All scripts were written in the session scratchpad and are not committed.
 | Plugin identity | [vst/vst.json](../../vst/vst.json) | |
 | Budgets | [vst/budget.json](../../vst/budget.json), [vst/bench.txt](../../vst/bench.txt) | |
 | Quality apparatus | [tests/run_tests.sh](../../tests/run_tests.sh), [tests/core_parity.sha256](../../tests/core_parity.sha256) | [docs/improvements](https://github.com/liotier/AkaiMPC/tree/main/AkaiMPCChordProgressionGenerator/docs/improvements), catalogue snapshot, theory audit |
+
+## Revision history
+
+- Revision 1 surveyed the three projects and proposed avenues.
+- Revision 2 recorded the owner's first decisions ([§10](#10-decision-log)), rebuilt the integration around palettes
+  rather than progressions ([§4](#4-palettes-not-progressions)), and answered three questions: whether the progression
+  path can accept any chord ([§6.2](#62-lifting-the-borrowed-only-clamp)), how turnaround chords can be found in a palette
+  ([avenue D](#d-the-palette-in-the-bar-editor-and-turnarounds)), and whether Cadenza's voice leading needs the CPG's
+  ([§6.6](#66-voice-leading-what-cadenza-already-does-what-the-cpg-would-add)).
+- Revision 3 recorded how the CPG is pinned and which identity test builds carry (decisions 10 and 11), and recommended
+  answers on the fifth of 11ths and 13ths ([avenue H](#h-completing-the-chord-vocabulary)) and on how live pads behave
+  ([avenue L](#l-live-palette-pads)).
+- Revision 4 recorded decisions 12 to 15 (the fifth of 11ths and 13ths, with its trade-off kept for review; file access;
+  Q-Link banks; the deferred probe of physical pads), corrected avenue J's risk, and noted the owner's routes from parts
+  to clips in the parked topic at the end of [§7](#7-integration-avenues).
+- Revision 5 dropped avenue J (decision 16), grounded the live pads' recommendation in Cadenza's current behaviour
+  ([avenue L](#l-live-palette-pads)), answered what a C port of the palette builder would give the user and recommended
+  against it ([avenue D](#d-the-palette-in-the-bar-editor-and-turnarounds)), and recorded where an MPC One keeps its
+  progression files.
+- Revision 6 recorded decisions 17 to 19 (live pads, no port, the pads' device test), compared Cadenza with Midicake's
+  ARP ([§2.4](#24-a-neighbour-midicakes-arp)), and added the device test's protocol,
+  [device-test-pads.md](device-test-pads.md).
+- Revision 7 recorded decision 20 after the device test's runs: no MIDI input, harmony being sequenced in Cadenza; avenue
+  L's pads stay on screen, and no question remains open ([§11](#11-open-questions)). It also pointed the work to the
+  [implementation strategy](implementation-strategy.md).
