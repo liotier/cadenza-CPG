@@ -899,7 +899,8 @@ is set aside by decision 20.
 | 4 | E palette walk; F Pedal and Smooth+; G crosswalk | a tile, two modes | device test, Smooth+ measured against Smooth |
 | 5 | I if wanted | as needed | per specification |
 
-Stage 1 is engine work that can be built and tested in this repository without the device (§2.1). Each stage first
+The [implementation strategy](implementation-strategy.md) details these stages as numbered steps, with their workflow,
+tests and milestones. Stage 1 is engine work that can be built and tested in this repository without the device (§2.1). Each stage first
 becomes a specification in this directory, in the format of the CPG's
 [docs/improvements](https://github.com/liotier/AkaiMPC/tree/main/AkaiMPCChordProgressionGenerator/docs/improvements):
 provenance, decisions, measurements, verification.
@@ -984,8 +985,8 @@ forward are in [avenue H](#h-completing-the-chord-vocabulary).
 ## 11. Open questions
 
 None at present: every question of revisions 1 to 6 is answered in §10, the last one (the physical pads) by decision 20.
-The study's next step is the first specification, stage 1 of §8, in the format the CPG's improvement specifications
-established.
+The work now proceeds by the [implementation strategy](implementation-strategy.md): its step 0, then one specification
+per step, in the format the CPG's improvement specifications established.
 
 ---
 
