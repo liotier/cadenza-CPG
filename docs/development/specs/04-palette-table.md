@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | for approval: S04-D3 under study at the owner's request, S04-D9 awaiting the owner's answer (2026-11-23) |
+| Status | for approval: S04-D3 answered (2026-11-23); S04-D9 open, with S05-D4 |
 | Type | data, tooling |
 | Size | M |
 | Depends on | 00 (the submodule), 03 (the full vocabulary) |
@@ -33,8 +33,8 @@ decision presupposes, here or elsewhere.
 
 | # | Question | Proposed answer | Alternatives | Rests on |
 |---|---|---|---|---|
-| S04-D3 | Which of the CPG's six styles fills each catalogue palette, and with which colours? Owner, 2026-11-23: no decision yet; the COLOUR control's interaction with the styles to be studied first (§2.4) | **Classic, its colours kept** (§2.4, option a): COLOUR acts on its triads, 53 % of the pads and 82 % of the starting orders' chords; the rest keep the palette's own colour, as a chord with its own type does in Cadenza today. Classic carries the functional fourth row (secondary dominants, augmented sixths, the Neapolitan); the one loss is the Jazz style's tritone substitute in that row. | b: every chord stored as a triad, COLOUR owning all colour; c: a second style, Jazz, chosen at load, about 9 KB more; d: all six styles, about 44 KB more (§2.4) | none |
-| S04-D9 | How are the spare bars of a starting order laid out? Owner's question, 2026-11-23: *are we thinking of playing the progression in order?* Yes: loading a palette writes its template, in order, into the slots as its starting order (study, decisions 2 and 4; S05-D4); from there the order is anyone's, through the bar editor, live pads and the walk (steps 7, 8, 10). If loading should write nothing, this question disappears and S05-D4 changes (§2.4) | **By decision 4's rule:** the loop is the smallest of 1, 2, 4, 8 or 16 bars holding one bar per chord; the spare bars go to the tonic, at the end when the order ends on it, at the start when it only starts on it, else to the last chord (§3.3). It leaves five-chord orders lopsided: the tonic held four bars, then one bar each. Stored as pairs of palette index and length in quarter bars. | Spread the spare bars over the chords for orders of five to seven (I-V-vi-iii-IV: two bars on I, V and vi, one on iii and IV); or keep the rule now and judge it at step 6's device run, where orders are first heard | decision 4; S05-D4 (that loading writes the order at all) |
+| S04-D3 | Which of the CPG's six styles fills each catalogue palette, and with which colours? | **Answered (owner, 2026-11-23): Classic, its colours kept** (§2.4, option a): "a solid foundation"; other styles' colourings, the "jazzy frills", to be considered after a first version. COLOUR acts on Classic's triads, 53 % of the pads and 82 % of the starting orders' chords; the rest keep the palette's own colour, as a chord with its own type does in Cadenza today | b, c and d of §2.4; c (a second style, about 9 KB) stays possible later | none |
+| S04-D9 | How does a starting order become bars? Owner's questions, 2026-11-23: *are we thinking of playing the progression in order?* Yes: loading writes the template, in order, into the slots as the palette's starting order (study, decisions 2 and 4; S05-D4); from there the order is anyone's. *Is there a mechanism in Cadenza to reuse, or must one be invented?* One exists; nothing need be invented (§2.4, "What Cadenza already does") | **Feel's preset layout, as it stands** (§2.4, layout 1): a bar a chord, the loop grown to the next length that holds the order, the order repeated into the spare bars. The table then stores no durations. Same as decision 4 for the 145 orders of 1, 2, 4 or 8 chords | Layout 2: decision 4's rule, the spare bars to the tonic, stored as durations that Feel's store already writes; or loading writes nothing (§2.4) | S05-D4, which takes the same choice for the loop's length |
 
 ### 2.2 For the owner: after a further step
 
@@ -95,6 +95,38 @@ follows COLOUR almost entirely; the colour variants come in when picked.
 - **d. All six styles.** About 44 KB more, most of the 70 KB of headroom, for differences that are mostly colour.
 
 Option a now leaves c open: the generator can add a style later, at about 9 KB each.
+
+**What Cadenza already does** (read in [seq_core.c](../../../src/seq_core.c), 2026-11-23). Two preset loaders and one
+store, all in 0.28.1:
+
+- **PHRASE's progression presets** (`seq_set_prog_preset`): the preset's chords written as a phrase over the loop's
+  slots at the current chord length, repeated if the loop is longer (`fill_phrase`); the loop keeps its length.
+- **Feel's progression presets** (`seq_feel_preset`): a bar a chord, the loop doubled until it holds the whole
+  progression, the change points cleared, then the same phrase repetition into any spare bars.
+- **Feel's store** (`feel_store`): writes runs of chords, each with its own start and length in quarter bars, into the
+  slots; the Feel page's add, remove and resize verbs use it.
+
+Cadenza's own presets all have 1, 2, 4 or 8 chords, so a spare bar never arises for them; but the repetition rule is
+there, general. Two layouts follow, neither needing a new mechanism:
+
+| | Layout 1: Feel's preset layout, as it stands | Layout 2: decision 4's rule, through Feel's store |
+|---|---|---|
+| The 145 orders of 1, 2, 4, 8 chords | a bar a chord | the same |
+| Three chords ending on the tonic (ii-V-I) | ii V I ii: the first chord gets the spare bar | ii V I I: the tonic held two bars, as jazz writes it |
+| Three chords starting on the tonic (i-♭VI-♭VII) | i ♭VI ♭VII i: around the loop, the same cycle as layout 2, begun a bar later | i i ♭VI ♭VII |
+| Five to seven chords (I-V-vi-iii-IV in eight bars) | I V vi iii IV I V vi | I I I I V vi iii IV |
+| The 12-bar blues in 16 bars | its first four bars again at the end | I7 for eight bars, then the usual eight |
+| What the table stores | the order | the order and a length per chord |
+| New code | none in the engine; the loader calls Feel's preset path with the order | the layout rule in the generator; the loader writes runs through Feel's store |
+| Consistency | a palette loads exactly as a Feel preset does | a palette's starting order can differ from what the same chords would give as a Feel preset |
+
+Of the 184 orders, 145 lay out the same either way; the 39 others (3 chords: 23; 5 to 7: 15; the blues: 1) differ, 15
+of them ending on the tonic, 21 starting on it, 2 neither. Layout 1 is Cadenza's way and needs nothing new; layout 2 is
+the musician's preference recorded as decision 4. Both are only starting orders.
+
+The loop's length (S05-D4) has the same two existing answers: PHRASE's presets keep it, Feel's grow it until the order
+fits, never shrinking it. Layout 1 goes with Feel's growth; the two questions are one choice of which existing preset a
+palette load behaves like.
 
 **Starting orders (S04-D9).** The study's model (§4.3) gives a palette two parts: its chords, the harmonic space, and a
 starting order, the template it came from, so that a loaded palette plays at once. Decision 2 calls the templates starting

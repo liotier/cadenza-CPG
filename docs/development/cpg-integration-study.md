@@ -1,6 +1,6 @@
 # Cadenza and the Chord Progression Generator: an integration study
 
-Status: study, revision 10 (the [revision history](#revision-history) closes the document). No code has been written; the
+Status: study, revision 11 (the [revision history](#revision-history) closes the document). No code has been written; the
 measurements come from throwaway scripts described in [Appendix A](#appendix-a-measurement-method).
 
 | Project | Version studied | Licence |
@@ -662,6 +662,8 @@ Decided (decision 18): no port; the three measures above.
 
 ### G. A genre crosswalk, and presets
 
+*Dropped by decision 24: the user chooses voicing and bass styles freely, coherent or not.*
+
 - **What.** Map the CPG's 22 genres onto Cadenza's genre vocabularies: 6 JAM columns, 13 voicing genres, 12 bass genres.
   Italo-Disco/House → HOUSE and DISCO, voicing House, bass House; Trance/Psytrance/Goa → TRANCE; Jungle/Drum'n'Bass →
   voicing and bass Drum & Bass, no JAM column; Film/Cinematic → Film, Film / Ambient. Loading a palette could then offer,
@@ -959,6 +961,7 @@ revision 3, 16 to revision 4, 17 to 19 to revision 5; 2026-11-23: 20, after the 
 | 21 | Room in the binary, both ways: the ARM build drops the functions the plugin never calls (section garbage collection, about 46 KB), and the fork's budget goes from 688 to 720 KB. The budget is upstream's own discipline, with no device limit cited for it. | §5, [spec 01](specs/01-key-aware-spelling.md) |
 | 22 | A project keeps the palette it was made with, saved by value: the principle of least surprise, respect for the composer, and a cleaner boundary between the CPG and Cadenza (a CPG revision never reaches into a saved song). | [spec 05](specs/05-part-palette.md), S05-D2 |
 | 23 | Cadenza's genres and the CPG's are orthogonal: Cadenza's (its genre presets, its JAM columns) are about time, rhythm and arrangement; the CPG's are palettes, harmony. The genre presets get no palettes, and neither kind of genre implies the other. | [spec 05](specs/05-part-palette.md), S05-D9; avenue G |
+| 24 | No genre crosswalk: loading a palette suggests no voicing or bass style. The user is not constrained: they may choose coherent options, or be free to get weird. Avenue G and the strategy's step 12 are dropped. | avenue G; strategy, O14 |
 
 **To revisit.** Decision 12, the fifth of 11ths and 13ths: when a listener misses the fifth, when a voicing style wants it,
 when `THEORY_CHORD_MAX` is raised for another reason, or when the CPG's 11ths and 13ths change. The trade-off and the ways
@@ -1051,3 +1054,4 @@ All scripts were written in the session scratchpad and are not committed.
 - Revision 10 recorded decisions 22 and 23: a project keeps its palette by value; Cadenza's genres and the CPG's are
   orthogonal, so genre presets get no palettes. Decision 23 puts avenue G, the genre crosswalk, in question: a question
   for the owner (strategy, §8.1, O14).
+- Revision 11 recorded decision 24: avenue G, the genre crosswalk, dropped.

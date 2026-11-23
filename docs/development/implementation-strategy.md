@@ -33,7 +33,7 @@ gets its own specification in `docs/development/specs/` before any code is writt
 | Decision 21 | room in the binary: dead code dropped, budget 720 KB | test build 4 (commit `d9b619d`): 650 KB |
 | 0a. Local tools | implemented | [spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools) |
 | 3 | approved, to be built | [spec 03](specs/03-missing-sonorities.md) |
-| 4 and 5 | specified; step 4's two questions open, step 5's answered | [specs 04 and 05](specs/README.md) |
+| 4 and 5 | specified; one question open for both, S04-D9 with S05-D4 (§8.1, O6) | [specs 04 and 05](specs/README.md) |
 
 The draft release *Cadenza 0.28.1-cpg.1 (test build)* holds steps 0 to 2 and the collected binary: one device run
 checks all four at once (§8.1, O1).
@@ -203,7 +203,7 @@ decision can rest on the fork's own figures.
 | 1 | Key-aware chord spelling | avenue A | 0 | labels | S-M | implemented |
 | 2 | Chromatic chords through the progression path | §6.2 | 0 | no | S-M | implemented |
 | 3 | The missing sonorities: the catalogue's eight and Scale Mode's 7sus4 | avenue H | 2 | no | M | approved |
-| 4 | The palette table, generated from the CPG | avenues B, K | 0, 3 | no | M | for approval (S04-D3 studied, S04-D9 asked) |
+| 4 | The palette table, generated from the CPG | avenues B, K | 0, 3 | no | M | S04-D3 answered; S04-D9 open (O6) |
 | 5 | The part's palette in the engine | §4.3, avenue D | 2, 4 | no | M | answered; approved with step 4 |
 | 6 | The palette browser | avenue C | 5 | yes | M-L | after M2 |
 | 7 | The palette in the bar editor | avenue D | 5 | yes | M | after M2 |
@@ -211,7 +211,7 @@ decision can rest on the fork's own figures.
 | 9 | Turnarounds | avenue D | 5 | a control | M | after M2 |
 | 10 | The palette walk | avenue E | 5 | a tile | M | after M2 |
 | 11 | Pedal voicing, then Smooth+ | avenue F, §6.6 | 0 | a mode | S-M each | after M2 |
-| 12 | Genre crosswalk | avenue G | 6 | suggestions | M | after M2 |
+| 12 | ~~Genre crosswalk~~ | avenue G | | | | dropped (decision 24) |
 | 13 | Heptatonic scales (optional) | avenue I | 3 | GLOBAL | M | after M2 |
 
 ### 6.2 Phase A: the engine
@@ -268,8 +268,7 @@ when* the same seed gives the same walk, locks are kept, and a tile starts it.
 if it measures better than Smooth over the whole catalogue (study, avenue F, §6.6). Independent of the palettes: it can
 move earlier if wanted.
 
-**Step 12. Genre crosswalk.** Loading a palette offers, without imposing, a matching voicing style and bass style (study,
-avenue G). In question since decision 23 made the two kinds of genre orthogonal (§8.1, O14).
+**Step 12.** Dropped by decision 24 (O14): no genre crosswalk; the user chooses voicing and bass styles freely.
 
 **Step 13 (optional). Heptatonic scales.** The twelve seven-note scales the CPG adds, each with its three borrowed chords,
 and the GLOBAL selector to match (study, avenue I).
@@ -282,7 +281,7 @@ and the GLOBAL selector to match (study, avenue I).
 | M2 | 5 | the engine complete: palettes, chords on any root, the full vocabulary, all tested offline; a design note to the author |
 | M3 | 7 | palettes usable on the MPC One: browser and bar editor |
 | M4 | 9 | performance: live palette pads and turnarounds |
-| M5 | 12 | generation and colour: the palette walk, the new voicings, the crosswalk |
+| M5 | 11 | generation and colour: the palette walk and the new voicings |
 
 ## 8. Decisions for the owner
 
@@ -297,9 +296,8 @@ for the record below it, and the ones concerning the integration as a whole go t
 | # | Decision | Options | Rests on | Informs | Needed before |
 |---|---|---|---|---|---|
 | O1 | Run the draft *Cadenza 0.28.1-cpg.1 (test build)* on the MPC One, and say whether it passes (checks in §9, item 1). Postponed by the owner, 2026-11-23: no MPC at hand | pass, or what failed | none | O2, O3 | the release branch; M1 |
-| O6 | Approve step 4, the palette table: two questions, [spec 04, §2.1](specs/04-palette-table.md#21-for-the-owner-decidable-now). S04-D3, the CPG style and its colours: the owner asked first how the COLOUR control interacts with the styles; the analysis is [spec 04, §2.4](specs/04-palette-table.md#24-background-to-s04-d3-and-s04-d9-colour-the-cpgs-styles-and-starting-orders). S04-D9, spare bars in starting orders: the owner asked whether the progression plays in order; it does, as the palette's starting order, and the alternative (loading writes nothing) is set out there too | answer each, or accept the proposed answers | spec 03 (approved) | O7's approval | step 4 |
+| O6 | Step 4's last question, with step 5's: **S04-D9 and S05-D4**, how a palette's starting order becomes bars and whether the loop grows to fit it. Cadenza already has the mechanisms; the choice is which existing preset a palette load behaves like: Feel's (a bar a chord, the loop grown to fit, the order repeated into spare bars; nothing new) or decision 4's rule (the spare bars to the tonic, written through Feel's store). Both set out in [spec 04, §2.4](specs/04-palette-table.md#24-background-to-s04-d3-and-s04-d9-colour-the-cpgs-styles-and-starting-orders) | Feel's layout; decision 4's; or loading writes nothing | spec 03 (approved) | the approval of specs 04 and 05 | step 4 |
 | O11 | Whether to raise with the author the numerals that spell D minor's F♯ major as `Gb7` ([spec 01](specs/01-key-aware-spelling.md), open point) | raise it, leave it | none | | nothing in the fork. The message sent on 2026-11-23 raised it as drafted; if that paragraph was cut, it stays open |
-| O14 | Step 12, the genre crosswalk (loading a palette offers a voicing style and a bass style of a matching genre): keep it, or drop it now that Cadenza's genres and the CPG's are orthogonal (study, decision 23) | keep as a suggestion, drop | decision 23 | | step 12 |
 
 ### 8.2 Depend on a further step or event
 
@@ -310,7 +308,6 @@ for the record below it, and the ones concerning the integration as a whole go t
 | O8b | The web simulation if the author does not share `web/`: a rewrite of the host (B, which leaves the licence question of testing against his published module) or a page of our own (C) (§4.7) | the author's answer, or none after a reasonable wait | B, C, neither | O10 | any screen work in a browser |
 | O10 | The fork's skin budget: may new views raise it, and by how much | milestone M2, an MPC memory probe over root SSH with and without a new view, and specifications 06 to 08 | raise by an amount, or keep 80 MB | | the first screen needing a new view (likely step 8) |
 | O12 | Do the fallbacks of the new chords sound acceptable in the official 0.28.1? ([spec 03, §2.2](specs/03-missing-sonorities.md#22-for-the-owner-after-a-further-step)) | step 5's device run | accept, or amend a fallback | | nothing in the fork |
-| O13 | When a palette loads, does the loop keep its length or take the starting order's? ([spec 05, §2.2](specs/05-part-palette.md#22-for-the-owner-after-a-further-step)); meanwhile it keeps its length | step 6's device run | keep, or take the order's | | step 6's verification |
 
 ### 8.3 Taken since the list was made
 
@@ -320,6 +317,8 @@ for the record below it, and the ones concerning the integration as a whole go t
 | O8 | The web simulation's route: ask the author for upstream's `web/` folder first | 2026-11-23 | §4.7 |
 | O9 | The message to the author, introducing the fork and asking for `web/`: sent | 2026-11-23 | §4.7 |
 | O5 | Step 3 approved: the new sonorities stay off every control (S03-D3), the fallbacks computed at save time (S03-D6; the answer ended on a colon, read as accepting them), the CPG's names (S03-D7) | 2026-11-23 | [spec 03, §2.1](specs/03-missing-sonorities.md#21-for-the-owner-decidable-now) |
+| O14 | Step 12, the genre crosswalk: dropped. "No need to constrain the user: they'll choose coherent options, maybe, or they'll be free to get weird" | 2026-11-23 | study, decision 24 |
+| O6, S04-D3 | The palette table takes the Classic style, its colours kept: "a solid foundation"; other styles' colourings ("jazzy frills") to be considered after a first version | 2026-11-23 | [spec 04, §2.1](specs/04-palette-table.md#21-for-the-owner-decidable-now) |
 | O7 | Step 5's questions: a project keeps its palette by value (S05-D2); the genre presets get no palettes (S05-D9). Its approval follows step 4's, which it rests on | 2026-11-23 | [spec 05, §2.1](specs/05-part-palette.md#21-for-the-owner-decidable-now); study, decisions 22 and 23 |
 
 ## 9. Next steps
@@ -356,7 +355,8 @@ In order:
 
 ## 11. Not scheduled
 
-Set aside by decision, or parked: parts to clips (parked, study §7); MIDI input and hardware pads (decision 20);
+Set aside by decision, or parked: parts to clips (parked, study §7); MIDI input and hardware pads (decision 20); the
+genre crosswalk (decision 24); other CPG styles' colourings, to consider after a first version (S04-D3);
 `.progression` import and export (decision 16); a C port of the palette builder (decision 18); Euclidean rhythms and
 polymeter, the Chord Matcher (study, §7).
 
@@ -381,4 +381,6 @@ polymeter, the Chord Matcher (study, §7).
   decisions taken); the two deferred ones join §8.2 as O12 and O13; O1 postponed by the owner. Then the owner's answers:
   step 3 approved (O5), step 5's questions answered (O7; study, decisions 22 and 23), step 4's S04-D3 studied at his request
   and his question on S04-D9 answered (O6); O14 asks whether step 12 survives decision 23. Then: decision identifiers
-  made global (§4.1), `S04-D3` for specification 04's decision 3, in every document and code comment.
+  made global (§4.1), `S04-D3` for specification 04's decision 3, in every document and code comment. Then: S04-D3
+  answered (Classic, its colours kept); O14 answered (step 12 dropped, study decision 24); S04-D9 shown to need no new
+  mechanism, and S05-D4 found to be the same choice, both now O6; O13 merged into it.
