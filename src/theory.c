@@ -134,6 +134,7 @@ int theory_slot_scale(int scale, int src) {
     return src >= THEORY_SRC_CHROMA ? SCALE_COUNT + src - THEORY_SRC_CHROMA : src ? theory_borrow_scale(scale, src) : scale;
 }
 int theory_chroma_src(int root, int quality) { return THEORY_SRC_CHROMA + pmod(root, 12) * CQ_COUNT + quality; }
+int theory_src_ok(int src) { return src >= 0 && src <= THEORY_SRC_MAX; }
 
 int theory_colour_tone(int colour, int tone) {
     if (tone != TONE_3) return tone;

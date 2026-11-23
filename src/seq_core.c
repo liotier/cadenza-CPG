@@ -335,8 +335,9 @@ static void fill_phrase(seq_part_t *p, int n, const int *deg, const unsigned cha
     for (int i = 0; i < to; i++) {
         int j = i % n, b = src ? src[j] : 0, c = colour ? colour[j] : 0;
         if (slot_locked(p, i)) continue;
-        p->prog[i] = pmod(deg[j], 7);   /* a borrow's degree: revoice */
-        p->src[i] = (unsigned char)(b > THEORY_NBORROW ? 0 : b);
+        if (!theory_src_ok(b)) b = 0;   /* fork, spec 02: a chromatic chord too (0.28.1: a borrowed one at most) */
+        p->prog[i] = b > THEORY_NBORROW ? 0 : pmod(deg[j], 7);   /* a borrow's degree: revoice; a chromatic chord's: 0 */
+        p->src[i] = (unsigned char)b;
         p->colour[i] = (unsigned char)(c >= COL_COUNT ? 0 : c);
     }
     p->filled_slots = to;
@@ -2016,10 +2017,10 @@ static int cp_put(seq_part_t *p, int b, int step, int deg, int src, int type) {
  * bad value, step 0 of a bar that starts a slot (a slot change there) or a full bar. cp_clear: the point at the step (none: nothing);
  * cp_clear_bar: every point of the bar */
 static int cp_set(const seq_t *s, seq_part_t *p, int bar, int step, int deg, int src, int type) {
-    if (bar < 0 || bar >= p->bars || step < 0 || step >= SEQ_STEPS || (!step && bar_starts_slot(p, bar)) || src < 0 || src > THEORY_NBORROW ||
+    if (bar < 0 || bar >= p->bars || step < 0 || step >= SEQ_STEPS || (!step && bar_starts_slot(p, bar)) || !theory_src_ok(src) ||
         (!src && (deg < 0 || deg > 6)) || type < 0 || type >= CP_TYPES)
         return 0;
-    if (src) deg = theory_borrow_degree(s->scale, src);
+    if (src) deg = theory_borrow_degree(s->scale, src);   /* a chromatic chord's: 0 */
     if (!cp_put(p, bar, step, deg, src, type)) return 0;
     revoice(s, p);
     return 1;
@@ -4694,7 +4695,8 @@ static void load_cp(seq_part_t *p, const char *v, int n) {
         if (!x) x = end;
         if (x - v == 5) {
             int b = hexv(v[0]), st = hexv(v[1]), d = v[2] - '0', sr = v[3] - '0', t = v[4] - '0';
-            if (b >= 0 && st >= 0 && d >= 0 && d <= 6 && sr >= 0 && sr <= THEORY_NBORROW && t >= 0 && t < CP_TYPES) cp_put(p, b, st, d, sr, t);
+            if (theory_src_ok(sr) && sr > THEORY_NBORROW) d = 0;   /* fork, spec 02: a chromatic point ('4'..'c'), its degree 0 */
+            if (b >= 0 && st >= 0 && d >= 0 && d <= 6 && theory_src_ok(sr) && t >= 0 && t < CP_TYPES) cp_put(p, b, st, d, sr, t);
         }
         v = x + 1;
     }
@@ -5799,7 +5801,7 @@ void seq_generate_progression(seq_t *s) {
 void seq_set_slot(seq_t *s, int slot, int deg, int src, int colour) {
     seq_part_t *p = cur(s);
     prog_view_t y = part_view(ccur(s));
-    if (slot < 0 || slot >= y.len || src < 0 || src > THEORY_NBORROW || (!src && (deg < 0 || deg > 6)) || colour < 0 ||
+    if (slot < 0 || slot >= y.len || !theory_src_ok(src) || (!src && (deg < 0 || deg > 6)) || colour < 0 ||
         colour >= COL_COUNT)
         return;
     if (src) deg = theory_borrow_degree(s->scale, src);
@@ -6265,9 +6267,10 @@ static void set_prog(seq_t *s, seq_part_t *p, int n, const int *deg, const unsig
         for (int i = 0; i < n; i++) {
             int b = src ? src[i] : 0, c = colour ? colour[i] : 0;
             if (slot_locked(p, i)) continue;   /* a locked slot keeps its chord (the repeats of a locked phrase slot too) */
-            p->src[i] = (unsigned char)(b > THEORY_NBORROW ? 0 : b);
+            if (!theory_src_ok(b)) b = 0;   /* fork, spec 02: a chromatic chord too */
+            p->src[i] = (unsigned char)b;
             p->colour[i] = (unsigned char)(c >= COL_COUNT ? 0 : c);
-            p->prog[i] = pmod(deg[i], 7);   /* a borrow's degree: revoice */
+            p->prog[i] = b > THEORY_NBORROW ? 0 : pmod(deg[i], 7);   /* a borrow's degree: revoice; a chromatic chord's: 0 */
         }
         if (p->filled_slots < n) p->filled_slots = n;   /* slots a shrink hid keep theirs */
         p->phrase = n <= SEQ_LEGACY_PROG ? n : 0;
@@ -7478,7 +7481,7 @@ int seq_rbar_chord(seq_t *s, int deg, int src) {
     seq_part_t *p = phrase_chords(s);
     int b, st, k, slot;
     ph_chord_t was, now;
-    if (!p || src < 0 || src > THEORY_NBORROW || (!src && (deg < 0 || deg > 6))) return RBC_NONE;
+    if (!p || !theory_src_ok(src) || (!src && (deg < 0 || deg > 6))) return RBC_NONE;
     if (src) deg = theory_borrow_degree(s->scale, src);
     b = s->txn.slot, st = s->txn.bsel, k = cp_at(p, b, st), slot = k < 0 ? pick_slot_at(p, b, st) : -1;
     if (slot >= 0) {
@@ -8668,7 +8671,7 @@ static int tw_type(int colour) {
     return -1;
 }
 
-int seq_tweak_point_ok(int src, int colour) { return src >= 0 && src <= THEORY_NBORROW && tw_type(colour) >= 0; }
+int seq_tweak_point_ok(int src, int colour) { return theory_src_ok(src) && tw_type(colour) >= 0; }
 
 int seq_tweak_chord(seq_t *s, int bar, int step, int deg, int src, int colour) {
     seq_part_t *p = cur(s);

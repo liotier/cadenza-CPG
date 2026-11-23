@@ -54,6 +54,9 @@ enum { CQ_MAJOR, CQ_MINOR, CQ_DOM, CQ_DIM, CQ_COUNT };
 #define THEORY_SRC_CHROMA 4
 #define THEORY_SRC_MAX (THEORY_SRC_CHROMA + 12 * CQ_COUNT - 1)
 int theory_chroma_src(int root, int quality);   /* root taken mod 12; quality CQ_* */
+/* fork (docs/development/specs/02-chromatic-progression-path.md): 1 for a source a slot or a change point may hold, 0..THEORY_SRC_MAX:
+ * the scale, a borrowed chord or a chromatic one. A chromatic chord's degree is 0 */
+int theory_src_ok(int src);
 /* The tone a lane plays for `tone` on a chord of colour c: sus2/sus4 turn tone 3 into 2/4; else tone */
 int theory_colour_tone(int colour, int tone);
 /* MIDI notes of the chord in root position, root in octave 3 (like theory_triad), ascending; returns the count (2..5).

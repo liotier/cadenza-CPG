@@ -172,7 +172,7 @@ enum { MW_DENS = 1, MW_RNG = 2, MW_VAR = 4, MW_SWING = 8, MW_TIME = 16 };   /* 0
 typedef struct { signed char c, l, sw, var, swing, tm; unsigned char grid16, weak; } djam_t;
 
 /* 0.24 a change point: from its step (0..15; -1 an empty entry) to the bar's next point or end, the chord deg / src (as a slot's:
- * src 0 the scale, 1..3 a borrow, whose degree deg is) of type `type` (seq_rbar_type's 0 Knobs .. 4 6th; 0.24.2 5..9 7th, power, 9th,
+ * src 0 the scale, 1..3 a borrow, whose degree deg is; fork, spec 02: 4..THEORY_SRC_MAX a chromatic chord, deg 0) of type `type` (seq_rbar_type's 0 Knobs .. 4 6th; 0.24.2 5..9 7th, power, 9th,
  * 11th, 13th: a point THIS HIT ONLY makes of a slot of that colour) plays instead of the slot */
 typedef struct { signed char step, deg, src, type; } seq_cp_t;
 
@@ -199,7 +199,7 @@ typedef struct {
      * points' virtual slots (cp), mirrored from cp by every change (cp_sync); prog_len stays the real slot count */
     int prog[SEQ_SLOTS_ALL];   /* scale degrees, 0-based; a borrowed slot's is its borrow's degree (older builds play it diatonic) */
     int prog_len;              /* 0.14: always seq_slots, max(1, bars x 16 / chord_len), after any setter or load */
-    unsigned char src[SEQ_SLOTS_ALL];      /* 0.9: 0 the project scale, 1..3 the scale's borrowed chord (theory_slot_scale) */
+    unsigned char src[SEQ_SLOTS_ALL];      /* 0.9: 0 the project scale, 1..3 the scale's borrowed chord (theory_slot_scale); 0.28 4.. a chromatic chord */
     unsigned char colour[SEQ_SLOTS_ALL];   /* 0.9: COL_TRIAD..COL_ADD9; Triad takes the COLOUR knob's */
     uint64_t slot_lock;        /* bit i: slot i locked (a pick); HARMONY GEN, ideas and moves keep it (0.14: 64 slots) */
     int filled_slots;          /* 0.14: slots holding real chords (>= prog_len): a grow fills only the slots past it */
@@ -800,7 +800,8 @@ unsigned seq_feel_hash(const seq_t *s);
  * degree from its scale (src) in its colour; every lane resolves through it at playback (gen.c is unchanged). Each setter
  * revoices and regenerates the lanes that read harmony; none runs on the audio thread. */
 void seq_set_slot(seq_t *s, int slot, int deg, int src, int colour);   /* a pick (PHRASE's phrase_slot): sets and locks the slot; one undo step. src > 0
-                                                                        * ignores deg (the borrow's degree). Bad values: ignored */
+                                                                        * ignores deg (the borrow's degree; fork, spec 02: src up to
+                                                                        * THEORY_SRC_MAX, a chromatic chord's degree 0). Bad values: ignored */
 void seq_toggle_slot_lock(seq_t *s, int slot);                         /* no undo; locking a Knobs chord writes the COLOUR knob's level */
 int  seq_slot_locked(const seq_t *s, int slot);
 int  seq_slot_deg(const seq_t *s, int slot);
@@ -808,7 +809,8 @@ int  seq_slot_src(const seq_t *s, int slot);
 int  seq_slot_colour(const seq_t *s, int slot);   /* the slot's own colour (the COLOUR knob's is not included) */
 int  seq_prog_len(const seq_t *s);   /* 0.14: the slot count, seq_slots */
 int  seq_slots(const seq_t *s);      /* 0.14: the playing part's slots, max(1, bars x 16 / chord_len), 1..64 */
-/* The progression (src, colour NULL: 0); undo 1 pushes one snapshot first. Locks are kept. 0.14:
+/* The progression (src, colour NULL: 0; fork, spec 02: a src 0..THEORY_SRC_MAX kept, a chromatic chord's degree 0, any other src read
+ * as 0); undo 1 pushes one snapshot first. Locks are kept. 0.14:
  *   n = seq_slots: the arrays are the whole loop, every slot written (the caller merges locked slots first).
  *   any other n (clamped 1..8): a phrase written into every slot by repetition, locked slots unchanged. */
 void seq_set_progression(seq_t *s, int n, const int *deg, const unsigned char *src, const unsigned char *colour, int undo);

@@ -9,7 +9,7 @@ points, and implementation notes filled in as the step is built.
 |---|---|---|---|
 | 00 | [Infrastructure: CI, compatibility harness, the CPG submodule, test builds](00-infrastructure.md) | implemented; device run pending | |
 | 01 | [Key-aware chord spelling](01-key-aware-spelling.md) | approved | 00 |
-| 02 | [Chromatic chords through the progression path](02-chromatic-progression-path.md) | approved | 00 |
+| 02 | [Chromatic chords through the progression path](02-chromatic-progression-path.md) | implemented; device run pending | 00 |
 | 03 | [The eight missing sonorities](03-missing-sonorities.md) | draft: design proposals | 02 |
 | 04 | [The palette table, generated from the CPG](04-palette-table.md) | draft: design proposals | 00, 03 |
 | 05 | [The part's palette](05-part-palette.md) | draft: design proposals | 02, 04 |

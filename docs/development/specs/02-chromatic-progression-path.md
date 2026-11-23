@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | approved |
+| Status | implemented; the device run is shared with step 1's |
 | Type | capability |
 | Size | S-M |
 | Depends on | 00 |
@@ -83,4 +83,45 @@ Chromatic chords offered on the Force's screens (steps 6 and 7); the second chro
 
 ## 8. Implementation notes
 
-Empty until implementation.
+**The seven checks** (§3.1) now call `theory_src_ok(src)` (theory.h, theory.c: `0 <= src <= THEORY_SRC_MAX`). `fill_phrase`
+and `set_prog` write degree 0 for a chromatic source and read any source outside the range as the scale's (0.28.1 did so
+from 4 on); `seq_set_slot`, `cp_set` and `seq_rbar_chord` already took the degree from `theory_borrow_degree`, which gives
+0 past the borrowed range; `load_cp` loads a chromatic point with degree 0 whatever its file says. The header comments of
+`seq_cp_t`, `seq_part_t.src`, `seq_set_slot` and `seq_set_progression` name the range. Nothing else changed.
+
+**The readers' audit** (§3.2), every reader of a slot's or a point's source in `seq_core.c`, `feel.c` and `engine.c`:
+
+| Reader | How it reads the source | Chromatic |
+|---|---|---|
+| `slot_scale`, `slot_notes`, `eff_colour`, `lock_colour`, `chord_word`, `chord_level` (the COLOUR ranking), `theory_drift`, `theory_avoid`, Feel's `root_pc`, `quality`, its offers | through `theory_slot_scale` | handled since 0.28 |
+| `borrow_degrees` (every revoice) | `theory_borrow_degree` | degree 0, as D2 requires |
+| `copy_slot`, `repeats`, `part_view`, `cp_sync`'s mirror, the slot comparisons of the Feel runs, the change test of `cp_sync` and `seq_chord_change_at` | equality | indifferent |
+| `feel_code_of` | `1 + deg + 7 x (src + 52 x colour)` | sized for 0..51 since 0.28 |
+| the preset match (`seq_prog_preset`) | a non-zero source is no preset's | indifferent |
+| the save (`.pq`, `.ch` with `old_src`, `.cx`) and the load (`.cx` over the fallbacks) | 0.28's design | unchanged (D3) |
+| `out_cp` and `load_cp` | `'0' + src`, `'4'` to `'c'` | the load opened here (D4) |
+| Feel's `base.src` tests (its sus and add9 suggestions) | a non-zero source is not the scale's | as for a borrowed chord |
+| the engine's caches (`fix_src_t`, `slot_src_t`, `bass_src_t`) | `memcmp` of the arrays | indifferent |
+| the engine's labels (`page_labels`, `slot_labels`, the bar texts) | through `theory_slot_scale` | handled; swept (below) |
+| the generator (`gen_progression_v2`) | writes 0 to 3 only | unchanged |
+
+No reader needed a fix. Two observations: `theory_drift` adds its "borrowed" 30 to any chord off the project scale, so a
+chromatic chord scores as a borrowed one, as Feel's have since 0.28; and `seq_tweak_point_ok` has no caller in the Force
+plugin: it serves another front end's Tweak page (its header says "a change point can hold this chord"), where a chromatic
+point becomes possible. That is a change in a product this fork does not build, for the conversation with the author.
+
+**Tests.** `tests/test_chroma_path.c`, in `tests/run_tests.sh` after the Feel tests: each writer of §3.1 with D♭7, A♭
+and F♯°, their sound (the Chords lane's notes, the bass on the root), undo, a save and load, a chord-length change (each
+chord keeps its place, two slots long), key and scale changes, COPY TO with + CHORDS, a hand-edited point's stray degree,
+and a sweep of 60 random loops over the whole range; 27 checks, of which 23 fail on 0.28.1's engine. `tests/test_plugin.c`
+gains `test_chroma_sweep`: 12 rounds of random chords and points over the whole range, in random keys and scales, read
+through PHRASE, the sound pages and JAM while playing, under ASan and UBSan. Three of the author's checks pinned 0.28.1's
+refusal of source 4 (`test_core.c`, twice; `test_tweak.c`); they now probe `THEORY_SRC_MAX + 1`, and the Tweak test
+checks that a chromatic point is accepted.
+
+**Compatibility.** Two scenarios in `tests/compat/writer.c`: `chroma-slots` comes back identical from 0.28.1, which reads
+`.cx`; `chroma-points` comes back without its two chromatic points (0.28.1's `load_cp` skips sources above 3) and with
+its diatonic one, pinned in `tests/compat/expected.txt`.
+
+**Measurements.** The core parity hash is unchanged (D6). The binary grows by about 210 bytes (an ARM cross-compiler's
+figure; CI's exact one goes with the commit's run).

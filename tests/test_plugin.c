@@ -6981,6 +6981,45 @@ static void test_241_noop_sets(void) {
     e->d(e, effClose, 0, 0, NULL, 0);
 }
 
+/* fork, docs/development/specs/02-chromatic-progression-path.md (verification 2): random progressions and change points over the whole
+ * chromatic range, in random keys and scales, through every page's labels (the getters, the wrapper's texts) while playing, under
+ * ASan and UBSan: a label reader the audit missed shows here */
+static void test_chroma_sweep(void) {
+    static char out[NPARAMS][192];
+    static const char *const PAGE[3][2] = {{"cvm_2", "ubm_2"}, {"cvm_1", "ubm_1"}, {"cvm_4", "ubm_3"}};
+    const mpc_engine_t *en = mpc_engine();
+    AEffect *e = VSTPluginMain(host);
+    seq_t *q = engine_of(e);
+    unsigned r = 2026u;
+    int rounds = 0, named = 1;
+    char v[8];
+#define RND(n) ((int)(((r = r * 1103515245u + 12345u) >> 16) % (unsigned)(n)))
+    ti[3] = 0;
+    for (int round = 0; round < 12; round++, rounds++) {
+        int deg[SEQ_MAX_PROG], n;
+        unsigned char src[SEQ_MAX_PROG], col[SEQ_MAX_PROG];
+        snprintf(v, sizeof v, "%d", RND(12)), en->set_param(q, "key", v);
+        snprintf(v, sizeof v, "%d", RND(SCALE_COUNT)), en->set_param(q, "scale", v);
+        n = seq_slots(q);
+        for (int i = 0; i < n; i++) deg[i] = RND(7), src[i] = (unsigned char)RND(THEORY_SRC_MAX + 1), col[i] = (unsigned char)RND(COL_COUNT);
+        seq_set_progression(q, n, deg, src, col, 1);
+        for (int k = 0; k < 3; k++) seq_cp_set(q, RND(seq_bars(q)), 1 + RND(15), RND(7), RND(THEORY_SRC_MAX + 1), RND(5));
+        q->display_rev++;
+        const char *const *pg = PAGE[round % 3];
+        en->set_param(q, pg[0], "1"), en->set_param(q, pg[1], "1");
+        run(e, 60, 1);
+        read_all(e, out);
+        for (int i = 0; i < n; i++) {
+            char name[32];
+            named &= seq_slot_name(q, i, name, sizeof name) > 0 && name[0] != ' ';
+        }
+    }
+#undef RND
+    CHECK(named, "chromatic sweep: %d rounds of random chords over src 0..%d, keys and scales, read through PHRASE, the sound pages and JAM "
+          "while playing; every slot named", rounds, THEORY_SRC_MAX);
+    e->d(e, effClose, 0, 0, NULL, 0);
+}
+
 int main(void) {
     char buf[128];
     char key[16];
@@ -7139,6 +7178,7 @@ int main(void) {
     test_parts();
     test_parts_not_saved();
     test_chords_keys();
+    test_chroma_sweep();   /* fork, spec 02 */
     test_chords_ideas();
     test_chords_shape();
     test_melody_classic_arp_defaults();

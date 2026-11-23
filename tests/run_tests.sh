@@ -5,6 +5,7 @@
 #   2. the plugin through the toolchain's real VST2 wrapper (tap, labels, save/restore, transport)
 #   3. the toolchain's generic host test (tools/test_port.sh)
 #   4. the core-API parity trace (tests/core_parity.c: the seq_* API alone, 44.1 and 48 kHz) against tests/core_parity.sha256
+#   fork: the chromatic progression path (tests/test_chroma_path.c, docs/development/specs/02-chromatic-progression-path.md)
 # MPC_VST points at a checkout of sd88me/mpc-vst-plugins (default: next to this repo).
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -49,6 +50,8 @@ docker run --rm -e SCREEN_BUDGET="$SCREEN_BUDGET" -v "$PWD":/w -v "$MPC_VST":/mv
   ./build/test_melody_feel
   gcc -std=gnu11 -Wall -Wextra -Werror $SAN -Isrc -o build/test_try_keep tests/test_try_keep.c src/feel.c src/presets.c src/seq_core.c src/theory.c src/gen.c src/melody.c src/voicing.c src/rhythm.c src/jamlib.c src/bassline.c src/melody2.c -lm -lpthread
   ./build/test_try_keep
+  gcc -std=gnu11 -Wall -Wextra -Werror $SAN -Isrc -o build/test_chroma_path tests/test_chroma_path.c src/seq_core.c src/theory.c src/gen.c src/melody.c src/voicing.c src/rhythm.c src/jamlib.c src/bassline.c src/melody2.c -lm
+  ./build/test_chroma_path
   gcc -std=gnu11 -Wall -Wextra -Werror $SAN -Isrc -o build/core_parity tests/core_parity.c src/seq_core.c src/theory.c src/gen.c src/melody.c src/voicing.c src/rhythm.c src/jamlib.c src/bassline.c src/melody2.c -lm -lpthread
   ./build/core_parity > build/core_parity_native.txt
   ./build/core_parity | cmp - build/core_parity_native.txt || { echo "run_tests: FAIL: the core parity trace differs between two runs" >&2; exit 1; }

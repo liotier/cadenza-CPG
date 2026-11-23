@@ -83,6 +83,25 @@ static void sc_lock(seq_t *s, const char *name) {
     CHECK(seq_slot_locked(s, 1));
 }
 
+/* Step 2 (docs/development/specs/02-chromatic-progression-path.md): chromatic chords written through the progression path and a
+ * pick, which 0.28.1 reads from `.cx` as its own Feel layer writes them: identical */
+static void sc_chroma_slots(seq_t *s, const char *name) {
+    const int deg[4] = {0, 0, 0, 4};
+    const unsigned char src[4] = {0, (unsigned char)theory_chroma_src(1, CQ_DOM), (unsigned char)theory_chroma_src(8, CQ_MAJOR), 0};
+    const unsigned char col[4] = {COL_TRIAD, COL_7TH, COL_TRIAD, COL_TRIAD};
+    seq_set_progression(s, seq_slots(s), deg, src, col, 1);
+    seq_set_slot(s, 3, 0, theory_chroma_src(6, CQ_DIM), COL_TRIAD);
+    CHECK(seq_slot_src(s, 1) == src[1] && seq_slot_src(s, 3) == theory_chroma_src(6, CQ_DIM));
+}
+
+/* Step 2: chromatic change points, which 0.28.1 skips on load (its load_cp takes sources 0..3): the slot's chord plays there, as
+ * tests/compat/expected.txt pins */
+static void sc_chroma_points(seq_t *s, const char *name) {
+    CHECK(seq_cp_set(s, 0, 8, 0, theory_chroma_src(6, CQ_DIM), 0) == 1);
+    CHECK(seq_cp_set(s, 1, 8, 4, 0, 0) == 1);   /* a diatonic point, kept */
+    CHECK(seq_cp_set(s, 2, 12, 0, theory_chroma_src(10, CQ_MAJOR), 1) == 1);
+}
+
 static const struct { const char *name; scenario_fn fn; } scenarios[] = {
     {"init", sc_init},
     {"key-scale", sc_key_scale},
@@ -93,6 +112,8 @@ static const struct { const char *name; scenario_fn fn; } scenarios[] = {
     {"bar-edit", sc_bar_edit},
     {"song-part", sc_song_part},
     {"lock", sc_lock},
+    {"chroma-slots", sc_chroma_slots},
+    {"chroma-points", sc_chroma_points},
 };
 
 static char first[SEQ_STATE_MAX], resave[SEQ_STATE_MAX], again[SEQ_STATE_MAX];

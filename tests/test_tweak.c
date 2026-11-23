@@ -245,7 +245,9 @@ static void test_bar_chords(void) {
     CHECK(seq_cp_count(&a, 0) == 0, "back to the chord as Feel has it");
     CHECK(seq_tweak_chord(&a, 0, 8, 4, 0, COL_COUNT) == 0, "a bad colour: nothing");
     CHECK(seq_tweak_point_ok(0, COL_6TH) && seq_tweak_point_ok(THEORY_NBORROW, COL_TRIAD), "a point holds the scale's and borrowed chords");
-    CHECK(!seq_tweak_point_ok(THEORY_NBORROW + 1, COL_TRIAD) && !seq_tweak_point_ok(0, COL_COUNT), "not a chromatic chord or a bad colour");
+    /* fork, docs/development/specs/02-chromatic-progression-path.md: a point holds a chromatic chord too (0.28.1: refused) */
+    CHECK(seq_tweak_point_ok(THEORY_NBORROW + 1, COL_TRIAD) && seq_tweak_point_ok(THEORY_SRC_MAX, COL_7TH), "a point holds a chromatic chord");
+    CHECK(!seq_tweak_point_ok(THEORY_SRC_MAX + 1, COL_TRIAD) && !seq_tweak_point_ok(0, COL_COUNT), "not past the chromatic range, nor a bad colour");
 
     fresh(&a);
     seq_rhythm_pick(&a, LANE_CHORDS, 3);   /* Pulse: x---x---x---x--- */
