@@ -1,0 +1,4 @@
+[submodule "third_party/AkaiMPC"]
+	path = third_party/AkaiMPC
+	url = https://github.com/liotier/AkaiMPC
+	shallow = true

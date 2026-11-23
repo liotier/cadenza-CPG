@@ -1,0 +1,4 @@
+# The differences the official engine's re-save may show, per scenario (tests/compat/run.sh). A scenario not listed here
+# must come back identical. One line per scenario: its name, then the SHA-256 of the official engine's re-save, after a
+# comment naming the specification that permits the difference and what it is.
+# Step 0 (docs/development/specs/00-infrastructure.md): none.

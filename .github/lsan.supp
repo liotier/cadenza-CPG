@@ -1,0 +1,5 @@
+# LeakSanitizer suppression for the plugin tests on GitHub's runners (docs/development/specs/00-infrastructure.md, 8).
+# The runners have libasound, which the offline test container does not: engine.c's alsa_open loads it, snd_seq_open fails
+# for want of /dev/snd/seq, and the allocations libasound keeps (its parsed configuration) are reported as leaks once the
+# library is closed. Only allocations made under alsa_open are suppressed.
+leak:alsa_open
