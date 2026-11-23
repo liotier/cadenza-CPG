@@ -290,10 +290,10 @@ for the record below it, and the ones concerning the integration as a whole go t
 
 | # | Decision | Options | Rests on | Informs | Needed before |
 |---|---|---|---|---|---|
-| O1 | Run the draft *Cadenza 0.28.1-cpg.1 (test build)* on the MPC One, and say whether it passes (checks in §9, item 1) | pass, or what failed | none | O2, O3 | the release branch; M1 |
-| O5 | Approve step 3, the missing sonorities ([spec 03](specs/03-missing-sonorities.md)) | approve, amend | none | O6, O7 | step 3 |
-| O6 | Approve step 4, the palette table ([spec 04](specs/04-palette-table.md)) | approve, amend | O5 (its chord storage presupposes spec 03): take it after O5, or with it | O7 | step 4 |
-| O7 | Approve step 5, the part's palette ([spec 05](specs/05-part-palette.md)) | approve, amend | O5, O6: take it after them, or with them | | step 5 |
+| O1 | Run the draft *Cadenza 0.28.1-cpg.1 (test build)* on the MPC One, and say whether it passes (checks in §9, item 1). Postponed by the owner, 2026-11-23: no MPC at hand | pass, or what failed | none | O2, O3 | the release branch; M1 |
+| O5 | Approve step 3, the missing sonorities: three questions, [spec 03, §2.1](specs/03-missing-sonorities.md#21-for-the-owner-decidable-now): D3, do the new chords stay off the controls; D6, the fallbacks older builds play; D7, the Italian sixth's name | answer each, or accept the proposed answers | none | O6, O7 | step 3 |
+| O6 | Approve step 4, the palette table: two questions, [spec 04, §2.1](specs/04-palette-table.md#21-for-the-owner-decidable-now): D3, the CPG style that fills the palettes; D9, how starting orders use spare bars | answer each, or accept the proposed answers | O5 (its chord storage presupposes spec 03): take it after O5, or with it | O7 | step 4 |
+| O7 | Approve step 5, the part's palette: two questions, [spec 05, §2.1](specs/05-part-palette.md#21-for-the-owner-decidable-now): D2, a project keeps its palette or follows the catalogue; D9, palettes for the genre presets | answer each, or accept the proposed answers | O5, O6: take it after them, or with them | | step 5 |
 | O11 | Whether to raise with the author the numerals that spell D minor's F♯ major as `Gb7` ([spec 01](specs/01-key-aware-spelling.md), open point) | raise it, leave it | none | | nothing in the fork. The message sent on 2026-11-23 raised it as drafted; if that paragraph was cut, it stays open |
 
 ### 8.2 Depend on a further step or event
@@ -304,6 +304,8 @@ for the record below it, and the ones concerning the integration as a whole go t
 | O3 | Send the author milestone M1: the dead-code patch (about 40 KB freed) and the spelling (about 4 KB) as a patch series, with a field report | O1 passed; his interest (the message offered them, as drafted) | send, hold | | nothing in the fork |
 | O8b | The web simulation if the author does not share `web/`: a rewrite of the host (B, which leaves the licence question of testing against his published module) or a page of our own (C) (§4.7) | the author's answer, or none after a reasonable wait | B, C, neither | O10 | any screen work in a browser |
 | O10 | The fork's skin budget: may new views raise it, and by how much | milestone M2, an MPC memory probe over root SSH with and without a new view, and specifications 06 to 08 | raise by an amount, or keep 80 MB | | the first screen needing a new view (likely step 8) |
+| O12 | Do the fallbacks of the new chords sound acceptable in the official 0.28.1? ([spec 03, §2.2](specs/03-missing-sonorities.md#22-for-the-owner-after-a-further-step)) | step 5's device run | accept, or amend a fallback | | nothing in the fork |
+| O13 | When a palette loads, does the loop keep its length or take the starting order's? ([spec 05, §2.2](specs/05-part-palette.md#22-for-the-owner-after-a-further-step)); meanwhile it keeps its length | step 6's device run | keep, or take the order's | | step 6's verification |
 
 ### 8.3 Taken since the list was made
 
@@ -367,4 +369,6 @@ polymeter, the Chord Matcher (study, §7).
   decisions gathered in one table with their dependencies (§8, O1 to O11), next steps renumbered (§9); whether
   `web_host.c` can be inferred from its calls (§4.7), and the route the owner chose. Then: the list split into decisions
   that can be taken now and those waiting for a further step or event (§8.1, §8.2), and the taken ones kept below them
-  (§8.3: step 0a approved, the message to the author sent).
+  (§8.3: step 0a approved, the message to the author sent). Then: O5 to O7 name the questions of their specifications,
+  whose decisions are split the same way (§2.1 decidable now, §2.2 after a further step, §2.3 following from
+  decisions taken); the two deferred ones join §8.2 as O12 and O13; O1 postponed by the owner.

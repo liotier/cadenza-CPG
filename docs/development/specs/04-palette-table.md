@@ -25,21 +25,34 @@ What steps 0 to 2 measured, and this revision uses:
 
 ## 2. Decisions
 
-The last column names what each decision presupposes, here or in another specification; a decision resting on none can be judged alone, and changing one changes those that rest on it.
+Approving this specification means answering §2.1; nothing waits for a later step (§2.2); §2.3 follows from decisions
+already taken or from the code, needs no answer of its own, and is there to be read and questioned. *Rests on*: what a
+decision presupposes, here or elsewhere.
+
+### 2.1 For the owner: decidable now
+
+| # | Question | Proposed answer | Alternatives | Rests on |
+|---|---|---|---|---|
+| D3 | Which of the CPG's six styles fills each catalogue palette? | **Classic alone.** Cadenza re-voices every chord and adds sevenths with its COLOUR knob, so the other styles' voicings and the Jazz style's seventh upgrades are redundant here; Classic carries the functional fourth row (secondary dominants, augmented sixths, the Neapolitan). The one loss: the Jazz style's tritone substitute in that row. | Jazz alone (the tritone substitute, without the Classic row's other functions); several styles per entry (each about 9 KB more of binary, and a choice of style in the browser) | none |
+| D9 | How are the spare bars of a starting order laid out? | **By decision 4's rule:** the loop is the smallest of 1, 2, 4, 8 or 16 bars holding one bar per chord; the spare bars go to the tonic, at the end when the order ends on it, at the start when it only starts on it, else to the last chord (§3.3). It leaves five-chord orders lopsided: the tonic held four bars, then one bar each. Stored as pairs of palette index and length in quarter bars. | Spread the spare bars over the chords for orders of five to seven (I-V-vi-iii-IV: two bars on I, V and vi, one on iii and IV); or keep the rule now and judge it at step 6's device run, where orders are first heard | decision 4 |
+
+### 2.2 For the owner: after a further step
+
+None.
+
+### 2.3 Following from decisions already taken
 
 | # | Decision | Rationale | Rests on |
 |---|---|---|---|
-| D1 | **A Node generator,** `tools/cpg/generate.mjs` (Node 20 or later), importing the CPG's `musicTheory.js` and `generation.js` from the submodule, and reading Cadenza's chord space from `tools/cpg/enumerate.c`'s listing. It runs during development and in CI, never in the plugin's build. | The CPG's modules run under Node already (the coverage tool proved it, step 0). Cadenza's side comes from Cadenza's own code, not from a JavaScript copy of it. | none (decisions 7, 10) |
-| D2 | **Its output is committed:** `src/cpg_palettes.c` (constant tables) and `src/cpg_palettes.h` (lookups only). CI's `cpg` job regenerates it and fails on any difference. | A submodule bump shows its effect as a reviewable diff, as `coverage.txt` does. | D1 |
-| D3 | **One palette per entry, from the Classic variant.** | Cadenza re-voices every chord and adds sevenths with its COLOUR knob; Classic carries the functional fourth row (secondary dominants, augmented sixths, the Neapolitan). The Jazz variant's tritone substitute is the one loss (open point). | none |
+| D1 | **A Node generator,** `tools/cpg/generate.mjs` (Node 20 or later), importing the CPG's `musicTheory.js` and `generation.js` from the submodule, and reading Cadenza's chord space from `tools/cpg/enumerate.c`'s listing. It runs during development and in CI, never in the plugin's build. | The CPG's modules run under Node already (the coverage tool proved it, step 0). Cadenza's side comes from Cadenza's own code, not from a JavaScript copy of it. | decisions 7 and 10 |
+| D2 | **Its output is committed:** `src/cpg_palettes.c` (constant tables) and `src/cpg_palettes.h` (lookups only). CI's `cpg` job regenerates it and fails on any difference. | A submodule bump shows its effect as a reviewable diff, as `coverage.txt` does. | D1; strategy, principle 5 |
 | D4 | **Catalogue chords are stored independently of the scale,** as chromatic chords: root (semitones above the tonic), quality (first or second range), colour; with spice (0 to 3), category (the CPG's row-4 categories, diatonic or borrowed) and a flag for chords of the starting order. | The project's key and scale are chosen in Cadenza; step 5 maps each chord to a degree, a borrowed chord or a chromatic one when it writes it. | spec 03, D1 and D2 |
-| D5 | **Scale palettes are stored relative to their scale:** degree, source, colour, as Cadenza's own slots hold them. | Each belongs to one Cadenza scale and is used only there; all its chords are that scale's (measured). | spec 03, D3 (the 7sus4) |
-| D6 | **A canonical form for each chord:** of the representations that voice the CPG pad's pitch classes exactly, the first-range quality before the second, then the lowest colour index. The fifth rule of decision 12 applies to the CPG's `dom13` and `minor11` only. | Several representations can voice the same pitch classes; one rule makes the table reproducible and reviewable. | D4, D5 |
-| D7 | **Strict.** Any pad with no exact representation stops the generation, naming the entry and the chord. | Decision 5; the CPG's own strict parser as precedent. | spec 03 implemented; decision 5 |
-| D8 | **Stable identifiers:** a 32-bit FNV-1a hash of `genre \| template value`; the generator fails on a collision. | An entry's identity in the CPG is that pair (its spec 01); indices would shift as the catalogue grows. | none |
-| D9 | **Starting orders laid out by decision 4:** the loop is the smallest of 1, 2, 4, 8 or 16 bars holding one bar per chord; the spare bars go to the tonic, at the end when the order ends on it, at the start when it only starts on it, else to the last chord. Stored as pairs of palette index and length in quarter bars. | The arranger's job, done once, here, and reviewable in the diff. | none (decision 4) |
-| D10 | **Nicknames in English, whole,** from the CPG's `locales/en.json`, UTF-8 as the CPG writes them. | The CPG's exports use canonical English; how a tile shortens the ten names over 19 characters is the browser's question (step 6). | none |
-| D11 | **The table is linked by the plugin's front end, never by the core.** `src/cpg_palettes.c` joins `vst/vst.json`'s sources and the plugin test's command line; the core's verbs (step 5) take palette data as arguments. | The core's fifteen command lines in the author's test script and its other front ends stay as they are (lesson 6); the core needs no catalogue to hold a part's palette. | none; spec 05 rests on it |
+| D5 | **Scale palettes are stored relative to their scale:** degree, source, colour, as Cadenza's own slots hold them. | Each belongs to one Cadenza scale and is used only there; all its chords are that scale's (measured). | spec 03, D3 (the 7sus4); decision 18 |
+| D6 | **A canonical form for each chord:** of the representations that voice the CPG pad's pitch classes exactly, the first-range quality before the second, then the lowest colour index. The fifth rule of decision 12 applies to the CPG's `dom13` and `minor11` only. | Several representations can voice the same pitch classes; one rule makes the table reproducible and reviewable. | D4, D5; decision 12 |
+| D7 | **Strict.** Any pad with no exact representation stops the generation, naming the entry and the chord. | The CPG's own strict parser as precedent. | decision 5; spec 03 implemented |
+| D8 | **Stable identifiers:** a 32-bit FNV-1a hash of `genre \| template value`; the generator fails on a collision. | An entry's identity in the CPG is that pair (its spec 01); indices would shift as the catalogue grows. | the CPG's spec 01 |
+| D10 | **Nicknames in English, whole,** from the CPG's `locales/en.json`, UTF-8 as the CPG writes them. | Cadenza's screens are in English, and the CPG's exports use canonical English; how a tile shortens the ten names over 19 characters is the browser's question (step 6). | Cadenza's language |
+| D11 | **The table is linked by the plugin's front end, never by the core.** `src/cpg_palettes.c` joins `vst/vst.json`'s sources and the plugin test's command line; the core's verbs (step 5) take palette data as arguments. | The core's fifteen command lines in the author's test script and its other front ends stay as they are; the core needs no catalogue to hold a part's palette. Spec 05 rests on it. | strategy, lesson 6 |
 | D12 | **The generator also writes a report,** `docs/development/measurements/palettes.txt`: counts, the table's bytes, nickname lengths, the starting orders' layouts by template length, and, for every chord, Cadenza's spelling of its root (from `enumerate.c`, which gains a names column) against the CPG's in the entry's key. CI compares it as it compares `coverage.txt`. | Lesson 7 measured in C only; the report measures the whole table, and keeps the numeral question in view for the author. | D1; spec 01 |
 
 ## 3. Specification
@@ -104,8 +117,7 @@ tiles shorten long nicknames (step 6).
 
 ## 7. Open points, to settle while implementing
 
-- The Jazz variant's tritone substitute in the fourth row (D3).
-- The lopsided layouts of five-chord orders (the tonic held four bars): keep, or spread the spare time.
+None: the two questions the draft left open are D3 and D9 of §2.1.
 
 ## 8. Implementation notes
 

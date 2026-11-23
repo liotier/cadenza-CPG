@@ -5,8 +5,12 @@ One specification per step of the [implementation strategy](../implementation-st
 a header, the problem, a decisions table, the specification, measurements, verification, what is out of scope, open
 points, and implementation notes filled in as the step is built. Since revision 2 of the strategy, a decisions table has a
 last column, *Rests on*, naming what each decision presupposes (here or in another specification): numbered rows are not
-independent choices, and the column shows which can be judged alone and which change with another. Specifications 00 to
-02, implemented before the rule, keep their tables as they were; addendum A of spec 00 follows it.
+independent choices, and the column shows which can be judged alone and which change with another. The decisions are
+split in three: §2.1, the owner's questions decidable now, each with a proposed answer and its alternatives; §2.2, the
+owner's questions that wait for a later step, with what holds meanwhile; §2.3, decisions that follow from ones already
+taken or from the code, to be read and questioned, needing no answer of their own. Approving a specification is answering
+its §2.1. Specifications 00 to 02, implemented before these rules, keep their tables as they were; addendum A of spec 00
+marks each decision's kind.
 
 Approvals pending are decisions O5 to O7 of the [strategy's list](../implementation-strategy.md#81-decidable-now).
 
