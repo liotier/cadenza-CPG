@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | draft, for the owner's approval |
+| Status | approved |
 | Type | capability |
 | Size | S-M |
 | Depends on | 00 |

@@ -1,6 +1,6 @@
 # Cadenza and the Chord Progression Generator: an integration study
 
-Status: study, revision 7 (the [revision history](#revision-history) closes the document). No code has been written; the
+Status: study, revision 8 (the [revision history](#revision-history) closes the document). No code has been written; the
 measurements come from throwaway scripts described in [Appendix A](#appendix-a-measurement-method).
 
 | Project | Version studied | Licence |
@@ -140,7 +140,8 @@ saved as digits; new behaviour gets a new identifier. Key, scale, MIDI channels 
 song parts. The project state is text, at most 8 KB per instance ([seq_core.h:34](../../src/seq_core.h#L34)).
 
 **Budgets** ([vst/budget.json](../../vst/budget.json)), every raise approved by the owner after measurement: skin images
-78.8 MB decoded against 80, and binary 666 KB against 688, at their last recorded measurements; audio p99 24.2 % of a
+79.1 MB decoded against 80, and binary 686 KB (701 956 bytes) against 688, as the fork's CI measured them on the 0.28.1
+sources (the budget file's own notes, 78.8 MB and 666 KB, date from earlier versions); audio p99 24.2 % of a
 block in the latest bench ([vst/bench.txt](../../vst/bench.txt)) against 49; 2 037 parameters. Harmony changes run in
 setters, off the audio thread: a richer harmony costs no audio time, but it costs binary, parameters and skin.
 
@@ -369,7 +370,7 @@ already planned.
 2. **One engine, three products.** `seq_core` serves the Force, the iOS app and the browser version. Upstream, any engine
    change crosses the author's commercial products and parity tests this export does not contain.
 3. **The Force's budgets.** At most 1.2 MB of skin headroom: a new full-panel view has cost 1.6 MB or more by the budget's
-   own history, so screens must reuse existing views. At most 22 KB of binary headroom. Each new tile is a parameter, and
+   own history, so screens must reuse existing views. At most 2.5 KB of binary headroom (2 556 bytes). Each new tile is a parameter, and
    the bench's random sweep grows with them. Upstream the owner approves every raise; in a fork the numbers still
    describe a real device.
 4. **The time grid.** Loops of 1, 2, 4, 8 or 16 bars ("128 divides by every loop length",
@@ -556,7 +557,8 @@ Sizes follow the CPG's improvement specifications: **S** under a day of a sessio
   drift from it, and the binary carries data instead of logic. The trade-off: palettes exist for catalogue entries only,
   which the palette model of §4 accepts, since a part keeps the palette it loaded however its order is edited.
 - **Budget.** 184 entries × 16 pads × about 3 bytes, plus starting orders and nicknames: roughly 12 to 15 KB of binary,
-  within the 22 KB headroom.
+  well beyond the 2.5 KB of headroom 0.28.1 leaves: room must be made first (the
+  [implementation strategy](implementation-strategy.md)'s risks).
 - **Identifiers.** Array indices would break as the CPG's catalogue grows and is re-sorted; an identifier derived from
   the entry's genre and template value survives both.
 - **Size.** S to M.
@@ -1036,3 +1038,7 @@ All scripts were written in the session scratchpad and are not committed.
 - Revision 7 recorded decision 20 after the device test's runs: no MIDI input, harmony being sequenced in Cadenza; avenue
   L's pads stay on screen, and no question remains open ([§11](#11-open-questions)). It also pointed the work to the
   [implementation strategy](implementation-strategy.md).
+- Revision 8 corrected the binary and skin figures of [§2.1](#21-cadenza) and the headroom of
+  [§5](#5-constraints-any-integration-must-respect) and [avenue B](#b-a-palette-table-generated-from-the-cpg) with the
+  first CI measurement (step 0): the binary has 2.5 KB of headroom, not 22 KB, the earlier figure coming from a budget
+  note written for 0.24.

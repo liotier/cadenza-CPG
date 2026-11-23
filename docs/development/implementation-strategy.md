@@ -212,6 +212,7 @@ and the GLOBAL selector to match (study, avenue I).
 | Upstream releases reshape `seq_core` | changes kept small and local; each upstream release merged promptly into the Claude branch; generated data apart from logic |
 | A save-format change breaks projects | the compatibility harness against 0.28.1 at every step touching the state; the never-refused rule |
 | The skin budget runs out | existing views reused; the gauge run in every CI build |
+| The binary budget runs out: 2.5 KB of headroom at 0.28.1 (step 0's measurement), less than step 1 alone needs | room made before features are added, by a decision of the owner (spec 01, implementation notes); the gauge run in every CI build |
 | Faults visible only on the device | a device run per step with screens or timing; CI zips that install as they are |
 | A CPG change breaks generation | the pinned submodule, bumped deliberately; the strict generator fails loudly and names the chord |
 | The licence | builds for testing only, the fork being personal; a conversation with the author before screens (study, §9) |

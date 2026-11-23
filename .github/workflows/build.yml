@@ -3,13 +3,15 @@
 # vst-release.yml does), and leaves the zips in a DRAFT release only, visible to the repository's collaborators.
 # Not the reusable workflow itself: it also uploads the zips as run artifacts, which anyone signed in to GitHub can download
 # from a public repository; a personal fork's builds stay private (study, section 9; spec 00, implementation notes).
-# Run by hand from the Claude branch (Actions > Test build > Run workflow), and on every push of a release/* branch.
+# Runs on a push to the Claude branch whose head commit message holds "[test build]", on every push of a release/* branch, and
+# by hand (Actions > Test build > Run workflow) once this file is on the default branch: GitHub offers manual runs only for
+# workflows there, and main holds upstream's tree.
 name: Test build
 
 on:
   workflow_dispatch:
   push:
-    branches: ['release/**']
+    branches: ['claude/gifted-carson-j102ab', 'release/**']
 
 permissions:
   contents: write
@@ -20,6 +22,7 @@ concurrency:
 
 jobs:
   draft:
+    if: github.event_name != 'push' || startsWith(github.ref, 'refs/heads/release/') || contains(github.event.head_commit.message, '[test build]')
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:

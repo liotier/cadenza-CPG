@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | draft, for the owner's approval |
+| Status | implemented; the device run of verification 4 pending |
 | Type | infrastructure |
 | Size | M |
 | Depends on | nothing |
@@ -94,13 +94,16 @@ a `release/*` branch. Each run leaves a draft release holding the installable zi
 
 Recorded from the first green CI run, as the reference every later specification compares with:
 
-| Quantity | Source | Value at 0.28.1 |
+| Quantity | Source | Value at 0.28.1, CI run 1 |
 |---|---|---|
-| Binary size | `tests/budget.sh` | 666 KB at the last recorded measurement, budget 688 |
-| Skin images, decoded | `tests/budget.sh` | 78.8 MB at the last recorded measurement, budget 80 |
+| Binary size | `tests/budget.sh` | 686 KB (701 956 bytes), budget 688 KB (704 512 bytes): **2 556 bytes of headroom** |
+| Skin images, decoded | `tests/budget.sh` | 79.1 MB, budget 80 |
 | Parameters | `vst/params.json` | 2 037 |
-| Core parity hash | `tests/core_parity.sha256` | `934d3f5c...` |
+| Core parity hash | `tests/core_parity.sha256` | `934d3f5c...`, 610 notes at 44.1 and 48 kHz |
 | Coverage | `coverage.txt` | the study's §3 figures |
+
+The binary and skin figures recorded in `vst/budget.json`'s notes (666 KB, 78.8 MB) date from earlier versions; the
+study's "22 KB of headroom" was taken from them and is corrected in its revision 8.
 
 ## 5. Verification
 
@@ -126,4 +129,51 @@ Any change under `src/` or `vst/`; the palette generator (step 4); showing the v
 
 ## 8. Implementation notes
 
-Empty until implementation.
+Implemented in commit `8561054` and the commit that adds these notes. CI run 1,
+[45130618321](https://github.com/liotier/cadenza-CPG/actions/runs/45130618321), is green on its three jobs in 12 minutes
+(the build under QEMU about 4, the offline tests about 7).
+
+**Files.** `.github/workflows/ci.yml`, `.github/workflows/build.yml`, `.github/toolchain`, `.github/lsan.supp`,
+`.gitmodules` and `third_party/AkaiMPC`, `tests/compat/` (`run.sh`, `writer.c`, `loader.c`, `expected.txt`), `tools/cpg/`
+(`enumerate.c`, `coverage.mjs`, `coverage.sh`), `docs/development/measurements/coverage.txt`, `versions.json`. Nothing
+under `src/` or `vst/` (D1).
+
+**Deviations from the specification.**
+
+1. *Test builds do not call the reusable workflow* (D8, §3.5). At `8fbeffc`, `vst-release.yml` uploads the zips as run
+   artifacts on every run (its upload step has no condition), which is what D8 rules out for a public repository; it
+   also checks out `open-mpc/mpc-vst-plugins` where the README names `Shrekage2024`'s branch. `build.yml` runs the same
+   tools (`vst/build.sh`, the toolchain's `release.py` and `sdk_zip.py`) and creates the draft itself, with no
+   artifacts. Inputs: `--license PolyForm-Shield-1.0.0`, an `--about` line calling the build a test build of a personal
+   fork; the catalog checks are left out, the fork not being meant for the catalog.
+2. *Test builds are started by a commit message.* GitHub offers manual runs only for workflows on the default branch,
+   and `main` holds upstream's tree. `build.yml` therefore also runs on a push to the Claude branch whose head commit
+   message holds `[test build]`; manual runs become available if the workflow ever reaches `main`.
+3. *The harness compares with the fork's own re-save* (D5, §3.2). Its first run on unchanged code found two scenarios
+   whose save, loaded and saved again, differs from itself in 0.28.1: a loop shortened after its drawn bars were filled
+   saves the hidden bars' rhythms (`.rb` up to `seq_part_t.filled`) once, and a reload saves the loop's bars only. So
+   the writer also saves its own engine's re-save, checks that it is a fixed point, and the official re-save is
+   compared with it: the official engine must read the state as the fork does. An upstream quirk, harmless (hidden bars
+   only), worth a line to the author.
+4. *Three files beyond the specification:* `.github/toolchain` holds D3's pin, read by both workflows; `.github/lsan.supp`
+   suppresses the leaks reported under `engine.c`'s `alsa_open` on GitHub's runners, which have libasound where the
+   offline test container has none (`snd_seq_open` fails for want of `/dev/snd/seq`, and libasound's cached
+   configuration is reported once the library is closed); `tools/cpg/coverage.sh` builds, runs and compares (`--check`
+   in CI).
+5. *The coverage report says more than §3.4 asked:* per-style tallies, the templates' counts (109 entirely diatonic, 144
+   within `src` 0-3, 182 exact), the 66 pads exact by decision 12, and **375 pads needing a new sonority**: the figure
+   step 3 drives to zero.
+
+**Open points, settled.**
+
+- `vst/build.sh` and `tests/run_tests.sh` run unchanged on GitHub's runners; the only adjustment is the leak
+  suppression above, in the workflow's environment.
+- `8fbeffc` is the exact toolchain: CI's `cadenza.so` is byte-identical to the official 0.28.1 release's (MD5
+  `4e13dd200a0378c3f04e29dbc040818c`, 701 956 bytes). Builds are reproducible, and a fork build differs from the
+  official one only by what the fork changes.
+- The reusable workflow's inputs: moot (deviation 1).
+
+**Found on the way.** The binary has 2 556 bytes of headroom, not the 22 KB the study assumed (§4). Step 1 alone needs
+more (its implementation notes); the budget is the owner's decision.
+
+**Verification.** 1 to 3 hold (CI run 1). 4, the device run, waits for the first draft release.

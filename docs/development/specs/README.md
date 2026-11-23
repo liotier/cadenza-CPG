@@ -7,16 +7,16 @@ points, and implementation notes filled in as the step is built.
 
 | # | Specification | Status | Depends on |
 |---|---|---|---|
-| 00 | [Infrastructure: CI, compatibility harness, the CPG submodule, test builds](00-infrastructure.md) | draft, for approval | |
-| 01 | [Key-aware chord spelling](01-key-aware-spelling.md) | draft, for approval | 00 |
-| 02 | [Chromatic chords through the progression path](02-chromatic-progression-path.md) | draft, for approval | 00 |
+| 00 | [Infrastructure: CI, compatibility harness, the CPG submodule, test builds](00-infrastructure.md) | implemented; device run pending | |
+| 01 | [Key-aware chord spelling](01-key-aware-spelling.md) | approved | 00 |
+| 02 | [Chromatic chords through the progression path](02-chromatic-progression-path.md) | approved | 00 |
 | 03 | [The eight missing sonorities](03-missing-sonorities.md) | draft: design proposals | 02 |
 | 04 | [The palette table, generated from the CPG](04-palette-table.md) | draft: design proposals | 00, 03 |
 | 05 | [The part's palette](05-part-palette.md) | draft: design proposals | 02, 04 |
 
 ## How far the drafting goes, and why
 
-Specifications 00 to 02 are complete: the code determines them, and they are ready for approval. Specifications 03 to 05
+Specifications 00 to 02 are complete: the code determines them, and the owner approved them. Specifications 03 to 05
 propose designs, which the implementation of the earlier steps will test and refine: the save format's fallbacks, the
 generator's data layout, the palette's verbs. Their open points name what is expected to be learnt.
 

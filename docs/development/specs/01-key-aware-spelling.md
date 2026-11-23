@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | draft, for the owner's approval |
+| Status | approved |
 | Type | defect |
 | Size | S-M |
 | Depends on | 00 |

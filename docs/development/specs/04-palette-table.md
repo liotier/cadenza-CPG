@@ -60,7 +60,8 @@ allocation, no state.
 
 ## 4. Measurements
 
-Binary size added (estimate 12 to 15 KB, within the 22 KB headroom); 184 entries, 22 genres, 191 palettes; the nickname
+Binary size added (estimate 12 to 15 KB, against 2.5 KB of headroom at 0.28.1: step 0's measurement; room must be made
+first); 184 entries, 22 genres, 191 palettes; the nickname
 lengths against the tiles' 19 characters (ten of the 184 exceed it, the longest 24).
 
 ## 5. Verification
