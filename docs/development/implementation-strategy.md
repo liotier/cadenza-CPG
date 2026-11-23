@@ -144,6 +144,15 @@ with SoundFonts in an AudioWorklet. None of `web/`, `tests/web_*` or `tools/rele
 the page's JavaScript is readable on the site but carries no licence granting its use; `web_host.c` and `build.sh` are
 not published. Routes, for the owner (§8, item 6).
 
+**Is the compiler a risk?** Measured, 2026-11-23: the published module was built with Emscripten in standalone mode (its
+exports name it; its compiler records are stripped). With an unrelated C-to-wasm toolchain, Zig 0.17.1's clang and WASI
+libc, the core parity trace compiled to wasm and run in Node gives the pinned hash, byte for byte; and the whole plugin,
+engine and toolchain wrapper with `vst.json`'s defines, links needing one platform import, `clock_time_get`, the one the
+published module also imports beside its own MIDI callback. The engine is written to compute the same on every target,
+and the parity test proves it there. What a rewrite could get wrong is not the compiler but the host's imitation of MPC
+in `web_host.c` (when texts are read, what a touch and a Q-Link send, which parameters are polled), and the published page
+already encodes that behaviour on its side of the interface.
+
 ## 5. Budgets
 
 | Budget | Limit | Now | Headroom | Checked by |

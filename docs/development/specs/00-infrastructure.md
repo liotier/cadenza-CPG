@@ -198,14 +198,18 @@ lessons 2 and 9).
 
 ### A.2 Decisions
 
-| # | Decision | Rationale |
-|---|---|---|
-| A1 | **`tools/dev/native_tests.sh`** runs `tests/run_tests.sh`'s compile-and-run steps with the host's gcc and the parity check, reading the steps from that script, never copying them. | One list of tests, the author's; the runner follows any change to it. |
-| A2 | **It generates `vst/build/keyflags.h` and `params.h` in a temporary copy of the tree** and copies the two headers back. | `vst/make_skin.py` also rewrites `vst/params.json`, `vst/layout.conf` and `vst/images/`, which are committed: run in place, it would dirty the tree. |
-| A3 | **It sets the LeakSanitizer suppression of `.github/lsan.supp`.** | A host with libasound reports its cached configuration as leaks, as GitHub's runners do (spec 00, deviation 4). |
-| A4 | **`tools/dev/armsize.sh`** builds the plugin with an ARM cross-compiler (`arm-linux-gnueabihf-gcc`), the sources and flags `gen_vst.py --shell` gives, for the working tree and for a commit, and prints the code size of each and the difference. | A step's cost before it is pushed. The cross-compiler is not the toolchain's (GCC 13 against 11): its differences guide, CI's absolute figure decides. Step 1: estimated +4 476 bytes, measured about +4 KB. |
-| A5 | **CI's summary states the binary in bytes and the headroom** against `vst/budget.json`. | The budget check prints whole kilobytes; a step's cost in bytes needs the exact figure. |
-| A6 | **The tools change nothing the plugin or CI depends on.** | Development aids, not part of the build. |
+Not six independent decisions: two choices for the owner (A1, A4), one change to CI (A5), two ways of building A1 (A2,
+A3) and a constraint on all the tools (A6). The last column names what each presupposes; a decision resting on none can be
+judged alone.
+
+| # | Kind | Decision | Rationale | Rests on |
+|---|---|---|---|---|
+| A1 | owner's choice | **`tools/dev/native_tests.sh`** runs `tests/run_tests.sh`'s compile-and-run steps with the host's gcc and the parity check, reading the steps from that script, never copying them. | One list of tests, the author's; the runner follows any change to it. | none |
+| A2 | how A1 is built | **It generates `vst/build/keyflags.h` and `params.h` in a temporary copy of the tree** and copies the two headers back. | `vst/make_skin.py` also rewrites `vst/params.json`, `vst/layout.conf` and `vst/images/`, which are committed: run in place, it would dirty the tree. | A1 |
+| A3 | how A1 is built | **It sets the LeakSanitizer suppression of `.github/lsan.supp`.** | A host with libasound reports its cached configuration as leaks, as GitHub's runners do (spec 00, deviation 4). | A1; spec 00, deviation 4 |
+| A4 | owner's choice | **`tools/dev/armsize.sh`** builds the plugin with an ARM cross-compiler (`arm-linux-gnueabihf-gcc`), the sources and flags `gen_vst.py --shell` gives, for the working tree and for a commit, and prints the code size of each and the difference. | A step's cost before it is pushed. The cross-compiler is not the toolchain's (GCC 13 against 11): its differences guide, CI's absolute figure decides. Step 1: estimated +4 476 bytes, measured about +4 KB. | A2 (the engine includes the generated headers) |
+| A5 | CI change | **CI's summary states the binary in bytes and the headroom** against `vst/budget.json`. | The budget check prints whole kilobytes; comparing A4's estimates with CI needs the exact figure. | none; its use comes from A4 |
+| A6 | constraint | **The tools change nothing the plugin or CI depends on.** | Development aids, not part of the build. | applies to A1 to A4 |
 
 ### A.3 Verification
 

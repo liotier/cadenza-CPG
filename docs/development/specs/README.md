@@ -3,7 +3,10 @@
 One specification per step of the [implementation strategy](../implementation-strategy.md), in the format of the CPG's
 [improvement specifications](https://github.com/liotier/AkaiMPC/tree/main/AkaiMPCChordProgressionGenerator/docs/improvements):
 a header, the problem, a decisions table, the specification, measurements, verification, what is out of scope, open
-points, and implementation notes filled in as the step is built.
+points, and implementation notes filled in as the step is built. Since revision 2 of the strategy, a decisions table has a
+last column, *Rests on*, naming what each decision presupposes (here or in another specification): numbered rows are not
+independent choices, and the column shows which can be judged alone and which change with another. Specifications 00 to
+02, implemented before the rule, keep their tables as they were; addendum A of spec 00 follows it.
 
 | # | Specification | Status | Depends on |
 |---|---|---|---|
