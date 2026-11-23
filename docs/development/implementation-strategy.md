@@ -31,10 +31,11 @@ gets its own specification in `docs/development/specs/` before any code is writt
 | 1. Key-aware spelling | implemented; device run pending | [spec 01](specs/01-key-aware-spelling.md); over the old binary budget (CI run 4), then decision 21 |
 | 2. Chromatic chords through the progression path | implemented; device run pending | [spec 02](specs/02-chromatic-progression-path.md); CI run 3 green |
 | Decision 21 | room in the binary: dead code dropped, budget 720 KB | test build 4 (commit `d9b619d`): 650 KB |
+| 0a. Local tools | implemented | [spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools) |
 | 3 to 5 | specified, for approval | [specs 03 to 05](specs/README.md), revised with what steps 0 to 2 measured |
 
 The draft release *Cadenza 0.28.1-cpg.1 (test build)* holds steps 0 to 2 and the collected binary: one device run
-checks all four at once (§8, O1).
+checks all four at once (§8.1, O1).
 
 ## 2. Principles
 
@@ -132,10 +133,11 @@ holds `0.28.1-cpg.N`, which names the zips, the drafts and the release branches.
 
 ### 4.6 Local tools (step 0a)
 
-The toolchain's scripts need Docker, which a cloud session lacks. Two tools, used for steps 1 and 2 and to be committed
-under `tools/dev/` ([spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools)): a native runner that
-executes `tests/run_tests.sh`'s steps with the host's gcc, and an ARM size estimate that builds the plugin with a
-cross-compiler and the toolchain's flags, before and after a change. Their figures guide; CI's decide.
+The toolchain's scripts need Docker, which a cloud session lacks. Two tools in `tools/dev/`
+([spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools)): `native_tests.sh` runs `tests/run_tests.sh`'s
+steps with the host's gcc, and `armsize.sh [REF]` builds the plugin with an ARM cross-compiler for the working tree and
+a commit and prints the difference. Their figures guide; CI's decide, and CI's summary gives the binary's bytes and
+headroom.
 
 ### 4.7 A web simulation (proposed)
 
@@ -154,7 +156,8 @@ Q-Links, and the page shows when each call is made. One essential mechanism is n
 sends its MIDI only to an ALSA port it opens with `dlopen` (`engine.c`, `alsa_open`), and nothing in it reaches the
 module's `host_midi` import, so the web build routes MIDI by a means the export does not show. A rewrite would design its
 own and could match the published module only by testing against it, which means running code no licence grants us.
-Route chosen by the owner, 2026-11-23 (§8, O8): ask the author for `web/`; a rewrite only if he declines.
+Route chosen by the owner, 2026-11-23 (§8.3, O8): ask the author for `web/`; the message was sent the same day (O9). A
+rewrite or a page of our own only if he declines (§8.2, O8b).
 
 **Is the compiler a risk?** Measured, 2026-11-23: the published module was built with Emscripten in standalone mode (its
 exports name it; its compiler records are stripped). With an unrelated C-to-wasm toolchain, Zig 0.17.1's clang and WASI
@@ -179,7 +182,7 @@ already encodes that behaviour on its side of the interface.
 **Planned spending.** Step 3 about 2 to 4 KB of binary; step 4's table 12 to 15 KB; step 5 about 2 to 4 KB: some 25 KB
 of the 70. The screens of phase B cost parameters and images. The skin is now the binding budget: 0.9 MB, where a new
 full-panel view has cost 1.6 MB or more. Phase B's screens therefore reuse existing views, and any new view needs a
-decision on the fork's skin budget first (§8, O10). The skin budget rests on a device probe ("MPC decodes the visible page
+decision on the fork's skin budget first (§8.2, O10). The skin budget rests on a device probe ("MPC decodes the visible page
 only", VST-9); with root SSH, MPC's memory can be measured on the owner's MPC One before and after a new view, so that
 decision can rest on the fork's own figures.
 
@@ -190,7 +193,7 @@ decision can rest on the fork's own figures.
 | Step | Content | Study | Depends on | Screens | Size | State |
 |---|---|---|---|---|---|---|
 | 0 | Infrastructure | | | no | M | implemented |
-| 0a | Local tools: native runner, ARM size estimate | §4.6 | 0 | no | S | for approval |
+| 0a | Local tools: native runner, ARM size estimate | §4.6 | 0 | no | S | implemented |
 | 1 | Key-aware chord spelling | avenue A | 0 | labels | S-M | implemented |
 | 2 | Chromatic chords through the progression path | §6.2 | 0 | no | S-M | implemented |
 | 3 | The missing sonorities: the catalogue's eight and Scale Mode's 7sus4 | avenue H | 2 | no | M | for approval |
@@ -244,7 +247,7 @@ with.
 **Step 8. Live palette pads.** A PALETTE view of sixteen pads with the PROGRESSIONS browser's behaviour for single chords:
 each tap lands at SWITCH AT and holds until the next, KEEP captures the last loop's worth, CANCEL restores (decision 17).
 The engine's new piece is a harmony queue that swaps all three lanes at one boundary. Probably a view of its own: the
-first screen to need the skin decision (§8, O10). *Done when* taps land in time at every SWITCH AT setting and tempo, capture
+first screen to need the skin decision (§8.2, O10). *Done when* taps land in time at every SWITCH AT setting and tempo, capture
 writes exactly what sounded, and the device run passes.
 
 **Step 9. Turnarounds.** Palette chords tagged by their function relative to the next phrase's first chord, ranked by the
@@ -277,26 +280,38 @@ and the GLOBAL selector to match (study, avenue I).
 
 ## 8. Decisions for the owner
 
-Every decision only the owner can take, as of 2026-11-23, with what it rests on (a decision it presupposes) and what it
-informs (a decision whose answer it changes). Nothing else is waiting for the owner. Taken decisions are recorded in the
-study's [decision log](cpg-integration-study.md#10-decision-log).
+Every decision only the owner can take, with what it rests on (a decision it presupposes) and what it informs (a decision
+whose answer it changes), in two groups: those that can be taken now, and those waiting for a further step or event.
+Nothing else is waiting for the owner. Numbers stay as first given, so references hold; taken decisions leave this list
+for the record below it, and the ones concerning the integration as a whole go to the study's
+[decision log](cpg-integration-study.md#10-decision-log).
+
+### 8.1 Decidable now
 
 | # | Decision | Options | Rests on | Informs | Needed before |
 |---|---|---|---|---|---|
 | O1 | Run the draft *Cadenza 0.28.1-cpg.1 (test build)* on the MPC One, and say whether it passes (checks in §9, item 1) | pass, or what failed | none | O2, O3 | the release branch; M1 |
-| O2 | Cut `release/0.28.1-cpg.1` and open its pull request to `main` | go, or not yet | O1 passed | | the next version, `0.28.1-cpg.2` |
-| O3 | Offer milestone M1 to the author: the dead-code patch (about 40 KB freed) and the spelling (about 4 KB), with a field report | now, with O9's message; later; not at all | O1 passed | | nothing in the fork |
-| O4 | Approve step 0a, the local tools ([spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools)): its two choices, A1 (the native runner) and A4 (the ARM size estimate) | approve, amend, refuse | none | | step 0a |
 | O5 | Approve step 3, the missing sonorities ([spec 03](specs/03-missing-sonorities.md)) | approve, amend | none | O6, O7 | step 3 |
-| O6 | Approve step 4, the palette table ([spec 04](specs/04-palette-table.md)) | approve, amend | O5: its chord storage presupposes spec 03 | O7 | step 4 |
-| O7 | Approve step 5, the part's palette ([spec 05](specs/05-part-palette.md)) | approve, amend | O5, O6 | | step 5 |
-| O8 | The web simulation's route (§4.7) | **taken: ask the author for `web/`**; if he declines or does not answer, decide between a rewrite (B, with the licence question of testing against the published module) and a page of our own (C) | none | O10 | any screen work in a browser |
-| O9 | Send the author the message drafted for O8 (introducing the fork, asking for `web/`) | send as drafted, edit, hold | none | O3, O11 | the author's answer to O8 |
-| O10 | The fork's skin budget: may new views raise it, and by how much | to take at milestone M2, after an MPC memory probe over root SSH with and without a new view | the probe; specifications 06 to 08 | | the first screen needing a new view (likely step 8) |
-| O11 | Whether to raise with the author the numerals that spell D minor's F♯ major as `Gb7` ([spec 01](specs/01-key-aware-spelling.md), open point) | raise it, leave it | none | | nothing in the fork; best in O9's message or the M2 design note |
+| O6 | Approve step 4, the palette table ([spec 04](specs/04-palette-table.md)) | approve, amend | O5 (its chord storage presupposes spec 03): take it after O5, or with it | O7 | step 4 |
+| O7 | Approve step 5, the part's palette ([spec 05](specs/05-part-palette.md)) | approve, amend | O5, O6: take it after them, or with them | | step 5 |
+| O11 | Whether to raise with the author the numerals that spell D minor's F♯ major as `Gb7` ([spec 01](specs/01-key-aware-spelling.md), open point) | raise it, leave it | none | | nothing in the fork. The message sent on 2026-11-23 raised it as drafted; if that paragraph was cut, it stays open |
 
-Order that respects the dependencies: O1 and O4 to O7 can be taken now, O5 before O6 before O7; O9 now if O3 and O11
-ride with it; O2 and O3 after O1; O10 at M2.
+### 8.2 Depend on a further step or event
+
+| # | Decision | Waits for | Options then | Informs | Needed before |
+|---|---|---|---|---|---|
+| O2 | Cut `release/0.28.1-cpg.1` and open its pull request to `main` | O1 passed | go, or not yet | | the next version, `0.28.1-cpg.2` |
+| O3 | Send the author milestone M1: the dead-code patch (about 40 KB freed) and the spelling (about 4 KB) as a patch series, with a field report | O1 passed; his interest (the message offered them, as drafted) | send, hold | | nothing in the fork |
+| O8b | The web simulation if the author does not share `web/`: a rewrite of the host (B, which leaves the licence question of testing against his published module) or a page of our own (C) (§4.7) | the author's answer, or none after a reasonable wait | B, C, neither | O10 | any screen work in a browser |
+| O10 | The fork's skin budget: may new views raise it, and by how much | milestone M2, an MPC memory probe over root SSH with and without a new view, and specifications 06 to 08 | raise by an amount, or keep 80 MB | | the first screen needing a new view (likely step 8) |
+
+### 8.3 Taken since the list was made
+
+| # | Decision | Taken | Recorded in |
+|---|---|---|---|
+| O4 | Step 0a, the local tools: A1 (the native runner) and A4 (the ARM size estimate), "as you see fit" | 2026-11-23 | [spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools) |
+| O8 | The web simulation's route: ask the author for upstream's `web/` folder first | 2026-11-23 | §4.7 |
+| O9 | The message to the author, introducing the fork and asking for `web/`: sent | 2026-11-23 | §4.7 |
 
 ## 9. Next steps
 
@@ -307,11 +322,11 @@ In order:
    reopens, and opens again after the official 0.28.1 is restored; CHORDS, PHRASE, PLAY and GLOBAL read correctly in F,
    E♭, A♭ and D♭ major and C♯ and D♯ minor (PLAY's title: `Eb MAJOR`, `D# MINOR`). Step 2 shows nothing.
 2. **If it passes:** the release branch and its pull request (O2); `versions.json` to `0.28.1-cpg.2`; M1's offer (O3).
-3. **Step 0a**, once O4 is taken: small, independent of the device run.
+3. **Step 0a**: done (spec 00, addendum A); its tools serve every later step.
 4. **Step 3**, then **step 4**, then **step 5**, each once its approval (O5 to O7) is given, each pushed with CI green
    before the next starts. Step 4 can begin its generator while step 3 is built; it cannot pass its strictness check
    before step 3 lands.
-5. **The web simulation**, once the author answers (O8, O9).
+5. **The web simulation**, once the author answers (O8 and O9 taken; O8b if he declines).
 6. **At M2:** the MPC memory probe over root SSH, the skin budget (O10), the design note to the author, then
    specifications 06 and 07.
 
@@ -319,7 +334,7 @@ In order:
 
 | Risk | Mitigation |
 |---|---|
-| The skin budget runs out: 0.9 MB of headroom, a full-panel view costing 1.6 MB or more | views reused; a decision on the fork's skin budget before any new view (§8, O10); the gauge in every CI build |
+| The skin budget runs out: 0.9 MB of headroom, a full-panel view costing 1.6 MB or more | views reused; a decision on the fork's skin budget before any new view (§8.2, O10); the gauge in every CI build |
 | The binary budget runs out again | 70 KB of headroom after decision 21; each step estimated locally, measured in CI; further raises are the owner's |
 | CPU costs invisible offline | the device bench over root SSH at each step with screens; offline, few polled parameters and the plugin test's screen-update count |
 | A save-format change breaks projects in older builds | principle 4 (old fields hold usable values only); the harness at every step touching the state |
@@ -350,4 +365,6 @@ polymeter, the Chord Matcher (study, §7).
   probe become the measures of CPU and skin); decisions are put with their dependencies (§4.1); the web simulation the
   owner proposed, with what upstream's browser version is made of (§4.7, §8). Amended again: the owner's pending
   decisions gathered in one table with their dependencies (§8, O1 to O11), next steps renumbered (§9); whether
-  `web_host.c` can be inferred from its calls (§4.7), and the route the owner chose.
+  `web_host.c` can be inferred from its calls (§4.7), and the route the owner chose. Then: the list split into decisions
+  that can be taken now and those waiting for a further step or event (§8.1, §8.2), and the taken ones kept below them
+  (§8.3: step 0a approved, the message to the author sent).

@@ -8,12 +8,12 @@ last column, *Rests on*, naming what each decision presupposes (here or in anoth
 independent choices, and the column shows which can be judged alone and which change with another. Specifications 00 to
 02, implemented before the rule, keep their tables as they were; addendum A of spec 00 follows it.
 
-Approvals pending are decisions O4 to O7 of the [strategy's list](../implementation-strategy.md#8-decisions-for-the-owner).
+Approvals pending are decisions O5 to O7 of the [strategy's list](../implementation-strategy.md#81-decidable-now).
 
 | # | Specification | Status | Depends on |
 |---|---|---|---|
 | 00 | [Infrastructure: CI, compatibility harness, the CPG submodule, test builds](00-infrastructure.md) | implemented; device run pending | |
-| 0a | [Local tools: native runner, ARM size estimate](00-infrastructure.md#addendum-a-local-tools) (spec 00, addendum A) | for approval | 00 |
+| 0a | [Local tools: native runner, ARM size estimate](00-infrastructure.md#addendum-a-local-tools) (spec 00, addendum A) | implemented | 00 |
 | 01 | [Key-aware chord spelling](01-key-aware-spelling.md) | implemented; device run pending | 00 |
 | 02 | [Chromatic chords through the progression path](02-chromatic-progression-path.md) | implemented; device run pending | 00 |
 | 03 | [The missing sonorities](03-missing-sonorities.md) | for approval | 02 |

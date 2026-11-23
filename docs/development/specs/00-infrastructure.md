@@ -184,7 +184,7 @@ more (its implementation notes); the budget is the owner's decision.
 
 | | |
 |---|---|
-| Status | for approval |
+| Status | approved by the owner, 2026-11-23 (strategy, §8.3, O4); implemented |
 | Step | 0a |
 | Size | S |
 | Depends on | 00 |
@@ -220,3 +220,25 @@ judged alone.
 ### A.4 Out of scope
 
 Installing the cross-compiler in a setup script: an environment matter, proposed separately if wanted.
+
+### A.5 Implementation notes
+
+`tools/dev/native_tests.sh`, `tools/dev/armsize.sh`, and `tools/dev/lib.sh` for what they share: the headers made in a
+copy of `vst/` (A2) and the toolchain's location (`MPC_VST`, else next to the repository, as the author's scripts look).
+
+- **The runner** writes a temporary copy of `tests/run_tests.sh` with three edits, each required to apply: its `cd` to
+  the repository, its `docker run ... gcc:12 bash -euc '` to a plain `bash -euc '` with the toolchain in `MV`, and `/mv/`
+  to `$MV/` in the former container's script. The parity check and the toolchain's host test then run as the author
+  wrote them. If `run_tests.sh` changes shape, the runner stops and names the edit that no longer applies.
+- **The size estimate** builds both trees with each tree's own `vst/vst.json`, so a commit from before decision 21 is
+  built without section garbage collection, as CI built it then.
+
+**Verification.**
+
+1. From an empty `vst/build/`: all 15 suites pass, the core parity trace as pinned, and `git status` shows nothing the
+   runner wrote.
+2. `armsize.sh 1baa448` (step 1, before decision 21; CI measured 690 KB) gives text −46 299 bytes and file −45 064
+   bytes for the working tree, where CI measured −40 KB between the same pair (650 KB): the right sign and order, the
+   cross-compiler's absolute figures larger than the toolchain's. `armsize.sh d9b619d`, whose code is the working tree's,
+   gives 0.
+3. CI's summary gains the binary's bytes and headroom: recorded with the run of the commit that adds this.
