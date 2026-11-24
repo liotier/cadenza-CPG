@@ -6984,7 +6984,7 @@ static void test_241_noop_sets(void) {
 
 /* fork, docs/development/specs/02-chromatic-progression-path.md (verification 2): random progressions and change points over the whole
  * chromatic range, in random keys and scales, through every page's labels (the getters, the wrapper's texts) while playing, under
- * ASan and UBSan: a label reader the audit missed shows here */
+ * ASan and UBSan: a label reader the audit missed shows here. Spec 03: the second range and the colours past COL_COUNT too */
 static void test_chroma_sweep(void) {
     static char out[NPARAMS][192];
     static const char *const PAGE[3][2] = {{"cvm_2", "ubm_2"}, {"cvm_1", "ubm_1"}, {"cvm_4", "ubm_3"}};
@@ -7002,9 +7002,9 @@ static void test_chroma_sweep(void) {
         snprintf(v, sizeof v, "%d", RND(12)), en->set_param(q, "key", v);
         snprintf(v, sizeof v, "%d", RND(SCALE_COUNT)), en->set_param(q, "scale", v);
         n = seq_slots(q);
-        for (int i = 0; i < n; i++) deg[i] = RND(7), src[i] = (unsigned char)RND(THEORY_SRC_MAX + 1), col[i] = (unsigned char)RND(COL_COUNT);
+        for (int i = 0; i < n; i++) deg[i] = RND(7), src[i] = (unsigned char)RND(THEORY_SRC2_MAX + 1), col[i] = (unsigned char)RND(COL_ALL);
         seq_set_progression(q, n, deg, src, col, 1);
-        for (int k = 0; k < 3; k++) seq_cp_set(q, RND(seq_bars(q)), 1 + RND(15), RND(7), RND(THEORY_SRC_MAX + 1), RND(5));
+        for (int k = 0; k < 3; k++) seq_cp_set(q, RND(seq_bars(q)), 1 + RND(15), RND(7), RND(THEORY_SRC2_MAX + 1), RND(5));
         q->display_rev++;
         const char *const *pg = PAGE[round % 3];
         en->set_param(q, pg[0], "1"), en->set_param(q, pg[1], "1");
@@ -7017,7 +7017,7 @@ static void test_chroma_sweep(void) {
     }
 #undef RND
     CHECK(named, "chromatic sweep: %d rounds of random chords over src 0..%d, keys and scales, read through PHRASE, the sound pages and JAM "
-          "while playing; every slot named", rounds, THEORY_SRC_MAX);
+          "while playing; every slot named", rounds, THEORY_SRC2_MAX);
     e->d(e, effClose, 0, 0, NULL, 0);
 }
 

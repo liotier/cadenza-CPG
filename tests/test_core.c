@@ -3292,8 +3292,8 @@ static void test_09_slots_locks_undo(void) {
     CHECK(s.part[0].prog[2] == 4 && seq_slot_colour(&s, 2) == COL_7TH && seq_slot_locked(&s, 2) && s.undo_n == n0 + 1, "FIX: one undo step");
     seq_set_slot(&s, 4, 0, 0, 0);
     seq_set_slot(&s, 0, 7, 0, 0);
-    seq_set_slot(&s, 0, 0, THEORY_SRC_MAX + 1, 0);   /* fork, spec 02: src 4..THEORY_SRC_MAX is a chromatic chord now (0.28.1: 4 refused) */
-    seq_set_slot(&s, 0, 0, 0, COL_COUNT);
+    seq_set_slot(&s, 0, 0, THEORY_SRC2_MAX + 1, 0);   /* fork, specs 02 and 03: src 4..THEORY_SRC2_MAX is a chromatic chord now (0.28.1: 4 refused) */
+    seq_set_slot(&s, 0, 0, 0, COL_ALL);   /* fork, spec 03: the colours up to COL_ALL (0.28.1: COL_COUNT refused) */
     CHECK(s.undo_n == n0 + 1 && s.part[0].prog[0] == 0, "out of range: ignored");
     seq_undo(&s);
     CHECK(s.part[0].prog[2] == 2 && !seq_slot_colour(&s, 2) && !seq_slot_locked(&s, 2) && voices_as_08(&s), "undo: chord, colour and lock back");
@@ -13946,7 +13946,7 @@ static void test_24_phrase_chord_rules(void) {
     CHECK(p->colour[5] == COL_SUS2 && (p->slot_lock >> 5 & 1) && seq_cp_count(&s, 5) == 2, "TYPE on the slot's first hit types the slot (sus2)");
     seq_rbar_select(&s, LANE_CHORDS, 2);
     seq_rbar_chord(&s, 7, 0);
-    seq_rbar_chord(&s, 2, THEORY_SRC_MAX + 1);   /* fork, spec 02: past the chromatic range (0.28.1 refused 4) */
+    seq_rbar_chord(&s, 2, THEORY_SRC2_MAX + 1);   /* fork, specs 02 and 03: past the chromatic ranges (0.28.1 refused 4) */
     seq_rbar_type(&s, 5);
     CHECK(p->prog[5] == 3 && p->colour[5] == COL_SUS2, "bad chords and types do nothing");
     seq_rbar_select(&s, LANE_CHORDS, 6);

@@ -558,6 +558,118 @@ static void test_fork_notes(void) {
     CHECK(!strcmp(theory_spelling_text(theory_spell_tone(0, SCALE_MAJOR, SCALE_MAJOR, 0, 4)), "F"), "Csus4's 4th is F, not E#");
 }
 
+/* fork, docs/development/specs/03-missing-sonorities.md: the nine constructions in every key (§3.1), their names and degree texts
+ * (§3.2), the fallback rule (S03-D6) against §3.3's table, and over every combination: names within 15 characters, fallbacks old */
+static int pmod_(int a, int m) { return (a % m + m) % m; }
+
+static void test_fork_sonorities(void) {
+    static const struct { int scale, src, colour, n, iv[5]; const char *name, *text; int fq, fc; } T[] = {
+        {SCALE_MAJOR, THEORY_SRC2 + CQ2_MELMIN, COL_7TH, 4, {0, 3, 7, 11}, "CmMaj7", "imaj7", CQ_MINOR, COL_TRIAD},
+        {SCALE_MAJOR, THEORY_SRC2 + CQ2_MELMIN, COL_6TH, 4, {0, 3, 7, 9}, "Cm6", "i6", CQ_MINOR, COL_TRIAD},
+        {SCALE_MAJOR, THEORY_SRC2 + CQ2_LOCRIAN, COL_7TH, 4, {0, 3, 6, 10}, "Cm7b5", "im7b5", CQ_DIM, COL_TRIAD},
+        {SCALE_MAJOR, THEORY_SRC2 + CQ2_DOMB5, COL_7TH, 4, {0, 4, 6, 10}, "C7b5", "I7b5", CQ_DOM, COL_7TH},
+        {SCALE_MAJOR, THEORY_SRC2 + CQ2_PHRDOM, COL_9TH, 5, {0, 4, 7, 10, 13}, "C7b9", "I7b9", CQ_DOM, COL_7TH},
+        {SCALE_MAJOR, THEORY_SRC2 + CQ2_MINSH5, COL_TRIAD, 3, {0, 3, 8}, "Cm#5", "i#5", CQ_MINOR, COL_6TH},
+        {SCALE_MAJOR, THEORY_SRC_CHROMA + CQ_DOM, COL_QUARTAL, 3, {0, 5, 10}, "C7sus4(no5)", "I 7sus4(no5)", CQ_DOM, COL_11TH},
+        {SCALE_MAJOR, THEORY_SRC_CHROMA + CQ_DOM, COL_7NO5, 3, {0, 4, 10}, "C7", "I7", CQ_DOM, COL_7TH},
+        {SCALE_DORIAN, 0, COL_7SUS4, 4, {0, 5, 7, 10}, "C7sus4", "i 7sus4", -1, COL_SUS4},
+    };
+    int bad = 0, names = 0, falls = 0;
+    for (size_t i = 0; i < sizeof T / sizeof T[0]; i++) {
+        int ss = theory_slot_scale(T[i].scale, T[i].src), g[THEORY_CHORD_MAX], fs, fd, fc, want_src;
+        char nm[24], tx[24];
+        for (int k = 0; k < 12; k++) {   /* §3.1 in every key, the chord on the key's root */
+            int n = theory_chord_notes(k, ss, 0, T[i].colour, g), good = n == T[i].n;
+            for (int j = 0; good && j < n; j++) good = g[j] - g[0] == T[i].iv[j] && g[0] % 12 == k;
+            if (!good) printf("     sonority %d key %d: %d notes from %d\n", (int)i, k, n, g[0]), bad++;
+        }
+        theory_chord_name_s(0, T[i].scale, ss, 0, T[i].colour, nm, sizeof nm);
+        theory_degree_c(0, T[i].scale, ss, 0, T[i].colour, tx, sizeof tx);
+        if (strcmp(nm, T[i].name) || strcmp(tx, T[i].text)) printf("     sonority %d: %s %s, want %s %s\n", (int)i, nm, tx, T[i].name, T[i].text), names++;
+        want_src = T[i].fq < 0 ? T[i].src : T[i].src >= THEORY_SRC2 ? theory_chroma_src(0, T[i].fq) : T[i].src;
+        if (theory_fallback(T[i].scale, T[i].src, 0, T[i].colour, &fs, &fd, &fc) != 1 || fs != want_src || fd != 0 || fc != T[i].fc)
+            printf("     sonority %d: fallback src %d colour %d, want %d %d\n", (int)i, fs, fc, want_src, T[i].fc), falls++;
+    }
+    CHECK(!bad, "the nine constructions give their intervals in every key (spec 03, §3.1)");
+    CHECK(!names, "their names and degree texts: CmMaj7 imaj7, Cm6 i6, Cm7b5 im7b5, C7b5 I7b5, C7b9 I7b9, Cm#5 i#5, C7sus4(no5), C7, C7sus4 (§3.2)");
+    CHECK(!falls, "their fallbacks by S03-D6's rule: Cm, Cm, Cdim, C7, C7, Cm6, C11, C7, Csus4 (§3.3)");
+    static const struct { int key, scale, root, q, second, colour; const char *name, *text; } S[] = {   /* spelled by step 1's rules */
+        {0, SCALE_MAJOR, 6, CQ2_LOCRIAN, 1, COL_7TH, "F#m7b5", "#ivm7b5"},   /* the #iv half-diminished */
+        {2, SCALE_MAJOR, 6, CQ2_LOCRIAN, 1, COL_7TH, "G#m7b5", "#ivm7b5"},
+        {0, SCALE_MAJOR, 8, CQ2_DOMB5, 1, COL_7TH, "Ab7b5", "bVI7b5"},       /* the French sixth, as the CPG names it */
+        {0, SCALE_MAJOR, 8, CQ_DOM, 0, COL_7NO5, "Ab7", "bVI7"},             /* the Italian sixth */
+        {5, SCALE_MAJOR, 7, CQ2_PHRDOM, 1, COL_9TH, "C7b9", "V7b9"},
+        {9, SCALE_MINOR, 0, CQ2_MELMIN, 1, COL_7TH, "AmMaj7", "imaj7"},
+        {10, SCALE_MAJOR, 2, CQ_DOM, 0, COL_QUARTAL, "C7sus4(no5)", "II 7sus4(no5)"},
+        {7, SCALE_MAJOR, 0, CQ2_MINSH5, 1, COL_TRIAD, "Gm#5", "i#5"},
+        {0, SCALE_MAJOR, 0, CQ2_DOMB5, 1, COL_TRIAD, "C(b5)", "I(b5)"},       /* no catalogue chord: generic names */
+        {0, SCALE_MAJOR, 7, CQ2_PHRDOM, 1, COL_13TH, "G13b9", "V13b9"},
+    };
+    bad = 0;
+    for (size_t i = 0; i < sizeof S / sizeof S[0]; i++) {
+        int ss = theory_slot_scale(S[i].scale, S[i].second ? theory_chroma2_src(S[i].root, S[i].q) : theory_chroma_src(S[i].root, S[i].q));
+        char nm[24], tx[24];
+        theory_chord_name_s(S[i].key, S[i].scale, ss, 0, S[i].colour, nm, sizeof nm);
+        theory_degree_c(S[i].key, S[i].scale, ss, 0, S[i].colour, tx, sizeof tx);
+        if (strcmp(nm, S[i].name) || strcmp(tx, S[i].text)) printf("     key %d root +%d: %s %s, want %s %s\n", S[i].key, S[i].root, nm, tx, S[i].name, S[i].text), bad++;
+    }
+    CHECK(!bad, "spelled in other keys: G#m7b5 #ivm7b5 in D, Ab7b5 bVI7b5, Ab7 bVI7, C7b9 V7b9 in F, AmMaj7, II 7sus4(no5) in Bb (%d wrong)", bad);
+    /* every combination a slot may hold with a value of spec 03: named within 15 characters, its fallback an older build's */
+    int longest = 0, worst = 0, fb = 1, combos = 0;
+    for (int k = 0; k < 12; k++)
+        for (int sc = 0; sc < SCALE_COUNT; sc++)
+            for (int src = 0; src <= THEORY_SRC2_MAX; src++)
+                for (int c = 0; c < COL_ALL; c++) {
+                    int d0 = src ? theory_borrow_degree(sc, src) : 0, d1 = src ? d0 : 6, fs, fd, fc;
+                    if (src < THEORY_SRC2 && c < COL_COUNT) {
+                        fb &= theory_fallback(sc, src, d0, c, &fs, &fd, &fc) == 0 && fs == src && fd == d0 && fc == c;
+                        continue;
+                    }
+                    for (int d = d0; d <= d1; d++) {
+                        char nm[24];
+                        int ss = theory_slot_scale(sc, src), n = theory_chord_name_s(k, sc, ss, d, c, nm, sizeof nm);
+                        if (n > longest) longest = n;
+                        if (!k) {
+                            int r = theory_fallback(sc, src, d, c, &fs, &fd, &fc);
+                            fb &= r == 1 && fs <= THEORY_SRC_MAX && fc < COL_COUNT && theory_src_ok(fs) &&
+                                  (src >= THEORY_SRC2 ? fd == 0 && fs >= THEORY_SRC_CHROMA && (fs - THEORY_SRC_CHROMA) / CQ_COUNT == (src - THEORY_SRC2) / CQ2_COUNT
+                                                      : fs == src && fd == d);
+                            combos++;
+                        }
+                    }
+                }
+    /* the degree text of a quartal or 7sus4 in the forms spec 05 writes (S05-D5: a degree, a borrow, else the first range, which voices
+     * both exactly; the second range only for what the first cannot), their 7th minor */
+    for (int sc = 0; sc < SCALE_COUNT; sc++)
+        for (int src = 0; src <= THEORY_SRC_MAX; src++)
+            for (int d = 0; d < 7; d++) {
+                int ss = theory_slot_scale(sc, src), dd = src ? 0 : d;
+                char tx[32];
+                if (pmod_(theory_degree_pc(0, ss, dd + 6) - theory_degree_pc(0, ss, dd), 12) != 10) continue;
+                for (int c = COL_QUARTAL; c < COL_ALL; c++) {
+                    int w = theory_text_width((theory_degree_c(0, sc, ss, dd, c, tx, sizeof tx), tx));
+                    if (w > worst) worst = w;
+                }
+            }
+    CHECK(longest <= 15, "every key, scale, source and colour with a value of spec 03 is named within 15 characters (longest %d)", longest);
+    CHECK(worst <= 15, "and every degree text of a quartal or 7sus4 as spec 05 writes them within 15 (longest %d)", worst);
+    CHECK(fb, "the fallback of every one of %d combinations is an older build's chord, on the same root; an old chord falls back to itself", combos);
+    CHECK(theory_src_ok(THEORY_SRC2_MAX) && !theory_src_ok(THEORY_SRC2_MAX + 1) && THEORY_SRC2 == 52 && THEORY_SRC2_MAX == 111 &&
+          theory_chroma2_src(13, CQ2_MINSH5) == 52 + 5 + 4 && COL_COUNT == 10 && COL_ALL == 13,
+          "the second range is 52..111, 52 + 5 x root + quality; COL_COUNT stays 10, COL_ALL 13");
+    int ok = 1;
+    for (int k = 0; k < 12; k++)
+        for (int d = 0; d < 7; d++) {
+            int ss = theory_slot_scale(SCALE_MAJOR, THEORY_SRC_CHROMA + CQ_DOM);
+            ok &= theory_drift(k, SCALE_MAJOR, ss, 0, COL_QUARTAL, 0, 0) == theory_drift(k, SCALE_MAJOR, ss, 0, COL_SUS4, 0, 0) &&
+                  theory_drift(k, SCALE_MAJOR, ss, 0, COL_7NO5, 0, 0) == theory_drift(k, SCALE_MAJOR, ss, 0, COL_7TH, 0, 0) &&
+                  theory_drift(k, SCALE_MAJOR, SCALE_MAJOR, d, COL_7SUS4, 0, 0) == theory_drift(k, SCALE_MAJOR, SCALE_MAJOR, d, COL_SUS4, 0, 0) &&
+                  theory_colour_tone(COL_QUARTAL, TONE_3) == TONE_4 && theory_colour_tone(COL_7SUS4, TONE_3) == TONE_4 &&
+                  theory_colour_tone(COL_7NO5, TONE_3) == TONE_3;
+        }
+    CHECK(ok, "drift scores quartal and 7sus4 as sus4, the 7th without its 5th as a 7th; quartal and 7sus4 play their 4th for the 3rd");
+}
+
 int main(void) {
     test_borrow();
     test_colours();
@@ -577,6 +689,7 @@ int main(void) {
     test_fork_chord_names();
     test_fork_notes();
     test_fork_chromatic_degrees();
+    test_fork_sonorities();
     printf(fails ? "\nFAILED: %d\n" : "\nPASSED\n", fails);
     return fails != 0;
 }

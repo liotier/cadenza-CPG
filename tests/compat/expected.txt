@@ -6,3 +6,11 @@
 # above 3, so the two chromatic points are dropped (the slot's chord plays there) and the diatonic one kept: `.cp=080O0,18400,2c0\1`
 # re-saved as `.cp=18400`, every other field identical.
 chroma-points c5e6a38c4dde7c24b48b1b434f2cda696189156676dedc681d8eeb516c19d35e
+# Step 3 (docs/development/specs/03-missing-sonorities.md, verification 6): 0.28.1 ignores `.cy` and `.cq` and plays the fallbacks (S03-D6)
+# the older fields hold; its re-save differs from the fork's only by those two fields. sonority-slots: the nine sonorities (`.pq`, `.ch`,
+# `.cx` as the fork wrote them; `.cy` dropped). sonority-points: as step 2's, the first point's fallback source (31, 'O') is above 3, so
+# 0.28.1 drops it and the slot plays there; the G7sus4 point keeps its fallback type, sus4 (`.cp=080O0,18402` re-saved as `.cp=18402`,
+# `.cq` dropped). sonority-feel: the base's fallback code in `.cx` kept, `.cy` dropped.
+sonority-slots fd3b3f4b09157f4325ba4e866a064cfc7fe928fdb66e9fdc6987b39553877b86
+sonority-points 81d3b4a7ad8a9ff04e184cb6bc27a503e12d9d1fdc06d51acd7a95c3763ad428
+sonority-feel 26ef4f51ded8c71166fb3decf15dd47ad17489d5cf7d0033802f67e03cdcf64a

@@ -22,7 +22,7 @@ No approval is pending: specifications 03 to 05 were approved on 2026-11-23 ([st
 | 0a | [Local tools: native runner, ARM size estimate](00-infrastructure.md#addendum-a-local-tools) (spec 00, addendum A) | implemented | 00 |
 | 01 | [Key-aware chord spelling](01-key-aware-spelling.md), with addendum A (chromatic roots) | implemented; device run pending | 00 |
 | 02 | [Chromatic chords through the progression path](02-chromatic-progression-path.md) | implemented; device run pending | 00 |
-| 03 | [The missing sonorities](03-missing-sonorities.md) | approved | 02 |
+| 03 | [The missing sonorities](03-missing-sonorities.md) | implemented; heard on the device with step 5 | 02 |
 | 04 | [The palette table, generated from the CPG](04-palette-table.md) | approved | 00, 03 |
 | 05 | [The part's palette](05-part-palette.md) | approved | 02, 03, 04 |
 

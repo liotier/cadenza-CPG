@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | approved: §2.1 answered by the owner, 2026-11-23 |
+| Status | implemented, 2026-11-24 (§8); heard on the device with step 5 (§2.2) |
 | Type | capability, save format |
 | Size | M |
 | Depends on | 02 |
@@ -193,4 +193,104 @@ None beyond §2.2.
 
 ## 8. Implementation notes
 
-Empty until implementation.
+### 8.1 What was built
+
+| Layer | Change |
+|---|---|
+| `src/theory.h`, `src/theory.c` | `COL_QUARTAL`, `COL_7NO5`, `COL_7SUS4` and `COL_ALL` after `COL_COUNT`, which stays 10; their tones (`COLOUR_TONES`), names (`THEORY_COLOUR_NAME`), drift costs and avoid-note entries; `theory_colour_tone` gives the 4th for the 3rd of quartal and 7sus4 as of sus4. The second range: `CQ2_*`, `THEORY_SRC2` (52), `THEORY_SRC2_MAX` (111), `theory_chroma2_src`, a second table of scales (`CHROMA2`) read by `theory_degree_pc`; `theory_slot_scale`'s formula already placed it after the first. `theory_src_ok` up to 111. Names and degree texts (§8.3). `theory_fallback`, S03-D6's rule. |
+| `src/seq_core.c` | The setters take colours up to `COL_ALL` (`seq_set_slot`, the progression's two paths); `feel_chord_ok` the second range and the new colours. Change-point types 10 to 12 for the new colours (`CP_TYPES` 13, `CP_OLD_TYPES` 10). The Feel code's second form (`FEEL_CODE2`), and `feel_decode`. The save's fallbacks and the new fields (§8.4). The lanes: `mel_chord_colour` reads the 7th without its 5th as its 7th chord, `chord_tone` counts the 7th of quartal and 7sus4. |
+| `src/feel.c` | `has_seventh` includes the three new colours, so Feel's suggestions read a 7sus4 or an Italian sixth as a chord with a 7th. |
+| `src/seq_core.h` | The contracts of the setters and of `seq_cp_t` name the new ranges. |
+| `tools/cpg` | `enumerate.c` lists the second range and every colour; `coverage.mjs` counts the pads exact only with step 3's values, the Classic pads with no chromatic form and the Scale Mode palettes Cadenza cannot voice; the report regenerated. |
+| Tests | `tests/test_theory.c` (`test_fork_sonorities`), `tests/test_chroma_path.c` (section 4 and the sweep), `tests/test_plugin.c` (the sweep), `tests/compat` (three scenarios, pinned). |
+
+### 8.2 Readers' audit (§3.4)
+
+Every array sized by `COL_COUNT` or indexed by a colour, every reader of a source or of a change point's type, and what
+each does with the new values.
+
+| Where | Reader | With the new values |
+|---|---|---|
+| `theory.c` | `COLOUR_TONES`, `THEORY_COLOUR_NAME`, `theory_avoid`'s `EXT`, `theory_drift`'s `COST` | grown to `COL_ALL`; their clamps (`theory_chord_notes`, `theory_chord_tones`, `theory_avoid`, `theory_drift`) to `COL_ALL` |
+| `theory.c` | `EXT_NUM` | stays `COL_COUNT` long: read only through `is_ext` (9th to 13th) |
+| `theory.c` | `theory_triad_quality` | a major 3rd under a diminished 5th, the dominant ♭5's, is major (§8.3, 1); no earlier scale has one |
+| `theory.c` | `theory_numeral`, `chroma_degree`, `root_in`, `tone_of`, `spell_pc` | read the second range through `theory_degree_pc` and `theory_triad_quality`: unchanged. The half-diminished 7th on F♯ in C reads `#ivm7b5`, the leading-tone rule of spec 01's addendum A |
+| `theory.c` | `theory_chord_card`, `name_card` (no caller in the plugin, lesson 6) | quartal and 7sus4 as a 7sus4 card, `(7s4)` and `C7sus4`, the 7th without its 5th as a 7th, as a card already shows add9 as a 9 |
+| `seq_core.c` | `PICK_TYPE` readers: `cp_sync`, `slot_chord`, `feel_put`, `tw_type`, `load_cp`, `cp_set` | loops over `CP_TYPES`: a point may hold types 10 to 12, made by THIS HIT ONLY or Feel of a slot with a new colour. `seq_cp_set` and the bar editor's TYPE (`seq_rbar_type`) stay 0 to 4 |
+| `seq_core.c` | `eff_colour`, `chord_level` (the COLOUR knob, COMPLEXITY) | act on Triad slots only; a slot with a new colour keeps it, as any coloured slot |
+| `seq_core.c` | `mel_chord_colour`, `chord_tone`, `mel_chords` | §8.1; the bass and the melody play only notes of each new chord's own scale (tested) |
+| `seq_core.c` | `chord_notes_inv` (SPREAD's low-interval rule), `mel_chords`' Power case | 9th to 13th and Power only: the new colours, of 3 or 4 notes, are not concerned |
+| `seq_core.c` | `old_src`, `out_slot_chords`, `save_part_head`, `out_cp`, `out_feel` | §8.4 |
+| `seq_core.c` | `load_quality` (`.pq`), `load_slots` (`.ch`), `load_cx`, `load_cp` | unchanged: the older fields keep their alphabets and ranges; `.cy` and `.cq` override after them |
+| `feel.c` | `has_seventh`, `is_dominant`, `is_dim7` | §8.1; `is_dim7` stays the 7th colour's |
+| `engine.c` | `pty_of` | maps the new colours to type 0: PHRASE's TYPE row lights nothing for them, as for 7th to 13th |
+| `engine.c` | `fo_label`, `VCOL_NAMES` | colours below 5, and the knob's levels: not concerned |
+| `engine.c`, `seq_core.c` | the label buffers (16 bytes) | every name fits 15 characters (tested); degree texts §8.3, 3 |
+
+### 8.3 Choices made while building
+
+1. **The dominant ♭5's triad quality.** `theory_triad_quality` called every diminished 5th diminished; C E G♭ then read
+   `Cm7b5` and `ii°`. The rule now asks for a minor 3rd as well; a major 3rd under a diminished 5th is major, its 5th
+   marked by the name. No scale before step 3 has that triad, so every earlier chord keeps its quality (the parity hash
+   is unchanged).
+2. **Names of combinations no catalogue chord uses.** The second range marks what it alters where the name or numeral
+   voices it: `C(b5)` for the bare major ♭5 triad (`Cb5` would read as a chord on C♭), `C9b5`, `Cm7#5`, `Cm6#5`,
+   `C11b9`, `C13b9`, `Caddb9`. The Phrygian dominant's 13th is ♭13, which `C13b9` does not say, as Cadenza names its
+   Phrygian and Aeolian 13ths without their ♭13 (spec §3.2: "the generic names"). Quartal and 7sus4 on a chord whose 7th
+   is major read `maj7sus4(no5)` and `maj7sus4`.
+3. **Fifteen characters.** Every name of every combination with a value of step 3 fits 15 characters, in every key and
+   scale (tested; the longest, `Bbmaj7sus4(no5)`, exactly 15). Degree texts fit for the forms step 5 writes: quartal and
+   7sus4 on a degree, a borrow or the first range, whose 7th is minor (`bVII 7sus4(no5)`, 15). A quartal on a
+   second-range chord with a diminished triad and an accidental reaches 16 (`#vii° 7sus4(no5)`) and would be cut; step
+   5 never writes it, since the first range's dominant voices the same notes (S05-D5).
+4. **The fallback view covers every real slot.** The first version computed the older fields' fallbacks for the loop's
+   slots only; a phrase longer than the loop saves hidden slots in `.prog`, and 26 of the author's checks failed at once.
+   `save_part_head` now builds the view for all 64 slots and decides whether `.ch` is written from the exact slots.
+5. **A Feel base's fallback** restores a borrow's degree before scoring: the code leaves it out (0.28's rule), and
+   scoring degree 0 of the borrowed scale would choose the colour for the wrong chord.
+6. **`.cy` and `.cq`** are fixed-width hex without separators, as `.cx`. `.cq` adds a chromatic point that `.cp` lacks
+   (a hand-edited state), and sets a found point's source and type, its degree 0 for a chromatic source.
+7. **Feel's suggestions.** `has_seventh` was not in §3.4's list; without it Feel would have read a 7sus4 as a chord
+   without a 7th.
+8. **The melody over quartal and 7sus4** may play the scale's 3rd, as 0.28.1's melody does over its own sus4 chords
+   (measured: B over G sus4). The test checks that every melody note belongs to the chord's own scale, which holds for
+   the nine; making the generated melodies avoid a sus chord's 3rd would change 0.28.1's sound and is not this step's.
+
+**The author's checks this step moved** (principle 9), each with a comment naming this specification: the three source
+probes §5 foresaw (`tests/test_core.c`: `seq_set_slot` and `seq_rbar_chord`; `tests/test_tweak.c`: `seq_tweak_point_ok`),
+now at `THEORY_SRC2_MAX + 1`; and three colour probes it did not, at `COL_COUNT`, which is now the quartal, moved to
+`COL_ALL` (`tests/test_core.c`: `seq_set_slot`; `tests/test_tweak.c`: `seq_tweak_chord`, `seq_tweak_point_ok`). The
+fork's own probes in `tests/test_chroma_path.c` moved likewise.
+
+### 8.4 Saved state, as built
+
+The writers see each slot twice: as it is, and as `old_chord` (`theory_fallback`) gives it to an older build. `.prog`,
+`.pq`, `.ch` and `.cx` hold the second, `.cy` the first for every slot whose chord or Feel base differs; `.cp` holds each
+point's fallback (an old colour's type), `.cq` the points that differ. `old_base` gives a Feel base code's fallback code.
+In the compatibility harness, 0.28.1 re-saves each such state with every older field as the fork wrote it and the new
+fields dropped (`tests/compat/expected.txt`); a fallback point on a first-range source is dropped by 0.28.1, as step 2's
+chromatic points are (the slot's chord plays there).
+
+### 8.5 Measurements
+
+| Quantity | Before (step 2) | After |
+|---|---|---|
+| Pads needing a new sonority | 375 | **0** |
+| Classic pads with no chromatic form | 164 | **0** |
+| Scale Mode palettes with a chord Cadenza cannot voice | 4 of 7 (the 7sus4) | **0 of 7** |
+| Pads exact only with step 3's values | | 375 (186 quartal, 124 It6, 17 minMaj7, 12 dom7b5, 12 m7b5, 12 minAug, 6 dom7b9, 6 minor6) |
+| Chords in Cadenza's space | 4 060 | 10 738 |
+| Pads near (the fifthless 11ths and 13ths, decision 12) | 66 | 66 |
+| Binary, local estimate (`tools/dev/armsize.sh`) | | +3 300 bytes of code, +36 of data |
+| Binary, CI | 650 KB | see the strategy, §5 |
+| Core parity hash | `934d3f5c...` | unchanged |
+| Compatibility harness | 17 scenarios | 20: 16 identical, 4 as pinned (step 2's and this step's three) |
+
+The coverage tool's new lines were first run against step 2's enumeration, where they give 375, 164 and 4 of 7: the
+figures after measure the step, not a changed definition.
+
+### 8.6 Other front ends
+
+For the design note to the author: a Feel base code may take the second form; the iOS app's Feel page decodes it only if
+it shares this engine. The new fields `.cy` and `.cq`, which a front end that saves through `seq_state_save` writes
+without knowing. `theory_fallback` is public, for any front end that writes states itself.

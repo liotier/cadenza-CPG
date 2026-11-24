@@ -102,6 +102,50 @@ static void sc_chroma_points(seq_t *s, const char *name) {
     CHECK(seq_cp_set(s, 2, 12, 0, theory_chroma_src(10, CQ_MAJOR), 1) == 1);
 }
 
+/* Step 3 (docs/development/specs/03-missing-sonorities.md, verification 6): slots with spec 03's values, which 0.28.1 plays as their
+ * fallbacks (S03-D6) from `.pq`, `.ch` and `.cx`, ignoring `.cy`, as tests/compat/expected.txt pins */
+static void sc_sonority_slots(seq_t *s, const char *name) {
+    int deg[16] = {0};
+    unsigned char src[16] = {0}, col[16] = {0};
+    const unsigned char nine[8][2] = {{(unsigned char)theory_chroma2_src(0, CQ2_MELMIN), COL_7TH},   /* CmMaj7 */
+                                      {(unsigned char)theory_chroma2_src(5, CQ2_MELMIN), COL_6TH},   /* Fm6 */
+                                      {(unsigned char)theory_chroma2_src(6, CQ2_LOCRIAN), COL_7TH},  /* F#m7b5 */
+                                      {(unsigned char)theory_chroma2_src(8, CQ2_DOMB5), COL_7TH},    /* Ab7b5 */
+                                      {(unsigned char)theory_chroma2_src(7, CQ2_PHRDOM), COL_9TH},   /* G7b9 */
+                                      {(unsigned char)theory_chroma2_src(0, CQ2_MINSH5), COL_TRIAD}, /* Cm#5 */
+                                      {(unsigned char)theory_chroma_src(2, CQ_DOM), COL_QUARTAL},    /* D7sus4(no5) */
+                                      {0, COL_7SUS4}};                                               /* G7sus4, on V */
+    seq_set_bars(s, 8);
+    seq_set_chord_len(s, 8);
+    CHECK(seq_slots(s) == 16);
+    for (int i = 0; i < 8; i++) src[i] = nine[i][0], col[i] = nine[i][1];
+    deg[7] = 4;
+    seq_set_progression(s, seq_slots(s), deg, src, col, 1);
+    seq_set_slot(s, 9, 0, theory_chroma_src(8, CQ_DOM), COL_7NO5);   /* the Italian sixth (Ab7), picked */
+    CHECK(seq_slot_src(s, 0) == src[0] && seq_slot_colour(s, 9) == COL_7NO5 && seq_slot_colour(s, 7) == COL_7SUS4 && seq_slot_deg(s, 7) == 4);
+}
+
+/* Step 3: change points with spec 03's values: a second-range source (its fallback a first-range one, which 0.28.1 skips, as for
+ * step 2's points) and a new colour on a degree (its fallback type, which 0.28.1 keeps) */
+static void sc_sonority_points(seq_t *s, const char *name) {
+    CHECK(seq_cp_set(s, 0, 8, 0, theory_chroma2_src(6, CQ2_LOCRIAN), 0) == 1);
+    CHECK(seq_tweak_chord(s, 1, 8, 4, 0, COL_7SUS4) == 1);
+    CHECK(seq_cp_count(s, 0) == 1 && seq_cp_count(s, 1) == 1);
+}
+
+/* Step 3: a Feel base naming a second-range chord: its fallback's code in `.cx` */
+static void sc_sonority_feel(seq_t *s, const char *name) {
+    seq_feel_chord_t c[16];
+    seq_set_slot(s, 1, 0, theory_chroma2_src(6, CQ2_LOCRIAN), COL_7TH);
+    int n = seq_feel_chords(s, c, 16), at = -1;
+    for (int i = 0; i < n; i++)
+        if (c[i].slot == 1) at = i;
+    CHECK(at >= 0);
+    seq_feel_pick(s, at, 3, 0, COL_TRIAD);
+    seq_feel_chords(s, c, 16);
+    CHECK(at >= 0 && c[at].has_base && c[at].base_src == theory_chroma2_src(6, CQ2_LOCRIAN));
+}
+
 static const struct { const char *name; scenario_fn fn; } scenarios[] = {
     {"init", sc_init},
     {"key-scale", sc_key_scale},
@@ -114,6 +158,9 @@ static const struct { const char *name; scenario_fn fn; } scenarios[] = {
     {"lock", sc_lock},
     {"chroma-slots", sc_chroma_slots},
     {"chroma-points", sc_chroma_points},
+    {"sonority-slots", sc_sonority_slots},
+    {"sonority-points", sc_sonority_points},
+    {"sonority-feel", sc_sonority_feel},
 };
 
 static char first[SEQ_STATE_MAX], resave[SEQ_STATE_MAX], again[SEQ_STATE_MAX];

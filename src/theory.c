@@ -46,13 +46,23 @@ static int cat2(char *buf, int len, const char *a, const char *b) { return cat5(
 
 /* 0.28 the chromatic chords' scales (theory_chroma_src), from their root: major, minor, dominant, diminished */
 static const int CHROMA[CQ_COUNT][7] = {{0, 2, 4, 5, 7, 9, 11}, {0, 2, 3, 5, 7, 8, 10}, {0, 2, 4, 5, 7, 9, 10}, {0, 2, 3, 5, 6, 8, 9}};
+/* fork (spec 03): the second range's, CQ2_*: melodic minor, Locrian, dominant b5, Phrygian dominant, minor #5 */
+static const signed char CHROMA2[CQ2_COUNT][7] = {
+    {0, 2, 3, 5, 7, 9, 11}, {0, 1, 3, 5, 6, 8, 10}, {0, 2, 4, 5, 6, 9, 10}, {0, 1, 4, 5, 7, 8, 10}, {0, 2, 3, 5, 8, 9, 10}};
 
 int theory_degree_pc(int key, int scale, int deg) {
     if (scale >= SCALE_COUNT) {   /* a chromatic chord's: theory_slot_scale */
-        int v = scale - SCALE_COUNT;
+        int v = scale - SCALE_COUNT, w = v - 12 * CQ_COUNT;
+        if (w >= 0) return (key + w / CQ2_COUNT + CHROMA2[w % CQ2_COUNT][pmod(deg, 7)]) % 12;   /* the second range */
         return (key + v / CQ_COUNT + CHROMA[v % CQ_COUNT][pmod(deg, 7)]) % 12;
     }
     return (key + SCALE[scale][pmod(deg, 7)]) % 12;
+}
+
+/* fork (spec 03): a chord scale's second-range quality, CQ2_*; -1 for any other scale */
+static int q2_of(int scale) {
+    int w = scale - SCALE_COUNT - 12 * CQ_COUNT;
+    return w >= 0 ? w % CQ2_COUNT : -1;
 }
 
 int theory_tone_note(int key, int scale, int deg, int tone, int octave) {
@@ -61,17 +71,26 @@ int theory_tone_note(int key, int scale, int deg, int tone, int octave) {
     return 48 + 12 * octave + root + above;
 }
 
-/* the triad quality: 0 major, 1 minor, 2 diminished, 3 augmented */
+/* the triad quality: 0 major, 1 minor, 2 diminished, 3 augmented. Fork (spec 03): a major 3rd under a diminished 5th, which no scale
+ * before the dominant b5's has, is major, its 5th marked by the name (five_mark) */
 int theory_triad_quality(int key, int scale, int deg) {
     int root = theory_degree_pc(key, scale, deg);
     int third = pmod(theory_degree_pc(key, scale, deg + 2) - root, 12);
     int fifth = pmod(theory_degree_pc(key, scale, deg + 4) - root, 12);
-    return fifth == 6 ? 2 : third == 4 && fifth == 8 ? 3 : third == 3 ? 1 : 0;
+    return fifth == 6 && third != 4 ? 2 : third == 4 && fifth == 8 ? 3 : third == 3 ? 1 : 0;
 }
 
+/* fork (spec 03, S03-D7): the mark of a second-range chord's altered 5th, after a name or numeral that voices it: the minor #5's "#5",
+ * the dominant b5's "b5" ("(b5)" after a bare triad, where "Cb5" would read as a chord on Cb) */
+static const char *five_mark(int scale, int bare) {
+    int q = q2_of(scale);
+    return q == CQ2_MINSH5 ? "#5" : q != CQ2_DOMB5 ? "" : bare ? "(b5)" : "b5";
+}
+
+static const char *const QUALITY[4] = {"", "m", "dim", "+"};
+
 int theory_chord_name(int key, int scale, int deg, char *buf, int len) {
-    static const char *const QUALITY[4] = {"", "m", "dim", "+"};
-    return cat2(buf, len, NOTE[theory_degree_pc(key, scale, deg)], QUALITY[theory_triad_quality(key, scale, deg)]);
+    return cat4(buf, len, NOTE[theory_degree_pc(key, scale, deg)], QUALITY[theory_triad_quality(key, scale, deg)], five_mark(scale, 1), NULL);
 }
 
 /* name and octave o: "E4" */
@@ -119,7 +138,8 @@ void theory_voice_next(int key, int scale, int deg, const int prev[3], int out[3
     if (best < 0) memcpy(out, root, 3 * sizeof(int));   /* unreachable: every triad has a voicing in range */
 }
 
-const char *const THEORY_COLOUR_NAME[COL_COUNT] = {"Triad", "7th", "sus2", "sus4", "add9", "Power", "9th", "11th", "13th", "6th"};
+const char *const THEORY_COLOUR_NAME[COL_ALL] = {"Triad", "7th",  "sus2",    "sus4",   "add9",  "Power", "9th",
+                                                 "11th",  "13th", "6th", "quartal", "7(no5)", "7sus4"};
 
 /* Each project scale's three borrowed chords: {scale, degree}, left to right on the PHRASE chord picker's borrow row (cqr_) */
 static const unsigned char BORROW[SCALE_COUNT][THEORY_NBORROW][2] = {
@@ -137,19 +157,21 @@ int theory_slot_scale(int scale, int src) {
     return src >= THEORY_SRC_CHROMA ? SCALE_COUNT + src - THEORY_SRC_CHROMA : src ? theory_borrow_scale(scale, src) : scale;
 }
 int theory_chroma_src(int root, int quality) { return THEORY_SRC_CHROMA + pmod(root, 12) * CQ_COUNT + quality; }
-int theory_src_ok(int src) { return src >= 0 && src <= THEORY_SRC_MAX; }
+int theory_chroma2_src(int root, int quality) { return THEORY_SRC2 + pmod(root, 12) * CQ2_COUNT + quality; }
+int theory_src_ok(int src) { return src >= 0 && src <= THEORY_SRC2_MAX; }
 
 int theory_colour_tone(int colour, int tone) {
     if (tone != TONE_3) return tone;
-    return colour == COL_SUS2 ? TONE_2 : colour == COL_SUS4 ? TONE_4 : tone;
+    return colour == COL_SUS2 ? TONE_2 : colour == COL_SUS4 || colour == COL_QUARTAL || colour == COL_7SUS4 ? TONE_4 : tone;
 }
 
-/* Each colour's tones, 0-ended (sus2 / sus4 swap the 3 in theory_colour_tone) */
-static const signed char COLOUR_TONES[COL_COUNT][6] = {
-    {1, 3, 5}, {1, 3, 5, 7}, {1, 3, 5}, {1, 3, 5}, {1, 3, 5, 9}, {1, 5}, {1, 3, 5, 7, 9}, {1, 3, 7, 9, 11}, {1, 3, 7, 9, 13}, {1, 3, 5, 6}};
+/* Each colour's tones, 0-ended (sus2 / sus4, quartal and 7sus4 swap the 3 in theory_colour_tone) */
+static const signed char COLOUR_TONES[COL_ALL][6] = {{1, 3, 5},       {1, 3, 5, 7},     {1, 3, 5},        {1, 3, 5},     {1, 3, 5, 9},
+                                                     {1, 5},          {1, 3, 5, 7, 9},  {1, 3, 7, 9, 11}, {1, 3, 7, 9, 13}, {1, 3, 5, 6},
+                                                     {1, 3, 7},       {1, 3, 7},        {1, 3, 5, 7}};
 
 int theory_chord_notes(int key, int scale, int deg, int colour, int out[THEORY_CHORD_MAX]) {
-    const signed char *t = COLOUR_TONES[colour >= 0 && colour < COL_COUNT ? colour : COL_TRIAD];
+    const signed char *t = COLOUR_TONES[colour >= 0 && colour < COL_ALL ? colour : COL_TRIAD];
     int n = 0;
     for (; t[n]; n++) out[n] = theory_tone_note(key, scale, deg, theory_colour_tone(colour, t[n]), 0);
     return n;
@@ -163,22 +185,34 @@ int theory_colour_of_level(int level) {
 static int is_ext(int colour) { return colour >= COL_9TH && colour <= COL_13TH; }
 static const char *const EXT_NUM[COL_COUNT] = {[COL_9TH] = "9", [COL_11TH] = "11", [COL_13TH] = "13"};
 
+/* fork (spec 03): an extended chord's number and the mark after it. The Phrygian dominant's b9 ("7b9" for its 9th, the CPG's name; "11b9",
+ * "13b9"), a half-diminished 7th's b5, the second range's altered 5th */
+static const char *ext_num(int scale, int colour) { return q2_of(scale) == CQ2_PHRDOM && colour == COL_9TH ? "7b9" : EXT_NUM[colour]; }
+static const char *ext_mark(int scale, int colour, int q, int sev) {
+    return q == 2 && sev == 10 ? "b5" : q2_of(scale) == CQ2_PHRDOM && colour != COL_9TH ? "b9" : five_mark(scale, 0);
+}
+/* fork (spec 03): the 7th of quartal and 7sus4, a major one written maj7 */
+static const char *sus_seventh(int colour, int sev) {
+    static const char *const T[2][2] = {{"7sus4", "maj7sus4"}, {"7sus4(no5)", "maj7sus4(no5)"}};
+    return T[colour == COL_QUARTAL][sev == 11];
+}
+
 int theory_chord_name_c(int key, int scale, int deg, int colour, char *buf, int len) {
     static const char *const SEV[4][2] = {{"7", "maj7"}, {"m7", "mMaj7"}, {"dim7", "m7b5"}, {"+7", "+maj7"}};
     static const char *const XPRE[4][2] = {{"", "maj"}, {"m", "mMaj"}, {"dim", "m"}, {"+", "+maj"}};   /* SEV's, before the number */
-    int root = theory_degree_pc(key, scale, deg), q, sev, n;
+    int root = theory_degree_pc(key, scale, deg), q = theory_triad_quality(key, scale, deg);
+    int sev = pmod(theory_degree_pc(key, scale, deg + 6) - root, 12);   /* 9, 10 or 11 in every scale here */
+    if (colour == COL_7NO5) colour = COL_7TH;   /* named as the full chord, as the fifthless 11ths and 13ths (S03-D7) */
     if (colour == COL_SUS2 || colour == COL_SUS4) return cat2(buf, len, NOTE[root], THEORY_COLOUR_NAME[colour]);
     if (colour == COL_POWER) return cat2(buf, len, NOTE[root], "5");
-    if (colour != COL_7TH && !is_ext(colour)) {
-        n = theory_chord_name(key, scale, deg, buf, len);
-        return (colour == COL_ADD9 || colour == COL_6TH) && n < len ? n + cat2(buf + n, len - n, colour == COL_6TH ? "6" : "add9", NULL) : n;
-    }
-    q = theory_triad_quality(key, scale, deg);
-    sev = pmod(theory_degree_pc(key, scale, deg + 6) - root, 12);   /* 9, 10 or 11 in every scale here */
+    if (colour == COL_QUARTAL || colour == COL_7SUS4) return cat2(buf, len, NOTE[root], sus_seventh(colour, sev));
+    if (colour == COL_ADD9 || colour == COL_6TH)
+        return cat4(buf, len, NOTE[root], QUALITY[q], colour == COL_6TH ? "6" : q2_of(scale) == CQ2_PHRDOM ? "addb9" : "add9", five_mark(scale, 0));
+    if (colour != COL_7TH && !is_ext(colour)) return theory_chord_name(key, scale, deg, buf, len);
     if (is_ext(colour))   /* the 7th's name with its 7 replaced: Em9, Cmaj13, D11, F#m9b5 */
-        return cat4(buf, len, NOTE[root], XPRE[q][q == 2 ? sev == 10 : sev == 11], EXT_NUM[colour], q == 2 && sev == 10 ? "b5" : "");
+        return cat4(buf, len, NOTE[root], XPRE[q][q == 2 ? sev == 10 : sev == 11], ext_num(scale, colour), ext_mark(scale, colour, q, sev));
     /* index 1: major 7th, except on dim where index 1 is the minor 7th (half-diminished) */
-    return cat2(buf, len, NOTE[root], SEV[q][q == 2 ? sev == 10 : sev == 11]);
+    return cat4(buf, len, NOTE[root], SEV[q][q == 2 ? sev == 10 : sev == 11], five_mark(scale, 0), NULL);
 }
 
 /* fork (docs/development/specs/01-key-aware-spelling.md, S01-A1 and S01-A2): the project degree a chromatic chord's root is written
@@ -226,14 +260,17 @@ int theory_degree_c(int key, int scale, int slot_scale, int deg, int colour, cha
     char num[12];
     static const char *const XPRE[4][2] = {{"", "maj"}, {"", "maj"}, {THEORY_DIM, "m"}, {"+", "+maj"}};   /* SEV's, before the number */
     int d = pmod(deg, 7), q = theory_triad_quality(key, slot_scale, d), n = theory_numeral(key, scale, slot_scale, d, num, sizeof num);
-    if (colour == COL_TRIAD || colour >= COL_COUNT || colour < 0) return cat2(buf, len, num, NULL);
-    if (colour == COL_POWER || colour == COL_6TH) return cat2(buf, len, num, colour == COL_POWER ? "5" : "6");   /* "i5", "IV6" */
-    if (colour != COL_7TH && !is_ext(colour)) return cat4(buf, len, num, " ", THEORY_COLOUR_NAME[colour], NULL);   /* "vi\xC2\xB0 sus4", "IV add9" */
-    num[numeral_stem(q, n)] = 0;
     int sev = pmod(theory_degree_pc(key, slot_scale, d + 6) - theory_degree_pc(key, slot_scale, d), 12);
-    if (is_ext(colour))   /* "i9", "Imaj9", "VII11", "iim9b5" */
-        return cat4(buf, len, num, XPRE[q][q == 2 ? sev == 10 : sev == 11], EXT_NUM[colour], q == 2 && sev == 10 ? "b5" : "");
-    return cat2(buf, len, num, SEV[q][q == 2 ? sev == 10 : sev == 11]);
+    if (colour == COL_7NO5) colour = COL_7TH;   /* fork (spec 03): as its name, the full chord's */
+    if (colour == COL_TRIAD || colour >= COL_ALL || colour < 0) return cat2(buf, len, num, five_mark(slot_scale, 1));   /* fork: "I(b5)", "i#5" */
+    if (colour == COL_POWER || colour == COL_6TH) return cat4(buf, len, num, colour == COL_POWER ? "5" : "6", colour == COL_6TH ? five_mark(slot_scale, 0) : "", NULL);   /* "i5", "IV6" */
+    if (colour == COL_QUARTAL || colour == COL_7SUS4) return cat4(buf, len, num, " ", sus_seventh(colour, sev), NULL);   /* fork: "I 7sus4(no5)", "i 7sus4" */
+    if (colour != COL_7TH && !is_ext(colour))   /* "vi\xC2\xB0 sus4", "IV add9" */
+        return cat4(buf, len, num, " ", colour == COL_ADD9 && q2_of(slot_scale) == CQ2_PHRDOM ? "addb9" : THEORY_COLOUR_NAME[colour], colour == COL_ADD9 ? five_mark(slot_scale, 0) : "");
+    num[numeral_stem(q, n)] = 0;
+    if (is_ext(colour))   /* "i9", "Imaj9", "VII11", "iim9b5"; fork: "I7b9" */
+        return cat4(buf, len, num, XPRE[q][q == 2 ? sev == 10 : sev == 11], ext_num(slot_scale, colour), ext_mark(slot_scale, colour, q, sev));
+    return cat4(buf, len, num, SEV[q][q == 2 ? sev == 10 : sev == 11], five_mark(slot_scale, 0), NULL);   /* fork: "I7b5", "i7#5" */
 }
 
 /* NAMES on: the name with a compact suffix, as 0.12 */
@@ -241,6 +278,9 @@ static int name_card(int key, int slot_scale, int d, int colour, char *buf, int 
     char base[16];
     int q = theory_triad_quality(key, slot_scale, d), root = theory_degree_pc(key, slot_scale, d);
     theory_chord_name(key, slot_scale, d, base, sizeof base);
+    if (colour == COL_7NO5) colour = COL_7TH;   /* fork (spec 03): the 7th; quartal and 7sus4 as a 7sus4, as add9 reads as a 9 */
+    if (colour == COL_QUARTAL || colour == COL_7SUS4)
+        return cat4(buf, len, NOTE[root], pmod(theory_degree_pc(key, slot_scale, d + 6) - root, 12) == 11 ? "M7" : "7", "sus4", NULL);
     if (colour <= COL_TRIAD || colour >= COL_COUNT) return cat2(buf, len, base, NULL);
     if (colour == COL_ADD9) return cat2(buf, len, base, "9");   /* 9: add9 on a card */
     if (colour >= COL_POWER) return theory_chord_name_c(key, slot_scale, d, colour, buf, len);   /* "E5", "Em9", "Cmaj13", "Em6" */
@@ -257,6 +297,8 @@ int theory_chord_card(int key, int scale, int slot_scale, int deg, int colour, i
     int d = pmod(deg, 7), root = theory_degree_pc(key, slot_scale, d), sev;
     if (names) return name_card(key, slot_scale, d, colour, buf, len);
     theory_numeral(key, scale, slot_scale, d, num, sizeof num);
+    if (colour == COL_7NO5) colour = COL_7TH;   /* fork (spec 03), as name_card */
+    if (colour == COL_QUARTAL || colour == COL_7SUS4) return cat2(buf, len, num, "(7s4)");
     if (colour <= COL_TRIAD || colour >= COL_COUNT) return cat2(buf, len, num, NULL);
     if (colour != COL_7TH && !is_ext(colour)) return cat4(buf, len, num, "(", SUF[colour], ")");
     sev = pmod(theory_degree_pc(key, slot_scale, d + 6) - root, 12);   /* the seventh: 11 major, 10 minor, 9 diminished */
@@ -304,8 +346,8 @@ int theory_voice_mode(const int notes[THEORY_CHORD_MAX], int n, const int prev[T
 }
 
 int theory_avoid(int key, int scale, int slot_scale, int deg, int colour) {
-    static const signed char EXT[COL_COUNT][2] = {[COL_ADD9] = {9}, [COL_9TH] = {9}, [COL_11TH] = {9, 11}, [COL_13TH] = {9, 13}, [COL_6TH] = {6}};
-    int c = colour >= 0 && colour < COL_COUNT ? colour : COL_TRIAD, avoid = 0;
+    static const signed char EXT[COL_ALL][2] = {[COL_ADD9] = {9}, [COL_9TH] = {9}, [COL_11TH] = {9, 11}, [COL_13TH] = {9, 13}, [COL_6TH] = {6}};
+    int c = colour >= 0 && colour < COL_ALL ? colour : COL_TRIAD, avoid = 0;
     (void)scale;   /* the chord's own scale decides */
     for (int e = 0; e < 2 && EXT[c][e]; e++)   /* an extension a semitone above the root, 3rd or 5th (even if the voicing leaves the 5th out) */
         for (int t = 0; t < 3; t++)
@@ -314,8 +356,9 @@ int theory_avoid(int key, int scale, int slot_scale, int deg, int colour) {
 }
 
 int theory_drift(int key, int scale, int slot_scale, int deg, int colour, int cluster, int inversion) {
-    static const unsigned char COST[COL_COUNT] = {0, 10, 12, 12, 12, 0, 22, 38, 50, 12};   /* by colour */
-    int score = 0, c = colour >= 0 && colour < COL_COUNT ? colour : COL_TRIAD;
+    /* by colour; fork (spec 03): quartal and 7sus4 as sus4, the 7th without its 5th as a 7th */
+    static const unsigned char COST[COL_ALL] = {0, 10, 12, 12, 12, 0, 22, 38, 50, 12, 12, 10, 12};
+    int score = 0, c = colour >= 0 && colour < COL_ALL ? colour : COL_TRIAD;
     if (slot_scale != scale) score += 30;
     if (theory_triad_quality(key, slot_scale, deg) == 2) score += 15;
     score += COST[c];
@@ -421,7 +464,7 @@ theory_spelling_t theory_spell_tone(int key, int scale, int slot_scale, int deg,
 }
 
 int theory_chord_tones(int colour, int out[THEORY_CHORD_MAX]) {
-    const signed char *t = COLOUR_TONES[colour >= 0 && colour < COL_COUNT ? colour : COL_TRIAD];
+    const signed char *t = COLOUR_TONES[colour >= 0 && colour < COL_ALL ? colour : COL_TRIAD];
     int n = 0;
     for (; t[n]; n++) out[n] = theory_colour_tone(colour, t[n]);
     return n;
@@ -459,3 +502,28 @@ int theory_note_name_s(int key, int scale, const theory_chord_t *ctx, int note, 
 }
 
 const char *theory_key_name_s(int key, int scale) { return theory_spelling_text(theory_spell_tonic(key, scale)); }
+
+/* fork (spec 03, S03-D6): the chord's pitch classes over C, a 12-bit set, and its count */
+static int pc_set(int slot_scale, int deg, int colour, int *count) {
+    int notes[THEORY_CHORD_MAX], n = theory_chord_notes(0, slot_scale, deg, colour, notes), set = 0;
+    while (n--) set |= 1 << notes[n] % 12;
+    for (n = 0, *count = 0; n < 12; n++) *count += set >> n & 1;
+    return set;
+}
+
+int theory_fallback(int scale, int src, int deg, int colour, int *fsrc, int *fdeg, int *fcolour) {
+    int sc = scale >= 0 && scale < SCALE_COUNT ? scale : SCALE_MAJOR, second = src >= THEORY_SRC2, want, n, best = -99, bshared = 0, bn = 0;
+    *fsrc = src, *fdeg = deg, *fcolour = colour;
+    if (!theory_src_ok(src) || colour < 0 || colour >= COL_ALL || (!second && colour < COL_COUNT)) return 0;
+    want = pc_set(theory_slot_scale(sc, src), deg, colour, &n);
+    for (int q = 0; q < (second ? CQ_COUNT : 1); q++)
+        for (int c = 0; c < COL_COUNT; c++) {
+            int s2 = second ? theory_chroma_src((src - THEORY_SRC2) / CQ2_COUNT, q) : src, d = second ? 0 : deg;
+            int have = pc_set(theory_slot_scale(sc, s2), d, c, &n), shared = 0, score;
+            for (int k = 0; k < 12; k++) shared += (have & want) >> k & 1;
+            score = 2 * shared - n;   /* shared less added */
+            if (score > best || (score == best && (shared > bshared || (shared == bshared && n < bn))))
+                best = score, bshared = shared, bn = n, *fsrc = s2, *fdeg = d, *fcolour = c;
+        }
+    return 1;
+}

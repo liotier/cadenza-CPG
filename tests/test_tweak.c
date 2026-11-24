@@ -243,11 +243,13 @@ static void test_bar_chords(void) {
     seq_tweak_chord(&a, 0, 8, 4, 0, COL_TRIAD);
     seq_tweak_chord(&a, 0, 8, -1, 0, 0);
     CHECK(seq_cp_count(&a, 0) == 0, "back to the chord as Feel has it");
-    CHECK(seq_tweak_chord(&a, 0, 8, 4, 0, COL_COUNT) == 0, "a bad colour: nothing");
+    CHECK(seq_tweak_chord(&a, 0, 8, 4, 0, COL_ALL) == 0, "a bad colour: nothing");   /* fork, spec 03: COL_COUNT is quartal now (0.28.1: refused) */
     CHECK(seq_tweak_point_ok(0, COL_6TH) && seq_tweak_point_ok(THEORY_NBORROW, COL_TRIAD), "a point holds the scale's and borrowed chords");
     /* fork, docs/development/specs/02-chromatic-progression-path.md: a point holds a chromatic chord too (0.28.1: refused) */
     CHECK(seq_tweak_point_ok(THEORY_NBORROW + 1, COL_TRIAD) && seq_tweak_point_ok(THEORY_SRC_MAX, COL_7TH), "a point holds a chromatic chord");
-    CHECK(!seq_tweak_point_ok(THEORY_SRC_MAX + 1, COL_TRIAD) && !seq_tweak_point_ok(0, COL_COUNT), "not past the chromatic range, nor a bad colour");
+    /* fork, spec 03: the second range and the colours past COL_COUNT too; the probes moved past them (0.28.1: THEORY_SRC_MAX + 1, COL_COUNT) */
+    CHECK(seq_tweak_point_ok(THEORY_SRC2_MAX, COL_7TH) && seq_tweak_point_ok(0, COL_QUARTAL) && seq_tweak_point_ok(0, COL_7SUS4), "a point holds spec 03's values");
+    CHECK(!seq_tweak_point_ok(THEORY_SRC2_MAX + 1, COL_TRIAD) && !seq_tweak_point_ok(0, COL_ALL), "not past the chromatic ranges, nor a bad colour");
 
     fresh(&a);
     seq_rhythm_pick(&a, LANE_CHORDS, 3);   /* Pulse: x---x---x---x--- */

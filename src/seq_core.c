@@ -222,9 +222,11 @@ static int part_slots(const seq_part_t *p) { return slots_of(p->bars, p->chord_l
 static int slot_locked(const seq_part_t *p, int slot) { return slot >= SEQ_MAX_PROG || (p->slot_lock >> slot & 1); }
 
 /* 0.24 the chord types a pick and a change point take (seq_rbar_type's 0 Knobs .. 4 6th), as colours. 0.24.2 (append only: saved as
- * digits) 5..9 the own colours no TYPE picks, which only a point made of a sounding chord takes (slot_chord: THIS HIT ONLY) */
-enum { PICK_TYPES = 5, CP_TYPES = 10 };
-static const unsigned char PICK_TYPE[CP_TYPES] = {COL_TRIAD, COL_SUS2, COL_SUS4, COL_ADD9, COL_6TH, COL_7TH, COL_POWER, COL_9TH, COL_11TH, COL_13TH};
+ * digits) 5..9 the own colours no TYPE picks, which only a point made of a sounding chord takes (slot_chord: THIS HIT ONLY). Fork (spec
+ * 03, S03-D4): 10..12 the colours past COL_COUNT, which `.cp` never holds (out_cp writes their fallbacks, `.cq` the types) */
+enum { PICK_TYPES = 5, CP_OLD_TYPES = 10, CP_TYPES = 13 };
+static const unsigned char PICK_TYPE[CP_TYPES] = {COL_TRIAD, COL_SUS2,  COL_SUS4,  COL_ADD9,    COL_6TH, COL_7TH,  COL_POWER,
+                                                  COL_9TH,   COL_11TH,  COL_13TH,  COL_QUARTAL, COL_7NO5, COL_7SUS4};
 
 /* 0.24 1 when bar b's step 0 starts a slot: a point there would be a slot change (none is kept) */
 static int bar_starts_slot(const seq_part_t *p, int b) { return b * SEQ_STEPS % p->chord_len == 0; }
@@ -338,7 +340,7 @@ static void fill_phrase(seq_part_t *p, int n, const int *deg, const unsigned cha
         if (!theory_src_ok(b)) b = 0;   /* fork, spec 02: a chromatic chord too (0.28.1: a borrowed one at most) */
         p->prog[i] = b > THEORY_NBORROW ? 0 : pmod(deg[j], 7);   /* a borrow's degree: revoice; a chromatic chord's: 0 */
         p->src[i] = (unsigned char)b;
-        p->colour[i] = (unsigned char)(c >= COL_COUNT ? 0 : c);
+        p->colour[i] = (unsigned char)(c >= COL_ALL ? 0 : c);
     }
     p->filled_slots = to;
     p->phrase = n;
@@ -527,8 +529,14 @@ static void voice_chain(const seq_t *s, seq_part_t *p, int n) {
         p->voice_n[i] = theory_voice_mode(notes, slot_notes(s, p, i, notes), p->voice[i - 1], p->voice_n[i - 1], mode, p->voice[i]);
 }
 
-/* 0.28 a slot's feel code (seq_feel_slot_t): what it plays, a borrow's degree left out (a scale change moves it, the chord stays) */
-static unsigned feel_code_of(int deg, int src, int colour) { return 1u + (unsigned)((src ? 0 : deg) + 7 * (src + (THEORY_SRC_MAX + 1) * colour)); }
+/* 0.28 a slot's feel code (seq_feel_slot_t): what it plays, a borrow's degree left out (a scale change moves it, the chord stays). Fork
+ * (spec 03, S03-D5): a second-range source takes a second form, FEEL_CODE2 + (src - THEORY_SRC2) x 16 + colour, past the first's
+ * largest (a colour past COL_COUNT on a first-range source stays in the first form, below 4733) */
+#define FEEL_CODE2 0x8000u
+static unsigned feel_code_of(int deg, int src, int colour) {
+    if (src >= THEORY_SRC2) return FEEL_CODE2 + (unsigned)((src - THEORY_SRC2) * 16 + colour);
+    return 1u + (unsigned)((src ? 0 : deg) + 7 * (src + (THEORY_SRC_MAX + 1) * colour));
+}
 static unsigned feel_code(const seq_part_t *p, int i) { return feel_code_of(p->prog[i], p->src[i], p->colour[i]); }
 
 /* 0.28 slot i's recipe notes, ascending: each voice's role in this chord, at the note nearest its reference (a note already taken: an
@@ -774,13 +782,15 @@ static void set_abs(seq_step_t *x, int note) {
 
 /* The colour the lanes that read chord tones (the recipe melody's chords, the Bass's chord-tone test) see for a slot's colour:
  * a 6th, 9th, 11th or 13th chord is its 7th chord (root, 3rd, 5th, 7th, the 5th too even where the voicing leaves it out); the
- * others as they are. The recipe reads a Power chord as its root and 5th (mel_chords). */
+ * others as they are. The recipe reads a Power chord as its root and 5th (mel_chords). Fork (spec 03): the 7th without its 5th is its
+ * 7th chord too; quartal and 7sus4 keep their 4th, their 7th a chord tone (chord_tone) */
 static int mel_chord_colour(int colour) {
-    return colour == COL_6TH || colour == COL_9TH || colour == COL_11TH || colour == COL_13TH ? COL_7TH : colour;
+    return colour == COL_6TH || colour == COL_9TH || colour == COL_11TH || colour == COL_13TH || colour == COL_7NO5 ? COL_7TH : colour;
 }
 
 static int chord_tone(const seq_t *s, const seq_part_t *p, int slot, int tone) {
-    return tone == TONE_R || tone == TONE_3 || tone == TONE_5 || (tone == TONE_7 && mel_chord_colour(eff_colour(s, p, slot)) == COL_7TH);
+    int c = mel_chord_colour(eff_colour(s, p, slot));
+    return tone == TONE_R || tone == TONE_3 || tone == TONE_5 || (tone == TONE_7 && (c == COL_7TH || c == COL_7SUS4 || c == COL_QUARTAL));
 }
 
 /* The note of pitch class pc nearest `near` (ties: the lower) */
@@ -3904,6 +3914,25 @@ static void save_lane(out_t *o, const seq_t *s, char c, const seq_part_t *p, con
 /* 0.28 a slot's src in the older fields: a chromatic chord (`.cx` holds it) saves as degree 0 of the scale, whose degree it already holds */
 static int old_src(int src) { return src > THEORY_NBORROW ? 0 : src; }
 
+static void feel_decode(unsigned code, int *deg, int *src, int *colour);
+
+/* fork (docs/development/specs/03-missing-sonorities.md, S03-D5): a chord as an older build reads it in the older fields, its fallback
+ * (theory_fallback) when it uses a value of spec 03; returns 1 then. The new fields `.cy` and `.cq` hold it exactly */
+static int old_chord(int scale, int *deg, int *src, int *colour) {
+    int d, sr, c, n = theory_fallback(scale, *src, *deg, *colour, &sr, &d, &c);
+    *deg = d, *src = sr, *colour = c;
+    return n;
+}
+
+/* fork (S03-D5): a Feel base code as an older build reads it, its fallback's code when it names a value of spec 03 (0, none, stays) */
+static unsigned old_base(int scale, unsigned base) {
+    int d, sr, c;
+    if (!base) return 0;
+    feel_decode(base, &d, &sr, &c);
+    if (sr >= 1 && sr <= THEORY_NBORROW) d = theory_borrow_degree(scale, sr);   /* the code leaves a borrow's degree out */
+    return old_chord(scale, &d, &sr, &c) ? feel_code_of(d, sr, c) : base;
+}
+
 /* 0.14 `|<c>.ch=`: every slot of the loop, 4 characters each, <degree 0-6><src 0-3><colour 0-4><lock 0|1> */
 static void out_slot_chords(out_t *o, char c, const prog_view_t *v) {
     char d[4 * SEQ_MAX_PROG + 1];
@@ -3918,18 +3947,31 @@ static void out_slot_chords(out_t *o, char c, const prog_view_t *v) {
 }
 
 /* 0.24 `|<c>.cp=` the change points of the bars up to filled, comma-separated, 5 characters each: bar and step in hex, degree, src,
- * type (seq_cp_t), as `58200` (bar 6 step 9, III, Knobs); only when one exists (a state without saves as 0.23 did) */
-static void out_cp(out_t *o, char c, const seq_part_t *p) {
+ * type (seq_cp_t), as `58200` (bar 6 step 9, III, Knobs); only when one exists (a state without saves as 0.23 did). Fork (spec 03,
+ * S03-D5): a point using a value of spec 03 as its fallback (old_chord), then `|<c>.cq=` each such point exactly, 5 hex digits: bar 1,
+ * step 1, src 2, type 1 */
+static void out_cp(out_t *o, char c, const seq_part_t *p, int scale) {
     static const char HEX[] = "0123456789abcdef";
     char d[SEQ_MAX_BARS * SEQ_CP_MAX * 6 + 1], *w = d;
+    int cq = 0;
     for (int b = 0; b < p->filled; b++)
         for (int k = 0; k < SEQ_CP_MAX && p->cp[b][k].step >= 0; k++) {
             const seq_cp_t *x = &p->cp[b][k];
+            int dg = x->deg, sr = x->src, col = PICK_TYPE[x->type], t = x->type;
+            if (old_chord(scale, &dg, &sr, &col))
+                for (t = 0; PICK_TYPE[t] != col; t++) continue;   /* an older colour: one of the first CP_OLD_TYPES */
             if (w > d) *w++ = ',';
-            *w++ = HEX[b], *w++ = HEX[x->step], *w++ = (char)('0' + x->deg), *w++ = (char)('0' + x->src), *w++ = (char)('0' + x->type);
+            *w++ = HEX[b], *w++ = HEX[x->step], *w++ = (char)('0' + dg), *w++ = (char)('0' + sr), *w++ = (char)('0' + t);
         }
     *w = 0;
     if (w > d) outf(o, "|%c.cp=%s", c, d);
+    for (int b = 0; b < p->filled; b++)
+        for (int k = 0; k < SEQ_CP_MAX && p->cp[b][k].step >= 0; k++) {
+            const seq_cp_t *x = &p->cp[b][k];
+            if (x->src < THEORY_SRC2 && x->type < CP_OLD_TYPES) continue;
+            if (!cq++) outf(o, "|%c.cq=", c);
+            outf(o, "%x%x%02x%x", b, x->step, x->src, x->type);
+        }
 }
 
 /* 0.24 a hit octave as one `.ho` character: HO_CH[k x 16 + step], k 0..3 the octave -2, -1, +1, +2 */
@@ -3951,16 +3993,23 @@ static void out_hoct(out_t *o, char c, const seq_part_t *p) {
     if (w > d) outf(o, "|%c.ho=%s", c, d);
 }
 
-/* 0.28 Feel, each only when used, in hex: `.cx=` per slot with a chromatic chord, a mute or a base: <slot 2><src 2><mute 1><base 4>;
+/* 0.28 Feel, each only when used, in hex: `.cx=` per slot with a chromatic chord, a mute or a base: <slot 2><src 2><mute 1><base 4>
+ * (fork, spec 03, S03-D5: of the slots as `old` holds them, each base as old_base reads it; then `.cy=` per slot using a value of spec 03
+ * in its chord or base, exactly: <slot 2><src 2><colour 1><base 4>);
  * `.vh=` per run of equal hand notes, comma-separated: <slot 2><count 2><n 1><note 2>..; `.vr=` the recipe: <n 1>, then <role 1><note 2>..;
  * `.fm=1` a Feel write's chord length (seq_part_t.feel_spans); `.bt=` per slot with a Bass tone: <slot 2><tone 1> */
-static void out_feel(out_t *o, char c, const seq_part_t *p) {
-    int cx = 0;
+static void out_feel(out_t *o, char c, const seq_part_t *p, const prog_view_t *old, int scale) {
+    int cx = 0, cy = 0;
     if (p->feel_spans) outf(o, "|%c.fm=1", c);
     for (int i = 0; i < p->prog_len; i++)
-        if (p->src[i] > THEORY_NBORROW || p->fs[i].mute || p->fs[i].base) {
+        if (old->src[i] > THEORY_NBORROW || p->fs[i].mute || p->fs[i].base) {
             if (!cx++) outf(o, "|%c.cx=", c);
-            outf(o, "%02x%02x%x%04x", i, p->src[i], p->fs[i].mute, p->fs[i].base);
+            outf(o, "%02x%02x%x%04x", i, old->src[i], p->fs[i].mute, old_base(scale, p->fs[i].base));
+        }
+    for (int i = 0; i < p->prog_len; i++)
+        if (p->src[i] >= THEORY_SRC2 || p->colour[i] >= COL_COUNT || old_base(scale, p->fs[i].base) != p->fs[i].base) {
+            if (!cy++) outf(o, "|%c.cy=", c);
+            outf(o, "%02x%02x%x%04x", i, p->src[i], p->colour[i], p->fs[i].base);
         }
     for (int i = 0, vh = 0; i < p->prog_len; i++) {
         const seq_feel_slot_t *f = &p->fs[i];
@@ -3998,10 +4047,21 @@ static void out_feel(out_t *o, char c, const seq_part_t *p) {
  * phrase is longer than the loop), exactly as 0.13 wrote its progression: a loop filled from a phrase saves byte for byte
  * as 0.13 did. A loop with no period of 16 or less (settle_slots) writes its first 16 slots there (what a 0.13 build then
  * plays, repeating) and every slot in `.ch` after `.cs`. */
-/* v: the progression saved */
-static void save_part_head(out_t *o, char c, const seq_part_t *p, const prog_view_t *v) {
+/* v: the progression saved (the part's own, part_view), in the project's scale. Fork (spec 03, S03-D5): `.prog`, `.pq`, `.ch` and `.cx`
+ * hold each slot as an older build reads it (old_chord), `.cy` (out_feel) the slots that differ */
+static void save_part_head(out_t *o, char c, const seq_part_t *p, const prog_view_t *v, int scale) {
     int pq = 0, cs = memcmp(p->lane_shape[LANE_CHORDS], LSHAPE_NEUTRAL[LANE_CHORDS], sizeof LSHAPE_NEUTRAL[0]) != 0, n = v->phrase;
     unsigned sl = (unsigned)(v->lock & (SLOT_BIT(n) - 1));
+    int oprog[SEQ_MAX_PROG];
+    unsigned char osrc[SEQ_MAX_PROG], ocol[SEQ_MAX_PROG];
+    prog_view_t old = *v;
+    const prog_view_t *exact = v;
+    for (int i = 0; i < SEQ_MAX_PROG; i++) {   /* every real slot: the phrase may run past the loop into hidden ones */
+        int d = v->prog[i], sr = v->src[i], col = v->colour[i];
+        old_chord(scale, &d, &sr, &col);
+        oprog[i] = d, osrc[i] = (unsigned char)sr, ocol[i] = (unsigned char)col;
+    }
+    old.prog = oprog, old.src = osrc, old.colour = ocol, v = &old;
     outf(o, "|%c.len=%d|%c.cl=%d|%c.h=%d,%d|%c.prog=", c, p->bars, c, p->chord_len, c, p->harmony, v->hseed, c);
     for (int i = 0; i < n; i++) {
         outf(o, "%d", v->prog[i]);
@@ -4019,11 +4079,11 @@ static void save_part_head(out_t *o, char c, const seq_part_t *p, const prog_vie
         outf(o, "|%c.cs=", c);
         for (int i = 0; i < SHAPE_COUNT; i++) outf(o, i ? ",%d" : "%d", p->lane_shape[LANE_CHORDS][i]);
     }
-    if (!view_loops(v)) out_slot_chords(o, c, v);
+    if (!view_loops(exact)) out_slot_chords(o, c, v);   /* whether the exact slots repeat (the slots unrolled, `.cy` then exact) */
     if (v->rank != n) outf(o, "|%c.rk=%d", c, v->rank);   /* never for a phrase as dealt (a 0.13 project's) */
-    out_cp(o, c, p);
+    out_cp(o, c, p, scale);
     out_hoct(o, c, p);   /* 0.24 */
-    out_feel(o, c, p);   /* 0.28 */
+    out_feel(o, c, p, v, scale);   /* 0.28 */
 }
 
 /* 0.11: `|<c>3.mr=` a recipe Melody 1's recipe (its .g says GEN_MEL_HOOK, which 0.10 plays), its phrase the old one
@@ -4070,7 +4130,7 @@ static int save_state(seq_t *s, char *buf, int len) {
     s->unsaved_mask = 0;
     outf(&o, "csq2|gv=1|k=%d|s=%d", s->key, s->scale);
     prog_view_t v = part_view(&s->part[0]);
-    save_part_head(&o, 'A', &s->part[0], &v);
+    save_part_head(&o, 'A', &s->part[0], &v, s->scale);
     outf(&o, "|ch=%d,%d,%d", s->chan[0], s->chan[1], s->chan[2]);
     if (s->swing) outf(&o, "|sw=%d", s->swing);   /* the output stage only when not neutral: a 0.6-sounding state saves as before */
     if (s->gate != 50) outf(&o, "|gt=%d", s->gate);
@@ -4092,7 +4152,7 @@ static int save_state(seq_t *s, char *buf, int len) {
         if (!seq_part_used(s, p)) continue;
         int at = o.n;
         v = part_view(&s->part[p]);
-        save_part_head(&o, (char)('A' + p), &s->part[p], &v);
+        save_part_head(&o, (char)('A' + p), &s->part[p], &v, s->scale);
         save_part_lanes(&o, s, (char)('A' + p), &s->part[p], &v, pm);
         if (o.n < len) continue;
         o.n = at;   /* the part is cut off: undone whole */
@@ -4232,7 +4292,8 @@ static int load_out(int *x, const char *v, int n, int dflt) {
 enum { F_REQUIRED = 5 + SEQ_LANES, F_VOI = F_REQUIRED, F_GV, F_H, F_G, F_LK = F_G + SEQ_LANES, F_CH = F_LK + SEQ_LANES, F_SW, F_GT,
        F_DY, F_PQ, F_SL, F_CS, F_BS, F_AB, F_MR = F_AB + SEQ_LANES, F_CV, F_SCH = F_CV + SEQ_LANES, F_RK, F_MP, F_BV,
        F_FO = F_BV + SEQ_LANES, F_VX, F_RB, F_RZ, F_BRB, F_BRZ, F_BX, F_BL, F_JX, F_JW, F_JK, F_JL, F_JF, F_JY, F_JV, F_JM,
-       F_DJ, F_GN = F_DJ + DL_COUNT, F_CP, F_HO, F_LA, F_PM = F_LA + DL_COUNT, F_AR, F_CX, F_VH, F_VR, F_FM, F_BT, F_BF, F_AP, F_MT, F_JP, F_JT, F_JE, F_JC, F_COUNT };
+       F_DJ, F_GN = F_DJ + DL_COUNT, F_CP, F_HO, F_LA, F_PM = F_LA + DL_COUNT, F_AR, F_CX, F_VH, F_VR, F_FM, F_BT, F_BF, F_AP, F_MT, F_JP, F_JT, F_JE, F_JC,
+       F_CY, F_CQ, F_COUNT };
 /* pq, sl, cs: 0.9, bs, ab: 0.10, when not neutral; mr: 0.11, a recipe melody; cv: 0.13, a chord rhythm's variant;
  * .ch (F_SCH): 0.14, every slot of a loop with no period of 16 or less; .rk: 0.14, the COLOUR ranks' period; mp: VST-12, a
  * recipe melody's phrasing; bv: 0.16, a generated lane's bars with their own variation; fo: after 0.16, FOLLOW off; vx: 0.17, the Chords voicing, when not a new part's;
@@ -4243,7 +4304,8 @@ enum { F_REQUIRED = 5 + SEQ_LANES, F_VOI = F_REQUIRED, F_GV, F_H, F_G, F_LK = F_
  * JAM state (out_djam), once used; gn: 0.23, the genre preset last loaded, when set; cp: 0.24, the change points (out_cp), when any; ho:
  * 0.24, the hit octaves (out_hoct), when any; 1.la, 2.la (F_LA + DL_*): 0.24, a drawn lane's LOCK WITH and ANTICIPATE (out_la), when not
  * the defaults; pm: 0.26, the parts keep their own mutes (else every part takes A's); ar: 0.27, the arrangement (load_ar); cx, vh, vr, fm: 0.28
- * Feel (out_feel), when used; bt: the Bass's Feel page's tones (out_feel), bf: a kept bar's, ap: a hit's picks (out_bass), when used */
+ * Feel (out_feel), when used; bt: the Bass's Feel page's tones (out_feel), bf: a kept bar's, ap: a hit's picks (out_bass), when used;
+ * fork (spec 03): cy, cq, the slots and points using spec 03's values, exactly (out_feel, out_cp) */
 typedef struct fields { const char *v[F_COUNT]; int n[F_COUNT]; } fields_t;
 
 static void find_fields(const char *str, char letter, fields_t *f) {
@@ -4253,7 +4315,8 @@ static void find_fields(const char *str, char letter, fields_t *f) {
                                               "1.cv", "2.cv", "3.cv", "4.cv", ".ch", ".rk", "3.mp",
                                               "1.bv", "2.bv", "3.bv", "4.bv", "fo", ".vx", ".rb", ".rz", "2.rb", "2.rz", "2.bx",
                                               "2.bl", "3.jx", "3.jw", "3.jk", "3.jl", "3.jf", "3.jy", "3.jv", "3.jm",
-                                              "1.dj", "2.dj", "gn", ".cp", ".ho", "1.la", "2.la", "pm", "ar", ".cx", ".vh", ".vr", ".fm", ".bt", "2.bf", "2.ap", ".mt", "3.jp", "3.jt", "3.je", "3.jc"};
+                                              "1.dj", "2.dj", "gn", ".cp", ".ho", "1.la", "2.la", "pm", "ar", ".cx", ".vh", ".vr", ".fm", ".bt", "2.bf", "2.ap", ".mt", "3.jp", "3.jt", "3.je", "3.jc",
+                                              ".cy", ".cq"};
     memset(f, 0, sizeof *f);
     for (const char *p = str; *p;) {
         const char *end = strchr(p, '|'), *eq;
@@ -4763,6 +4826,35 @@ static void load_cx(seq_part_t *p, const char *v, int len) {
     }
 }
 
+/* fork (spec 03, S03-D5): `.cy` (out_feel), after `.pq`, `.ch` and `.cx`: each slot's exact source, colour and Feel base, overriding the
+ * fallbacks they hold. Never refused: a bad entry is skipped */
+static void load_cy(seq_part_t *p, const char *v, int len) {
+    for (int k = 0; v && k + 9 <= len; k += 9) {
+        int i = hexn(v + k, 2), sr = hexn(v + k + 2, 2), col = hexn(v + k + 4, 1), b = hexn(v + k + 5, 4);
+        if (i < 0 || i >= p->prog_len || !theory_src_ok(sr) || col < 0 || col >= COL_ALL || b < 0) continue;
+        p->src[i] = (unsigned char)sr, p->colour[i] = (unsigned char)col, p->fs[i].base = (unsigned short)b;
+        if (sr > THEORY_NBORROW) p->prog[i] = 0;   /* a chromatic chord's degree; a borrow's: revoice */
+    }
+}
+
+/* fork (spec 03, S03-D5): `.cq` (out_cp), after `.cp`: each point's exact source and type, overriding its fallback; a chromatic point
+ * `.cp` lacks is added. Never refused: a bad entry is skipped */
+static void load_cq(seq_part_t *p, const char *v, int len) {
+    for (int k = 0; v && k + 5 <= len; k += 5) {
+        int b = hexn(v + k, 1), st = hexn(v + k + 1, 1), sr = hexn(v + k + 2, 2), t = hexn(v + k + 4, 1), at = -1;
+        if (b < 0 || st < 0 || !theory_src_ok(sr) || t < 0 || t >= CP_TYPES) continue;
+        for (int j = 0; j < SEQ_CP_MAX; j++)
+            if (p->cp[b][j].step == st) at = j;
+        if (at >= 0) {
+            seq_cp_t *x = &p->cp[b][at];
+            x->src = (signed char)sr, x->type = (signed char)t;
+            if (sr > THEORY_NBORROW) x->deg = 0;
+        } else if (sr > THEORY_NBORROW) {
+            cp_put(p, b, st, 0, sr, t);
+        }
+    }
+}
+
 static void load_vh(seq_part_t *p, const char *v, int len) {
     for (int k = 0; v && k + 5 <= len; k++) {   /* k: past each entry's comma */
         int i = hexn(v + k, 2), run = hexn(v + k + 2, 2), n = hexn(v + k + 4, 1);
@@ -4805,6 +4897,7 @@ static void load_feel(seq_part_t *p, const fields_t *f) {
     load_bt(p, f->v[F_BT], f->n[F_BT]);
     load_mt(p, f->v[F_MT], f->n[F_MT]);
     load_cx(p, f->v[F_CX], f->n[F_CX]);
+    load_cy(p, f->v[F_CY], f->n[F_CY]);   /* fork, spec 03 */
     load_vh(p, f->v[F_VH], f->n[F_VH]);
     load_vr(p, f->v[F_VR], f->n[F_VR]);
     for (int i = 0; i < p->prog_len; i++) p->fs[i].pick = (unsigned short)feel_code(p, i);
@@ -4835,6 +4928,7 @@ static int parse_part(const fields_t *f, seq_part_t *p) {
     load_slots(p, f->v[F_SCH], f->n[F_SCH]);
     load_feel(p, f);   /* 0.28 */
     load_cp(p, f->v[F_CP], f->n[F_CP]);   /* 0.24 */
+    load_cq(p, f->v[F_CQ], f->n[F_CQ]);   /* fork, spec 03 */
     load_hoct(p, f->v[F_HO], f->n[F_HO]);
     for (int l = 0; l < SEQ_LANES; l++)
         if (!load_lane_fields(p, l, f)) return 0;
@@ -5823,7 +5917,7 @@ void seq_set_slot(seq_t *s, int slot, int deg, int src, int colour) {
     seq_part_t *p = cur(s);
     prog_view_t y = part_view(ccur(s));
     if (slot < 0 || slot >= y.len || !theory_src_ok(src) || (!src && (deg < 0 || deg > 6)) || colour < 0 ||
-        colour >= COL_COUNT)
+        colour >= COL_ALL)
         return;
     if (src) deg = theory_borrow_degree(s->scale, src);
     if (y.prog[slot] == deg && y.src[slot] == src && (y.lock >> slot & 1) &&
@@ -5862,6 +5956,10 @@ typedef struct { int start, steps, deg, src, colour, lock; seq_feel_slot_t f; } 
 
 static void feel_decode(unsigned code, int *deg, int *src, int *colour) {
     unsigned c = code - 1;
+    if (code >= FEEL_CODE2) {   /* fork (spec 03): the second form, feel_code_of */
+        *deg = 0, *src = THEORY_SRC2 + (int)((code - FEEL_CODE2) / 16), *colour = (int)((code - FEEL_CODE2) % 16);
+        return;
+    }
     *deg = (int)(c % 7), c /= 7;
     *src = (int)(c % (THEORY_SRC_MAX + 1)), *colour = (int)(c / (THEORY_SRC_MAX + 1));
 }
@@ -5972,7 +6070,7 @@ static void feel_begin_lane(seq_t *s, int lane) {
 static void feel_begin(seq_t *s) { feel_begin_lane(s, -1); }
 
 static int feel_chord_ok(int deg, int src, int colour) {
-    return src >= 0 && src <= THEORY_SRC_MAX && colour >= 0 && colour < COL_COUNT && (src || (deg >= 0 && deg <= 6));
+    return theory_src_ok(src) && colour >= 0 && colour < COL_ALL && (src || (deg >= 0 && deg <= 6));   /* fork: spec 03's values too */
 }
 
 /* How far resize moves chord i's end, dir +1 or -1: half a bar where both can spare it, else a quarter; 0 when it cannot */
@@ -6290,7 +6388,7 @@ static void set_prog(seq_t *s, seq_part_t *p, int n, const int *deg, const unsig
             if (slot_locked(p, i)) continue;   /* a locked slot keeps its chord (the repeats of a locked phrase slot too) */
             if (!theory_src_ok(b)) b = 0;   /* fork, spec 02: a chromatic chord too */
             p->src[i] = (unsigned char)b;
-            p->colour[i] = (unsigned char)(c >= COL_COUNT ? 0 : c);
+            p->colour[i] = (unsigned char)(c >= COL_ALL ? 0 : c);
             p->prog[i] = b > THEORY_NBORROW ? 0 : pmod(deg[i], 7);   /* a borrow's degree: revoice; a chromatic chord's: 0 */
         }
         if (p->filled_slots < n) p->filled_slots = n;   /* slots a shrink hid keep theirs */

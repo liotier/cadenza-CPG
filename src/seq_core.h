@@ -172,8 +172,8 @@ enum { MW_DENS = 1, MW_RNG = 2, MW_VAR = 4, MW_SWING = 8, MW_TIME = 16 };   /* 0
 typedef struct { signed char c, l, sw, var, swing, tm; unsigned char grid16, weak; } djam_t;
 
 /* 0.24 a change point: from its step (0..15; -1 an empty entry) to the bar's next point or end, the chord deg / src (as a slot's:
- * src 0 the scale, 1..3 a borrow, whose degree deg is; fork, spec 02: 4..THEORY_SRC_MAX a chromatic chord, deg 0) of type `type` (seq_rbar_type's 0 Knobs .. 4 6th; 0.24.2 5..9 7th, power, 9th,
- * 11th, 13th: a point THIS HIT ONLY makes of a slot of that colour) plays instead of the slot */
+ * src 0 the scale, 1..3 a borrow, whose degree deg is; fork, spec 02: 4..THEORY_SRC_MAX a chromatic chord, deg 0; spec 03: up to THEORY_SRC2_MAX) of type `type` (seq_rbar_type's 0 Knobs .. 4 6th; 0.24.2 5..9 7th, power, 9th,
+ * 11th, 13th: a point THIS HIT ONLY makes of a slot of that colour; fork, spec 03: 10..12 quartal, 7(no5), 7sus4, likewise) plays instead of the slot */
 typedef struct { signed char step, deg, src, type; } seq_cp_t;
 
 /* 0.28 Feel, per real slot: mute (the Chords lane is silent there; Bass and Melody play on); base, the chord as written before the Feel
@@ -806,7 +806,8 @@ unsigned seq_feel_hash(const seq_t *s);
  * revoices and regenerates the lanes that read harmony; none runs on the audio thread. */
 void seq_set_slot(seq_t *s, int slot, int deg, int src, int colour);   /* a pick (PHRASE's phrase_slot): sets and locks the slot; one undo step. src > 0
                                                                         * ignores deg (the borrow's degree; fork, spec 02: src up to
-                                                                        * THEORY_SRC_MAX, a chromatic chord's degree 0). Bad values: ignored */
+                                                                        * THEORY_SRC_MAX, a chromatic chord's degree 0; spec 03: src up to
+                                                                        * THEORY_SRC2_MAX, colour up to COL_ALL). Bad values: ignored */
 void seq_toggle_slot_lock(seq_t *s, int slot);                         /* no undo; locking a Knobs chord writes the COLOUR knob's level */
 int  seq_slot_locked(const seq_t *s, int slot);
 int  seq_slot_deg(const seq_t *s, int slot);
@@ -814,7 +815,7 @@ int  seq_slot_src(const seq_t *s, int slot);
 int  seq_slot_colour(const seq_t *s, int slot);   /* the slot's own colour (the COLOUR knob's is not included) */
 int  seq_prog_len(const seq_t *s);   /* 0.14: the slot count, seq_slots */
 int  seq_slots(const seq_t *s);      /* 0.14: the playing part's slots, max(1, bars x 16 / chord_len), 1..64 */
-/* The progression (src, colour NULL: 0; fork, spec 02: a src 0..THEORY_SRC_MAX kept, a chromatic chord's degree 0, any other src read
+/* The progression (src, colour NULL: 0; fork, spec 02: a src 0..THEORY_SRC_MAX kept (spec 03: 0..THEORY_SRC2_MAX, a colour below COL_ALL), a chromatic chord's degree 0, any other src read
  * as 0); undo 1 pushes one snapshot first. Locks are kept. 0.14:
  *   n = seq_slots: the arrays are the whole loop, every slot written (the caller merges locked slots first).
  *   any other n (clamped 1..8): a phrase written into every slot by repetition, locked slots unchanged. */

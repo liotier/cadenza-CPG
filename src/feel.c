@@ -23,7 +23,10 @@ static int above(int key, int scale, feel_chord_t c, int tone) {
 static int quality(int key, int scale, feel_chord_t c) { return theory_triad_quality(key, theory_slot_scale(scale, c.src), c.deg); }
 static int is_minor(int key, int scale, feel_chord_t c) { return quality(key, scale, c) == 1; }
 static int is_dim(int key, int scale, feel_chord_t c) { return quality(key, scale, c) == 2; }
-static int has_seventh(feel_chord_t c) { return c.colour == COL_7TH || c.colour == COL_9TH || c.colour == COL_11TH || c.colour == COL_13TH; }
+static int has_seventh(feel_chord_t c) {   /* fork (spec 03): the 7th without its 5th, 7sus4 and quartal hold their 7th too */
+    return c.colour == COL_7TH || c.colour == COL_9TH || c.colour == COL_11TH || c.colour == COL_13TH || c.colour == COL_7NO5 ||
+           c.colour == COL_7SUS4 || c.colour == COL_QUARTAL;
+}
 static int is_dominant(int key, int scale, feel_chord_t c) {
     return has_seventh(c) && above(key, scale, c, TONE_3) == 4 && above(key, scale, c, TONE_7) == 10;
 }

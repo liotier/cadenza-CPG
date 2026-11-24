@@ -39,7 +39,12 @@ void theory_voice_next(int key, int scale, int deg, const int prev[3], int out[3
 enum { COL_TRIAD, COL_7TH, COL_SUS2, COL_SUS4, COL_ADD9, COL_POWER, COL_9TH, COL_11TH, COL_13TH, COL_6TH, COL_COUNT };   /* append only: saved as digits */
 #define THEORY_NBORROW 3
 #define THEORY_CHORD_MAX 6   /* notes in a chord: a 9th, 11th or 13th has 5, and CLUSTER adds one */
-extern const char *const THEORY_COLOUR_NAME[COL_COUNT];   /* "Triad","7th","sus2","sus4","add9","Power","9th","11th","13th","6th" */
+/* fork (docs/development/specs/03-missing-sonorities.md, S03-D3): three colours past the controls' set, reachable only as palette chords:
+ * quartal (tones 1 4 7: C F Bb on a dominant), the 7th without its 5th (1 3 7: the Italian sixth), 7sus4 (1 4 5 7). COL_COUNT stays
+ * the set the controls offer and .ch's digits hold; COL_ALL closes the set the engine accepts */
+enum { COL_QUARTAL = COL_COUNT, COL_7NO5, COL_7SUS4, COL_ALL };
+/* "Triad","7th","sus2","sus4","add9","Power","9th","11th","13th","6th"; fork: "quartal","7(no5)","7sus4" */
+extern const char *const THEORY_COLOUR_NAME[COL_ALL];
 
 /* The scale and degree of a project scale's borrowed chord b (1..3): the same degree from another scale. */
 int theory_borrow_scale(int scale, int b);
@@ -54,18 +59,34 @@ enum { CQ_MAJOR, CQ_MINOR, CQ_DOM, CQ_DIM, CQ_COUNT };
 #define THEORY_SRC_CHROMA 4
 #define THEORY_SRC_MAX (THEORY_SRC_CHROMA + 12 * CQ_COUNT - 1)
 int theory_chroma_src(int root, int quality);   /* root taken mod 12; quality CQ_* */
-/* fork (docs/development/specs/02-chromatic-progression-path.md): 1 for a source a slot or a change point may hold, 0..THEORY_SRC_MAX:
- * the scale, a borrowed chord or a chromatic one. A chromatic chord's degree is 0 */
+/* fork (spec 03, S03-D1, S03-D2): a second chromatic range, after the first so that no saved source moves: THEORY_SRC2 + root x
+ * CQ2_COUNT + quality, a chord on root of a seven-note scale: melodic minor (its 7th the minor-major 7th, its 6th the minor 6th),
+ * Locrian (the half-diminished 7th), dominant b5 (0 2 4 5 6 9 10, a major triad with a b5: the 7b5), Phrygian dominant (the 7b9)
+ * and minor #5 (0 2 3 5 8 9 10, the line cliche's minor #5). theory_slot_scale maps it after the first range */
+enum { CQ2_MELMIN, CQ2_LOCRIAN, CQ2_DOMB5, CQ2_PHRDOM, CQ2_MINSH5, CQ2_COUNT };
+#define THEORY_SRC2 (THEORY_SRC_MAX + 1)
+#define THEORY_SRC2_MAX (THEORY_SRC2 + 12 * CQ2_COUNT - 1)
+int theory_chroma2_src(int root, int quality);   /* root taken mod 12; quality CQ2_* */
+/* fork (spec 03, S03-D6): what an older build plays for a chord (src, deg, colour) of a project in `scale`. 0 when the chord is
+ * one an older build has (a source up to THEORY_SRC_MAX, a colour below COL_COUNT): *f* the chord itself. Else 1, *f* the old
+ * chord whose pitch classes score best, shared with the exact chord less added (ties to the more shared, then the fewer, then the
+ * first in order): a new colour on an old source keeps its source and degree and takes an old colour; a second-range source takes
+ * the first range's quality on the same root, degree 0, with an old colour */
+int theory_fallback(int scale, int src, int deg, int colour, int *fsrc, int *fdeg, int *fcolour);
+/* fork (docs/development/specs/02-chromatic-progression-path.md): 1 for a source a slot or a change point may hold, 0..THEORY_SRC2_MAX
+ * (spec 03): the scale, a borrowed chord or a chromatic one of either range. A chromatic chord's degree is 0 */
 int theory_src_ok(int src);
-/* The tone a lane plays for `tone` on a chord of colour c: sus2/sus4 turn tone 3 into 2/4; else tone */
+/* The tone a lane plays for `tone` on a chord of colour c: sus2/sus4 turn tone 3 into 2/4 (fork: quartal and 7sus4 into 4); else tone */
 int theory_colour_tone(int colour, int tone);
 /* MIDI notes of the chord in root position, root in octave 3 (like theory_triad), ascending; returns the count (2..5).
  * Tones of the chord's own scale: Power 1-5; Triad 1-3-5; 7th 1-3-5-7; 9th 1-3-5-7-9; 11th 1-3-7-9-11; 13th 1-3-7-9-13; 6th 1-3-5-6;
- * add9 1-3-5-9; sus2 / sus4 swap the 3 */
+ * add9 1-3-5-9; sus2 / sus4 swap the 3; fork: quartal 1-4-7, 7(no5) 1-3-7, 7sus4 1-4-5-7 */
 int theory_chord_notes(int key, int scale, int deg, int colour, int out[THEORY_CHORD_MAX]);
 /* The COLOUR knob's level -1..4 as a colour: Power, Triad, 7th, 9th, 11th, 13th; anything else Triad */
 int theory_colour_of_level(int level);
-/* "Em7", "F#m7b5", "Asus4", "Cadd9", "E5", "Em9", "Cmaj13", "D11", "Em6" (ASCII); returns the length */
+/* "Em7", "F#m7b5", "Asus4", "Cadd9", "E5", "Em9", "Cmaj13", "D11", "Em6" (ASCII); returns the length. Fork (spec 03, S03-D7), the
+ * CPG's names: "C7sus4(no5)" (quartal), "C7" (a 7th without its 5th, named as the full chord), "C7sus4", "CmMaj7", "Cm6", "Cm7b5",
+ * "C7b5", "C7b9", "Cm#5"; the second range marks its altered 5th or 9th on other colours ("C(b5)", "Cm7#5", "C13b9") */
 int theory_chord_name_c(int key, int scale, int deg, int colour, char *buf, int len);
 /* The numeral of a chord on deg from `slot_scale`, in a project in `scale`: "i", "bII", "IV", "ii\xC2\xB0". Case and the
  * dim sign (0.13: THEORY_DIM, the UTF-8 degree sign MPC's font draws; 0.12 "o") or + come from the chord's triad; b/# when

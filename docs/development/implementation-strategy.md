@@ -32,10 +32,12 @@ gets its own specification in `docs/development/specs/` before any code is writt
 | 2. Chromatic chords through the progression path | implemented; device run pending | [spec 02](specs/02-chromatic-progression-path.md); CI run 3 green |
 | Decision 21 | room in the binary: dead code dropped, budget 720 KB | test build 4 (commit `d9b619d`): 650 KB |
 | 0a. Local tools | implemented | [spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools) |
-| 3 to 5 | approved, to be built in that order | [specs 03 to 05](specs/README.md) |
+| 3. The missing sonorities | implemented; heard on the device with step 5 | [spec 03](specs/03-missing-sonorities.md), §8: no pad, Classic chord or Scale Mode chord left that Cadenza cannot voice; parity unchanged; 0.28.1 opens every such state with its fallbacks |
+| 4 and 5 | approved, to be built in that order | [specs 04 and 05](specs/README.md) |
 
-The draft release *Cadenza 0.28.1-cpg.1 (test build)* holds steps 0 to 2 and the collected binary: one device run
-checks all four at once (§8.1, O1).
+The draft release *Cadenza 0.28.1-cpg.1 (test build)* holds steps 0 to 3 and the collected binary: one device run
+checks them at once (§8.1, O1). Step 3 changes nothing on screen and nothing in a state saved from the controls, which
+cannot produce its values.
 
 ## 2. Principles
 
@@ -80,6 +82,13 @@ checks all four at once (§8.1, O1).
 | 11 | The CPU bench needs root SSH on the device (`tools/bench.sh`). I assumed the owner's MPC One had none; it has (owner, 2026-11-23). | The device bench and an MPC memory probe are possible: the CPU and skin budgets can be measured on the device, not only by offline proxies (§5). Ask before assuming what the owner's setup allows. |
 | 12 | 30 Classic pads exist in Cadenza only as some scale's own chord (24 half-diminished sevenths, 3 minor-major sevenths, 3 minor sixths), not as chromatic chords. | Step 3's new qualities serve twice: the 134 Classic pads Cadenza cannot voice at all, and the palette table's storage independent of the scale (step 4). |
 | 13 | The scale palettes of decision 18 (the CPG's Scale Mode) hold a chord the catalogue does not: the tonic's dominant 7sus4 with its fifth, in Minor, Dorian, Mixolydian and Phrygian. | A ninth sonority in step 3, as a colour; measure every source of data a step will use before specifying it. |
+
+Step 3 added two:
+
+| # | Lesson | Consequence, now practice |
+|---|---|---|
+| 14 | A range's probes include its colours: spec 03 foresaw the three source probes past `THEORY_SRC_MAX` and missed three at `COL_COUNT`, which became a valid colour. | When a range grows, search the tests for every bound of it, sources and colours alike, and list them in the specification before building. |
+| 15 | A measuring tool changed with the thing it measures can change the measure. | The coverage tool's new lines were run on the previous enumeration first, reproducing its figures, before measuring the step. |
 
 ## 4. Workflow and infrastructure
 
@@ -201,7 +210,7 @@ decision can rest on the fork's own figures.
 | 0a | Local tools: native runner, ARM size estimate | §4.6 | 0 | no | S | implemented |
 | 1 | Key-aware chord spelling | avenue A | 0 | labels | S-M | implemented |
 | 2 | Chromatic chords through the progression path | §6.2 | 0 | no | S-M | implemented |
-| 3 | The missing sonorities: the catalogue's eight and Scale Mode's 7sus4 | avenue H | 2 | no | M | approved |
+| 3 | The missing sonorities: the catalogue's eight and Scale Mode's 7sus4 | avenue H | 2 | no | M | implemented |
 | 4 | The palette table, generated from the CPG | avenues B, K | 0, 3 | no | M | approved |
 | 5 | The part's palette in the engine | §4.3, avenue D | 2, 4 | no | M | approved |
 | 6 | The palette browser | avenue C | 5 | yes | M-L | after M2 |
@@ -324,14 +333,14 @@ for the record below it, and the ones concerning the integration as a whole go t
 
 In order:
 
-1. **The device run of the draft** *Cadenza 0.28.1-cpg.1 (test build)* (O1). It holds steps 0 to 2 and the collected
+1. **The device run of the draft** *Cadenza 0.28.1-cpg.1 (test build)* (O1). It holds steps 0 to 3 and the collected
    binary. Checks: the plugin loads from `VST2 Plugins` under MPC OS 3.10.1; INIT and House 124 play; a project saves and
    reopens, and opens again after the official 0.28.1 is restored; CHORDS, PHRASE, PLAY and GLOBAL read correctly in F,
    E♭, A♭ and D♭ major and C♯ and D♯ minor (PLAY's title: `Eb MAJOR`, `D# MINOR`). Step 2 shows nothing.
 2. **If it passes:** the release branch and its pull request (O2); `versions.json` to `0.28.1-cpg.2`; M1's offer (O3).
 3. **Step 0a**: done (spec 00, addendum A); its tools serve every later step.
-4. **Step 3**, then **step 4**, then **step 5**, all approved, each pushed with CI green before the next starts. Step 4 can begin its generator while step 3 is built; it cannot pass its strictness check before step 3
-   lands.
+4. **Step 4**, then **step 5**, both approved, each pushed with CI green before the next starts. Step 3 is
+   implemented (spec 03, §8).
 5. **The web simulation**, once the author answers (O8 and O9 taken; O8b if he declines).
 6. **At M2:** the MPC memory probe over root SSH, the skin budget (O10), the design note to the author, then
    specifications 06 and 07.
@@ -383,4 +392,5 @@ polymeter, the Chord Matcher (study, §7).
   answered (Classic, its colours kept); O14 answered (step 12 dropped, study decision 24); S04-D9 shown to need no new
   mechanism, and S05-D4 found to be the same choice, both now O6; O13 merged into it. Then O6 answered: decision 4's
   rule, one chord a bar, the loop grown as Feel's presets grow it; specs 03 to 05 all approved. Then O11 answered:
-  chromatic roots fixed (spec 01, addendum A); lesson 7 updated; only O1 remains decidable now.
+  chromatic roots fixed (spec 01, addendum A); lesson 7 updated; only O1 remains decidable now. Then step 3 built:
+  §1 and §6.1 updated, lessons 14 and 15, the budget after step 3 (§5), next steps (§9).
