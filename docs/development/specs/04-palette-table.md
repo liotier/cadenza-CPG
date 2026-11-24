@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | approved: §2.1 answered by the owner, 2026-11-23 |
+| Status | implemented, 2026-11-24 (§8); two questions for the owner found while building (§8.4, strategy O15, O16) |
 | Type | data, tooling |
 | Size | M |
 | Depends on | 00 (the submodule), 03 (the full vocabulary) |
@@ -207,4 +207,70 @@ None: the two questions the draft left open are S04-D3 and S04-D9 of §2.1, both
 
 ## 8. Implementation notes
 
-Empty until implementation.
+### 8.1 What was built
+
+| File | Content |
+|---|---|
+| `tools/cpg/generate.mjs` | The generator (S04-D1): the CPG's `generateVariant` in its Classic style, key C, for each of the 184 templates; `generateProgressionChords` for the starting orders; `generateScaleExploration` for the seven scale palettes; `locales/en.json` for the nicknames. Strict (S04-D7). |
+| `tools/cpg/generate.sh` | Builds `tools/cpg/enumerate.c`, lists Cadenza's chord space and root names, runs the generator; `--check` compares with the committed files (CI's `cpg` job). |
+| `tools/cpg/enumerate.c` | `--names`: every chord root as spec 01 spells it, in every key, scale and source (9 912 lines), for the report. |
+| `src/cpg_palettes.h` | The interface (§3.2), written by hand: `cpg_count`, `cpg_entry`, `cpg_find`, `cpg_genre_count`, `cpg_genre_name`, `cpg_nickname`, `cpg_chord`, `cpg_order`, `cpg_chord_src`, `cpg_scale_palette`. |
+| `src/cpg_palettes.c` | Generated: the table and its lookups. Joins `vst/vst.json`'s sources and `tests/test_plugin.c`'s command line (S04-D11). |
+| `tests/cpg_expected.h`, `tests/test_cpg_palettes.c` | The expectations the generator writes, and the test of §5 (a new line of `tests/run_tests.sh`). |
+| `docs/development/measurements/palettes.txt` | The report (S04-D12), generated. |
+
+### 8.2 Choices made while building
+
+1. **No pointer in the table.** The first version held each nickname as a `const char *`: 206 pointers, each a dynamic
+   relocation in the shared object, and the table in `.data.rel.ro`. Nicknames and genre names are now one block of text
+   (2 783 bytes, the duplicates shared) and each entry an offset into it (`cpg_nickname`): the table is pure read-only data.
+   An entry takes 68 bytes: identifier 4, offset 2, genre, tonality and bars 3, chords 48, starting order 8, padding 3.
+2. **S04-D6's canonical order, made complete:** the first range before the second, then the lowest colour, then the lowest
+   quality, which settles the ties the specification left (a power chord is the same on the major, minor and dominant
+   qualities).
+3. **Spice** is the pad's row in the CPG's grid less one: the CPG's own "harmonic gradient", row 1 the foundation, row 4
+   the spiciest (`generation.js`).
+4. **Category: none yet.** The CPG computes a category for each row-4 candidate (`ROW4_CATEGORIES`, eleven values) but its
+   pads do not carry it; rows 1 to 3 have none at all. Deriving it here would port CPG logic (against decision 18). The field
+   stays in `cpg_chord_t`, 0 for every chord, and the question goes to the owner (§8.4, O16).
+5. **The CPG's palettes depend on the key** (§8.4, O15): the table holds each palette as the CPG builds it in C, and the
+   report counts the keys in which it builds another. The generator first stopped on it; it now measures it, since the
+   table's design (S04-D4) holds one palette per entry whatever the answer.
+6. **Starting orders** take each template chord to the palette chord of the starting order with the same root and pitch
+   classes; the generator stops if one is missing (none is).
+
+### 8.3 Measurements
+
+| Quantity | Expected | Measured |
+|---|---|---|
+| Entries, genres, palettes | 184, 22, 191 | 184, 22, 191 |
+| Every chord exact | yes | yes; 11 by decision 12's fifth rule (S04-D6) |
+| Chords by range | | of the catalogue's 2 944: 2 909 first range, 35 second (24 Locrian, 6 melodic minor, 2 dominant ♭5, 2 minor ♯5, 1 Phrygian dominant); 129 with a colour of step 3 (98 7(no5), 31 quartal). The scale palettes: the four tonic 7sus4 |
+| As a project in the entry's tonality holds them (S05-D5) | | 1 554 degrees, 421 borrowed, 958 first range, 11 second range |
+| Table, on ARM (`arm-linux-gnueabihf-size`) | 12 to 14 KB | 16.1 KB: entries 12.5, text 2.8, scale palettes 0.3, code 0.5. Over the estimate by about 2 KB: the estimate omitted the entries' padding and identifiers |
+| Plugin binary, CI | within 720 KB | 650 KB after step 3 (CI run 18); the table joins it when step 5's front end calls it, the linker dropping it until then |
+| Root spellings differing from the CPG's | none in C | none: 35 028 compared, every chord of every palette in its twelve keys, as S05-D5 would write it in the entry's tonality |
+| Nicknames over 19 characters | 10, the longest 24 | 10, the longest 24 (*Secondary Dominant Chain*) |
+| Starting orders | §3.3 | as §3.3: 145 one chord a bar; 23 of three chords (11 ending on the tonic, 12 starting on it); 15 of five to seven; the blues |
+| Core parity hash | unchanged | unchanged |
+
+Verification: 1, two generations identical and CI's `--check`; 2, every chord against the CPG pad's pitch classes in all
+twelve keys; 3, both snapshot palettes named as the snapshot names them; 4, the layouts of §3.3 by name; 5, the parity hash.
+All pass.
+
+### 8.4 Found while building: two questions for the owner
+
+**O15. The CPG's row 4 depends on the key.** In 122 of the 2 024 (entry, key) pairs, the CPG builds a palette that is not
+C's transposed: row 4 holds other chords or the same in another order (300 pads; the report lists them). The cause is in
+`selectDynamicRow4Chords` ([generation.js](https://github.com/liotier/AkaiMPC/blob/main/AkaiMPCChordProgressionGenerator/modules/generation.js)):
+it scores a candidate's voice leading by comparing `candidate.root`, a pitch class relative to the tonic
+(`scaleDegrees[...]`), with `existingRoots`, the absolute pitch class of each pad's lowest voiced note
+(`c.notes[0] % 12`). The frames coincide only in C, and the lowest note is the root only in root position, which the
+Classic voicing leaves by register, differently in each key. Reading each pad's root relative to the tonic,
+`(rootOf(chordName) - keyOffset + 12) % 12`, makes all 2 024 transpositions of C (tested on a scratch copy, the submodule
+untouched); it also changes 11 of the 184 palettes in C, where only the inversions misled the score. Recommended: fix it in
+the CPG, then move the submodule; the table's diff shows the 11 palettes. Until then the table holds the CPG's C palettes.
+
+**O16. Categories.** The specification gives each chord a category; the CPG's pads carry none (§8.2, 4). Options: the
+CPG's pads gain the category row 4 computes (and `diatonic` or `borrowed` for rows 1 to 3), in the same CPG change as O15;
+or the field is dropped until a screen needs it. No step specified so far reads it; steps 6 to 10 may.

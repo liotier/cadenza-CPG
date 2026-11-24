@@ -4,11 +4,27 @@
  * to COL_ALL (spec 03: the colours no control offers too). One line a chord:
  *   scale src degree colour root-pc pitch-classes notes
  * pitch classes ascending and comma-separated, notes as semitones above C4 (theory_chord_notes, less 48), comma-separated.
- * Read by tools/cpg/coverage.mjs. Built against src/theory.c alone: tools/cpg/coverage.sh. */
+ * Read by tools/cpg/coverage.mjs. Built against src/theory.c alone: tools/cpg/coverage.sh.
+ *   enumerate --names: spec 04 (S04-D12), Cadenza's spelling of every chord's root in every key, for tools/cpg/generate.mjs's report:
+ *   key scale src degree root-name, for the same sources and degrees (theory_spell_root, spec 01). */
 #include <stdio.h>
+#include <string.h>
 #include "theory.h"
 
-int main(void) {
+static int names(void) {
+    for (int key = 0; key < 12; key++)
+        for (int scale = 0; scale < SCALE_COUNT; scale++)
+            for (int src = 0; src <= THEORY_SRC2_MAX; src++)
+                for (int deg = 0; deg < 7; deg++) {
+                    if (src >= 1 && src <= THEORY_NBORROW && deg != theory_borrow_degree(scale, src)) continue;
+                    if (src > THEORY_NBORROW && deg != 0) continue;
+                    printf("%d %d %d %d %s\n", key, scale, src, deg, theory_spelling_text(theory_spell_root(key, scale, theory_slot_scale(scale, src), deg)));
+                }
+    return 0;
+}
+
+int main(int argc, char **argv) {
+    if (argc > 1 && !strcmp(argv[1], "--names")) return names();
     for (int scale = 0; scale < SCALE_COUNT; scale++)
         for (int src = 0; src <= THEORY_SRC2_MAX; src++)
             for (int deg = 0; deg < 7; deg++) {
