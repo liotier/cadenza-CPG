@@ -340,7 +340,8 @@ In order:
 1. **The device run of the draft** *Cadenza 0.28.1-cpg.1 (test build)* (O1). It holds steps 0 to 5 and the collected
    binary. Checks: the plugin loads from `VST2 Plugins` under MPC OS 3.10.1; INIT and House 124 play; a project saves and
    reopens, and opens again after the official 0.28.1 is restored; CHORDS, PHRASE, PLAY and GLOBAL read correctly in F,
-   E♭, A♭ and D♭ major and C♯ and D♯ minor (PLAY's title: `Eb MAJOR`, `D# MINOR`). Step 2 shows nothing.
+   E♭, A♭ and D♭ major and C♯ and D♯ minor (PLAY's title: `Eb MAJOR`, `D# MINOR`). Steps 2 to 5 show nothing. The
+   procedure, with the expected chord names: [device-run-test-build.md](device-run-test-build.md).
 2. **If it passes:** the release branch and its pull request (O2); `versions.json` to `0.28.1-cpg.2`; M1's offer (O3).
 3. **Step 0a**: done (spec 00, addendum A); its tools serve every later step.
 4. Steps 3 to 5 are implemented (specs 03 to 05, §8): milestone M2. The CPG's spec 18 (O15) is implemented and the
