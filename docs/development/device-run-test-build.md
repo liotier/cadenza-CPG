@@ -1,6 +1,6 @@
 # Device run of the test build (O1)
 
-Status: procedure, 2026-11-24; results to be recorded in §5. Decision O1 of the
+Status: procedure, 2026-11-24; first run recorded in §5, row 7 and five keys of row 5 to confirm. Decision O1 of the
 [implementation strategy](implementation-strategy.md#81-decidable-now): run the draft *Cadenza 0.28.1-cpg.1 (test build)*
 on the MPC One and say whether it passes.
 
@@ -71,4 +71,17 @@ compatibility harness checks it offline for every saved field).
 
 ## 5. Results
 
-To be filled in after the run: the date, MPC OS version, the draft's commit, and each row's result.
+**Run 1, 2026-11-24**, by the owner: MPC One, the draft built from `ce39284`.
+
+| # | Result |
+|---|---|
+| 1 | Passed: the plugin loads. |
+| 2 | Passed: `CPG 0.28.1-cpg.1 ce39284` visible on GLOBAL; D# and Major give `Eb MAJOR` on PLAY. |
+| 3, 4 | Passed: "all live functionality nominal". |
+| 5 | Passed for F major (B♭, never A♯); the other five keys not reported. |
+| 6 | Passed: saving and loading worked in the test build. |
+| 7 | Not reported: whether the official 0.28.1 opens a project saved with the test build. |
+| 8 | Nothing reported. |
+
+The first loads found one procedural flaw, now fixed: the procedure named E♭ on the key selector, whose black keys carry
+sharps in both builds (S01-D7); and the owner asked for the build's mark on GLOBAL (strategy, §4.5).
