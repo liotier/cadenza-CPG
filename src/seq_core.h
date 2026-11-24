@@ -190,6 +190,11 @@ typedef struct {
 } seq_feel_slot_t;
 typedef struct { signed char n, note[THEORY_CHORD_MAX]; unsigned char role[THEORY_CHORD_MAX]; } seq_feel_recipe_t;
 
+/* fork (docs/development/specs/05-part-palette.md): a part's palette, held by value (S05-D1, S05-D2): up to 16 chords as the palette table
+ * holds them (theory_palette_chord_t), independent of the key and scale, and the identifier of the catalogue entry they came from (0 for
+ * none); n 0: the part holds no palette (S05-D3) */
+typedef struct { uint32_t id; unsigned char n; theory_palette_chord_t chord[THEORY_PALETTE_MAX]; } seq_palette_t;
+
 typedef struct {
     int bars;                  /* 1, 2, 4, 8 or 16 */
     int filled;                /* bars holding real content: a shrink hides bars, a grow back shows them again */
@@ -273,6 +278,7 @@ typedef struct {
     unsigned char feel_spans;   /* a Feel write's chord_len under a bar: its slots are one chord's parts, so the Bass's spans end only where the
                                  * chord changes (bar_harm), and 0.28.1 a Chords hold strikes a new chord (feel_strike). Older parts keep a span
                                  * per slot and hold through, as they have always played. Saved as `<P>.fm=1` */
+    seq_palette_t pal;   /* fork, spec 05: saved as `<P>.pl=` when it holds one; a part's first use copies the Verse's (S05-D8) */
 } seq_part_t;
 
 /* 0.22 a JAM block queued on a drawn lane of the playing part (seq_t.djq[DL_*], seq_jam_queue): c, l the block (c < 0 nothing queued),
@@ -353,6 +359,7 @@ typedef struct {
     seq_feel_slot_t fs[SEQ_MAX_PROG];        /* 0.28 a progression snapshot's undo restores them */
     seq_feel_recipe_t rc;
     unsigned char feel_spans;
+    seq_palette_t pal;                       /* fork, spec 05: a progression snapshot's undo restores the palette with the slots */
 } seq_snap_t;
 
 /* 0.17 the CHORDS page's views. CVIEW_PROG / VOICE are open transactions (seq_cview); the user picks the others.
@@ -820,6 +827,20 @@ int  seq_slots(const seq_t *s);      /* 0.14: the playing part's slots, max(1, b
  *   n = seq_slots: the arrays are the whole loop, every slot written (the caller merges locked slots first).
  *   any other n (clamped 1..8): a phrase written into every slot by repetition, locked slots unchanged. */
 void seq_set_progression(seq_t *s, int n, const int *deg, const unsigned char *src, const unsigned char *colour, int undo);
+/* fork (docs/development/specs/05-part-palette.md): the playing part's palette.
+ *   load   the palette (n chords, 1..16, each theory_palette_ok; id the catalogue entry's, from the front end's table) and its starting
+ *          order (n_order bars, 1, 2, 4, 8 or 16, each an index into chords): one undo step, as Feel's presets write theirs (S05-D4): the
+ *          loop doubled until the order fits, never shrunk; a bar a chord, a longer loop repeating the order; the change points cleared;
+ *          locked slots kept. Each chord written as the project's scale places it (theory_palette_place, S05-D5). 0 for bad arguments,
+ *          nothing changed; else 1
+ *   clear  the palette goes, the slots stay: one undo step (S05-D6); none without a palette
+ *   palette  the chords into out, the count (0: none, S05-D3); id: the entry's identifier, 0 for none
+ * Editing the slots never removes the palette (S05-D6). A scale change keeps the sound of every slot and point that plays a palette
+ * chord: each is written again as the new scale places it (S05-D5). */
+int  seq_palette_load(seq_t *s, uint32_t id, const theory_palette_chord_t *chords, int n, const unsigned char *order, int n_order);
+void seq_palette_clear(seq_t *s);
+int  seq_palette(const seq_t *s, theory_palette_chord_t out[THEORY_PALETTE_MAX]);
+uint32_t seq_palette_id(const seq_t *s);
 void seq_set_chord_shape(seq_t *s, int what, int v);   /* SHAPE_*: clamped to 0..100 (SHAPE_OCT -1..1); no undo, like the knobs.
                                                         * 0.17: SHAPE_COLOUR and SHAPE_SPREAD no longer act (vcol and vspr do) */
 /* 0.17 the CHORDS page's COLOUR, INVERSION, SPREAD and STRUM on the playing part (VK_*), clamped to their ranges; no undo, like

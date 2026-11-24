@@ -527,3 +527,28 @@ int theory_fallback(int scale, int src, int deg, int colour, int *fsrc, int *fde
         }
     return 1;
 }
+
+/* fork (spec 05): palette chords */
+int theory_palette_ok(theory_palette_chord_t c) {
+    return c.root >= 0 && c.root < 12 && c.quality >= 0 && c.quality < CQ_COUNT + CQ2_COUNT && c.colour >= 0 && c.colour < COL_ALL;
+}
+
+int theory_palette_src(theory_palette_chord_t c) {
+    return c.quality < CQ_COUNT ? theory_chroma_src(c.root, c.quality) : theory_chroma2_src(c.root, c.quality - CQ_COUNT);
+}
+
+static int chord_is(int slot_scale, int deg, int colour, int root, int set) {
+    int n;
+    return theory_degree_pc(0, slot_scale, deg) == root && pc_set(slot_scale, deg, colour, &n) == set;
+}
+
+int theory_palette_place(int scale, theory_palette_chord_t c, int *deg, int *src) {
+    int sc = scale >= 0 && scale < SCALE_COUNT ? scale : SCALE_MAJOR, s0 = theory_palette_src(c), n, set;
+    if (!theory_palette_ok(c)) return 0;
+    set = pc_set(theory_slot_scale(sc, s0), 0, c.colour, &n);
+    for (int d = 0; d < 7; d++)
+        if (chord_is(sc, d, c.colour, c.root, set)) return *deg = d, *src = 0, 1;
+    for (int b = 1; b <= THEORY_NBORROW; b++)
+        if (chord_is(theory_borrow_scale(sc, b), theory_borrow_degree(sc, b), c.colour, c.root, set)) return *deg = theory_borrow_degree(sc, b), *src = b, 1;
+    return *deg = 0, *src = s0, 1;
+}

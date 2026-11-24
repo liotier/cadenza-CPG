@@ -24,7 +24,7 @@ No approval is pending: specifications 03 to 05 were approved on 2026-11-23 ([st
 | 02 | [Chromatic chords through the progression path](02-chromatic-progression-path.md) | implemented; device run pending | 00 |
 | 03 | [The missing sonorities](03-missing-sonorities.md) | implemented; heard on the device with step 5 | 02 |
 | 04 | [The palette table, generated from the CPG](04-palette-table.md) | implemented; two questions for the owner (§8.4) | 00, 03 |
-| 05 | [The part's palette](05-part-palette.md) | approved | 02, 03, 04 |
+| 05 | [The part's palette](05-part-palette.md) | implemented | 02, 03, 04 |
 
 ## How far the drafting goes, and why
 

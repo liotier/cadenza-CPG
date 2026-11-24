@@ -146,6 +146,17 @@ static void sc_sonority_feel(seq_t *s, const char *name) {
     CHECK(at >= 0 && c[at].has_base && c[at].base_src == theory_chroma2_src(6, CQ2_LOCRIAN));
 }
 
+/* Step 5 (docs/development/specs/05-part-palette.md, verification 6): a part with a loaded palette (hand-made here: the writer links no
+ * table), its chords spec 03's among them; 0.28.1 ignores `.pl`, playing the slots as written (spec 03's fallbacks where they apply) */
+static void sc_palette(seq_t *s, const char *name) {
+    const theory_palette_chord_t chords[6] = {
+        {0, CQ_MAJOR, COL_TRIAD, 0, 0, 1}, {9, CQ_MINOR, COL_7TH, 0, 0, 1}, {8, CQ_DOM, COL_7NO5, 3, 0, 1},   /* C, Am7, Ab7 (the It6) */
+        {7, CQ_DOM, COL_7TH, 0, 0, 1}, {0, CQ_COUNT + CQ2_MELMIN, COL_7TH, 2, 0, 0}, {2, CQ_DOM, COL_QUARTAL, 3, 0, 0}};   /* G7; CmMaj7, D quartal */
+    const unsigned char order[4] = {0, 1, 2, 3};
+    CHECK(seq_palette_load(s, 0x12345678u, chords, 6, order, 4) == 1);
+    CHECK(seq_palette(s, NULL) == 6 && seq_slot_colour(s, 2) == COL_7NO5);
+}
+
 static const struct { const char *name; scenario_fn fn; } scenarios[] = {
     {"init", sc_init},
     {"key-scale", sc_key_scale},
@@ -161,6 +172,7 @@ static const struct { const char *name; scenario_fn fn; } scenarios[] = {
     {"sonority-slots", sc_sonority_slots},
     {"sonority-points", sc_sonority_points},
     {"sonority-feel", sc_sonority_feel},
+    {"palette", sc_palette},
 };
 
 static char first[SEQ_STATE_MAX], resave[SEQ_STATE_MAX], again[SEQ_STATE_MAX];

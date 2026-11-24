@@ -14,3 +14,6 @@ chroma-points c5e6a38c4dde7c24b48b1b434f2cda696189156676dedc681d8eeb516c19d35e
 sonority-slots fd3b3f4b09157f4325ba4e866a064cfc7fe928fdb66e9fdc6987b39553877b86
 sonority-points 81d3b4a7ad8a9ff04e184cb6bc27a503e12d9d1fdc06d51acd7a95c3763ad428
 sonority-feel 26ef4f51ded8c71166fb3decf15dd47ad17489d5cf7d0033802f67e03cdcf64a
+# Step 5 (docs/development/specs/05-part-palette.md, verification 6): 0.28.1 ignores `.pl`, the part's palette, and `.cy`, the Italian sixth's
+# exact colour (spec 03); it plays the slots as the older fields hold them, the It6 as its fallback, a full Ab7. Every other field identical.
+palette f8b42b673e8d12c2242cb816b317485a0873e34f58c45f8ed8f1c963bdb7cea0

@@ -76,6 +76,16 @@ int theory_fallback(int scale, int src, int deg, int colour, int *fsrc, int *fde
 /* fork (docs/development/specs/02-chromatic-progression-path.md): 1 for a source a slot or a change point may hold, 0..THEORY_SRC2_MAX
  * (spec 03): the scale, a borrowed chord or a chromatic one of either range. A chromatic chord's degree is 0 */
 int theory_src_ok(int src);
+/* fork (docs/development/specs/04-palette-table.md, S04-D4; spec 05): a palette chord, independent of the project's key and scale: a chromatic
+ * chord on `root` semitones above the tonic of quality 0..3 (the first range's CQ_*) or 4..8 (the second range's CQ2_*) in colour COL_*
+ * (below COL_ALL); spice 0..3, its row in the CPG's grid less one; category (0: none given); start: 1 for a chord of the starting order */
+#define THEORY_PALETTE_MAX 16
+typedef struct { signed char root, quality, colour, spice, category, start; } theory_palette_chord_t;
+int theory_palette_ok(theory_palette_chord_t c);    /* 1 for a chord in range */
+int theory_palette_src(theory_palette_chord_t c);   /* its chromatic source, of the first range or the second */
+/* S05-D5: where a project in `scale` writes the chord, its colour carried over: a degree of the scale whose chord voices the same pitch
+ * classes on the same root, else such a borrowed chord, else its chromatic source (degree 0). 0 for a chord out of range */
+int theory_palette_place(int scale, theory_palette_chord_t c, int *deg, int *src);
 /* The tone a lane plays for `tone` on a chord of colour c: sus2/sus4 turn tone 3 into 2/4 (fork: quartal and 7sus4 into 4); else tone */
 int theory_colour_tone(int colour, int tone);
 /* MIDI notes of the chord in root position, root in octave 3 (like theory_triad), ascending; returns the count (2..5).

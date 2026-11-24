@@ -5,15 +5,15 @@
  * no allocation, no state. */
 #pragma once
 #include <stdint.h>
+#include "theory.h"
 
 #define CPG_PADS 16        /* chords in a palette */
 #define CPG_MAX_BARS 16    /* bars in a laid-out starting order */
 
-/* A catalogue chord, independent of the project's key and scale (S04-D4): a chromatic chord on `root` semitones above the tonic of
- * quality 0..3 (the first range's CQ_*) or 4..8 (the second range's CQ2_*, spec 03) in colour COL_* (up to COL_ALL); its row in
- * the CPG's grid less one (spice 0 to 3: the CPG's harmonic gradient, row 1 the foundation, row 4 the spiciest); its category, 0
- * while the CPG's pads do not carry one (spec 04, §8); start: 1 for a chord of the starting order */
-typedef struct { signed char root, quality, colour, spice, category, start; } cpg_chord_t;
+/* A catalogue chord, independent of the project's key and scale (S04-D4): theory.h's palette chord, which the core holds by value (spec
+ * 05). Spice: the CPG's harmonic gradient, row 1 the foundation, row 4 the spiciest; category 0 while the CPG's pads carry none (spec 04,
+ * §8) */
+typedef theory_palette_chord_t cpg_chord_t;
 
 /* A catalogue entry. Its chords packed three bytes each (cpg_chord unpacks them); its starting order laid out by decision 4's rule
  * (S04-D9), one palette index a bar, `bars` of them (1, 2, 4, 8 or 16), 4 bits each, the first bar in the low nibble. No pointer: the

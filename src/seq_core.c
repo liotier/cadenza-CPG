@@ -2193,10 +2193,14 @@ void seq_set_key(seq_t *s, int key) {
     others_follow(s);
 }
 
+static void palette_rescale(seq_t *s, int from);
+
 void seq_set_scale(seq_t *s, int scale) {
+    int from = s->scale;
     if (scale < 0 || scale >= SCALE_COUNT || scale == s->scale) return;
     act(s);
     s->scale = scale;
+    palette_rescale(s, from);   /* fork, spec 05: a palette chord keeps its sound */
     for (int p = 0; p < SEQ_PARTS; p++) borrow_degrees(s, &s->part[p]);   /* every part saves its borrows' new degrees */
     revoice(s, cur(s));
     regen_harmony(s, cur(s));
@@ -4047,6 +4051,18 @@ static void out_feel(out_t *o, char c, const seq_part_t *p, const prog_view_t *o
  * phrase is longer than the loop), exactly as 0.13 wrote its progression: a loop filled from a phrase saves byte for byte
  * as 0.13 did. A loop with no period of 16 or less (settle_slots) writes its first 16 slots there (what a 0.13 build then
  * plays, repeating) and every slot in `.ch` after `.cs`. */
+/* fork (docs/development/specs/05-part-palette.md, S05-D2): `|<c>.pl=` the part's palette, only when it holds one, in hex: the identifier
+ * (8 digits), the count less one (1), then per chord its root, quality, colour, spice + 4 x start, and category (1 each). 0.28.1 ignores
+ * the field: the slots play as written (spec 03's fallbacks where they apply), the palette is dropped */
+static void out_palette(out_t *o, char c, const seq_part_t *p) {
+    if (!p->pal.n) return;
+    outf(o, "|%c.pl=%08x%x", c, (unsigned)p->pal.id, p->pal.n - 1);
+    for (int k = 0; k < p->pal.n; k++) {
+        const theory_palette_chord_t *x = &p->pal.chord[k];
+        outf(o, "%x%x%x%x%x", x->root, x->quality, x->colour, x->spice | x->start << 2, x->category);
+    }
+}
+
 /* v: the progression saved (the part's own, part_view), in the project's scale. Fork (spec 03, S03-D5): `.prog`, `.pq`, `.ch` and `.cx`
  * hold each slot as an older build reads it (old_chord), `.cy` (out_feel) the slots that differ */
 static void save_part_head(out_t *o, char c, const seq_part_t *p, const prog_view_t *v, int scale) {
@@ -4084,6 +4100,7 @@ static void save_part_head(out_t *o, char c, const seq_part_t *p, const prog_vie
     out_cp(o, c, p, scale);
     out_hoct(o, c, p);   /* 0.24 */
     out_feel(o, c, p, v, scale);   /* 0.28 */
+    out_palette(o, c, p);   /* fork, spec 05 */
 }
 
 /* 0.11: `|<c>3.mr=` a recipe Melody 1's recipe (its .g says GEN_MEL_HOOK, which 0.10 plays), its phrase the old one
@@ -4293,7 +4310,7 @@ enum { F_REQUIRED = 5 + SEQ_LANES, F_VOI = F_REQUIRED, F_GV, F_H, F_G, F_LK = F_
        F_DY, F_PQ, F_SL, F_CS, F_BS, F_AB, F_MR = F_AB + SEQ_LANES, F_CV, F_SCH = F_CV + SEQ_LANES, F_RK, F_MP, F_BV,
        F_FO = F_BV + SEQ_LANES, F_VX, F_RB, F_RZ, F_BRB, F_BRZ, F_BX, F_BL, F_JX, F_JW, F_JK, F_JL, F_JF, F_JY, F_JV, F_JM,
        F_DJ, F_GN = F_DJ + DL_COUNT, F_CP, F_HO, F_LA, F_PM = F_LA + DL_COUNT, F_AR, F_CX, F_VH, F_VR, F_FM, F_BT, F_BF, F_AP, F_MT, F_JP, F_JT, F_JE, F_JC,
-       F_CY, F_CQ, F_COUNT };
+       F_CY, F_CQ, F_PL, F_COUNT };
 /* pq, sl, cs: 0.9, bs, ab: 0.10, when not neutral; mr: 0.11, a recipe melody; cv: 0.13, a chord rhythm's variant;
  * .ch (F_SCH): 0.14, every slot of a loop with no period of 16 or less; .rk: 0.14, the COLOUR ranks' period; mp: VST-12, a
  * recipe melody's phrasing; bv: 0.16, a generated lane's bars with their own variation; fo: after 0.16, FOLLOW off; vx: 0.17, the Chords voicing, when not a new part's;
@@ -4305,7 +4322,7 @@ enum { F_REQUIRED = 5 + SEQ_LANES, F_VOI = F_REQUIRED, F_GV, F_H, F_G, F_LK = F_
  * 0.24, the hit octaves (out_hoct), when any; 1.la, 2.la (F_LA + DL_*): 0.24, a drawn lane's LOCK WITH and ANTICIPATE (out_la), when not
  * the defaults; pm: 0.26, the parts keep their own mutes (else every part takes A's); ar: 0.27, the arrangement (load_ar); cx, vh, vr, fm: 0.28
  * Feel (out_feel), when used; bt: the Bass's Feel page's tones (out_feel), bf: a kept bar's, ap: a hit's picks (out_bass), when used;
- * fork (spec 03): cy, cq, the slots and points using spec 03's values, exactly (out_feel, out_cp) */
+ * fork (spec 03): cy, cq, the slots and points using spec 03's values, exactly (out_feel, out_cp); (spec 05) pl, the part's palette */
 typedef struct fields { const char *v[F_COUNT]; int n[F_COUNT]; } fields_t;
 
 static void find_fields(const char *str, char letter, fields_t *f) {
@@ -4316,7 +4333,7 @@ static void find_fields(const char *str, char letter, fields_t *f) {
                                               "1.bv", "2.bv", "3.bv", "4.bv", "fo", ".vx", ".rb", ".rz", "2.rb", "2.rz", "2.bx",
                                               "2.bl", "3.jx", "3.jw", "3.jk", "3.jl", "3.jf", "3.jy", "3.jv", "3.jm",
                                               "1.dj", "2.dj", "gn", ".cp", ".ho", "1.la", "2.la", "pm", "ar", ".cx", ".vh", ".vr", ".fm", ".bt", "2.bf", "2.ap", ".mt", "3.jp", "3.jt", "3.je", "3.jc",
-                                              ".cy", ".cq"};
+                                              ".cy", ".cq", ".pl"};
     memset(f, 0, sizeof *f);
     for (const char *p = str; *p;) {
         const char *end = strchr(p, '|'), *eq;
@@ -4855,6 +4872,28 @@ static void load_cq(seq_part_t *p, const char *v, int len) {
     }
 }
 
+/* fork (spec 05): `.pl` (out_palette); a bad field is ignored whole, never refused: the part then holds no palette */
+static int pal_chord_ok(const theory_palette_chord_t *c) {
+    return theory_palette_ok(*c) && c->spice >= 0 && c->spice <= 3 && c->category >= 0 && c->category <= 15 && (c->start == 0 || c->start == 1);
+}
+
+static void load_pl(seq_part_t *p, const char *v, int len) {
+    seq_palette_t pal = {0};
+    int hi = v && len >= 9 ? hexn(v, 4) : -1, lo = hi >= 0 ? hexn(v + 4, 4) : -1, n = lo >= 0 ? hexn(v + 8, 1) + 1 : 0;
+    if (n < 1 || len != 9 + 5 * n) return;
+    pal.id = (uint32_t)hi << 16 | (uint32_t)lo;
+    pal.n = (unsigned char)n;
+    for (int k = 0; k < n; k++) {
+        const char *x = v + 9 + 5 * k;
+        int d[5];
+        for (int i = 0; i < 5; i++) d[i] = hexn(x + i, 1);
+        pal.chord[k] = (theory_palette_chord_t){(signed char)d[0], (signed char)d[1], (signed char)d[2], (signed char)(d[3] & 3), (signed char)d[4],
+                                                (signed char)(d[3] >> 2)};
+        if (d[3] < 0 || d[3] > 7 || !pal_chord_ok(&pal.chord[k])) return;
+    }
+    p->pal = pal;
+}
+
 static void load_vh(seq_part_t *p, const char *v, int len) {
     for (int k = 0; v && k + 5 <= len; k++) {   /* k: past each entry's comma */
         int i = hexn(v + k, 2), run = hexn(v + k + 2, 2), n = hexn(v + k + 4, 1);
@@ -4927,6 +4966,7 @@ static int parse_part(const fields_t *f, seq_part_t *p) {
     p->rank_len = f->v[F_RK] ? num(f->v[F_RK], f->n[F_RK]) : 0;   /* bad or absent: the phrase's (settle_slots) */
     load_slots(p, f->v[F_SCH], f->n[F_SCH]);
     load_feel(p, f);   /* 0.28 */
+    load_pl(p, f->v[F_PL], f->n[F_PL]);   /* fork, spec 05 */
     load_cp(p, f->v[F_CP], f->n[F_CP]);   /* 0.24 */
     load_cq(p, f->v[F_CQ], f->n[F_CQ]);   /* fork, spec 03 */
     load_hoct(p, f->v[F_HO], f->n[F_HO]);
@@ -5363,6 +5403,7 @@ static void push_snap_part(seq_t *s, int part, int lane, int join) {
     memcpy(u->fs, p->fs, sizeof u->fs);   /* 0.28 */
     u->rc = p->rc;
     u->feel_spans = p->feel_spans;
+    u->pal = p->pal;   /* fork, spec 05 */
     u->chord_len = p->chord_len;
     u->filled_slots = p->filled_slots;
     u->phrase = p->phrase;
@@ -5832,6 +5873,7 @@ static void restore_prog(seq_t *s, seq_part_t *p, const seq_snap_t *u) {
     memcpy(p->fs, u->fs, sizeof p->fs);   /* 0.28 */
     p->rc = u->rc;
     p->feel_spans = u->feel_spans;
+    p->pal = u->pal;   /* fork, spec 05: a palette's load and clear are progression steps */
     p->slot_lock = u->slot_lock;
     p->chord_len = u->chord_len;
     p->filled_slots = u->filled_slots;
@@ -6407,6 +6449,93 @@ void seq_set_progression(seq_t *s, int n, const int *deg, const unsigned char *s
     if (n != seq_slots(s)) n = n < 1 ? 1 : n > 8 ? 8 : n;   /* a phrase */
     set_prog(s, cur(s), n, deg, src, colour, 1);
 }
+
+/* ---- fork, docs/development/specs/05-part-palette.md: the part's palette (seq_core.h) */
+
+/* The pitch classes a chord voices over C, a 12-bit set */
+static int chord_mask(int slot_scale, int deg, int colour) {
+    int n[THEORY_CHORD_MAX], k = theory_chord_notes(0, slot_scale, deg, colour, n), m = 0;
+    while (k--) m |= 1 << n[k] % 12;
+    return m;
+}
+
+/* The palette chord a chord of a project in `scale` plays (its root, colour and pitch classes), -1 for none */
+static int pal_index(const seq_palette_t *pal, int scale, int deg, int src, int colour) {
+    int ss = theory_slot_scale(scale, src), root = theory_degree_pc(0, ss, deg), want = chord_mask(ss, deg, colour);
+    for (int k = 0; k < pal->n; k++) {
+        const theory_palette_chord_t *c = &pal->chord[k];
+        if (c->colour == colour && c->root == root && chord_mask(theory_slot_scale(scale, theory_palette_src(*c)), 0, colour) == want) return k;
+    }
+    return -1;
+}
+
+/* S05-D5 after a scale change (s->scale is the new one, `from` the old): every slot and point of a part with a palette that played one of its
+ * chords is written as the new scale places that chord, so it keeps its sound; the others follow the scale as they always have */
+static void palette_rescale(seq_t *s, int from) {
+    for (int part = 0; part < SEQ_PARTS; part++) {
+        seq_part_t *p = &s->part[part];
+        int k, d, sr;
+        if (!p->pal.n) continue;
+        for (int i = 0; i < SEQ_MAX_PROG; i++)
+            if ((k = pal_index(&p->pal, from, p->prog[i], p->src[i], p->colour[i])) >= 0 && theory_palette_place(s->scale, p->pal.chord[k], &d, &sr))
+                p->prog[i] = d, p->src[i] = (unsigned char)sr;
+        for (int b = 0; b < SEQ_MAX_BARS; b++)
+            for (int j = 0; j < SEQ_CP_MAX && p->cp[b][j].step >= 0; j++) {
+                seq_cp_t *x = &p->cp[b][j];
+                if ((k = pal_index(&p->pal, from, x->deg, x->src, PICK_TYPE[x->type])) >= 0 && theory_palette_place(s->scale, p->pal.chord[k], &d, &sr))
+                    x->deg = (signed char)d, x->src = (signed char)sr;
+            }
+    }
+}
+
+int seq_palette_load(seq_t *s, uint32_t id, const theory_palette_chord_t *chords, int n, const unsigned char *order, int n_order) {
+    seq_part_t *p = cur(s);
+    int deg[SEQ_MAX_PROG], old, slots;
+    unsigned char src[SEQ_MAX_PROG], col[SEQ_MAX_PROG];
+    if (!chords || !order || n < 1 || n > THEORY_PALETTE_MAX || (n_order != 1 && n_order != 2 && n_order != 4 && n_order != 8 && n_order != 16)) return 0;
+    for (int k = 0; k < n; k++)
+        if (!pal_chord_ok(&chords[k])) return 0;
+    for (int b = 0; b < n_order; b++)
+        if (order[b] >= n) return 0;
+    for (int b = p->bars; b < n_order && b < SEQ_MAX_BARS; b = p->bars) seq_set_bars(s, b * 2);   /* as seq_feel_preset: the whole order */
+    feel_begin(s);
+    memset(&p->pal, 0, sizeof p->pal);
+    p->pal.id = id;
+    p->pal.n = (unsigned char)n;
+    memcpy(p->pal.chord, chords, (size_t)n * sizeof *chords);
+    old = p->chord_len;
+    cp_init(p);   /* as feel_preset_set: a bar a chord, no change points */
+    p->feel_spans = 0;
+    chord_len_to(s, p, SEQ_STEPS);
+    slots = part_slots(p);
+    for (int i = 0; i < slots; i++) {
+        const theory_palette_chord_t *c = &chords[order[i % n_order]];   /* a longer loop repeats the order */
+        int d, sr;
+        theory_palette_place(s->scale, *c, &d, &sr);
+        deg[i] = d, src[i] = (unsigned char)sr, col[i] = (unsigned char)c->colour;
+        if (!slot_locked(p, i)) memset(&p->fs[i], 0, sizeof p->fs[i]);   /* a written slot's mute, base and hand notes go, as a preset's */
+    }
+    set_prog(s, p, slots, deg, src, col, 1);   /* the whole loop, locked slots kept */
+    if (old != SEQ_STEPS) regen_part(s, p);
+    return 1;
+}
+
+void seq_palette_clear(seq_t *s) {
+    seq_part_t *p = cur(s);
+    if (!p->pal.n) return;
+    seq_txn_done(s);
+    act(s);
+    push_undo(s, -1);
+    memset(&p->pal, 0, sizeof p->pal);
+}
+
+int seq_palette(const seq_t *s, theory_palette_chord_t out[THEORY_PALETTE_MAX]) {
+    const seq_part_t *p = ccur(s);
+    if (out) memcpy(out, p->pal.chord, (size_t)p->pal.n * sizeof *out);
+    return p->pal.n;
+}
+
+uint32_t seq_palette_id(const seq_t *s) { return ccur(s)->pal.n ? ccur(s)->pal.id : 0; }
 
 /* The Bass's MOVEMENT, SYNC, OCTAVES and APPROACH change its steps (regenerated here); the others act at playback (0.17: the
  * Chords' SHAPE_COLOUR and SHAPE_SPREAD only keep their values, vcol and vspr sound) */

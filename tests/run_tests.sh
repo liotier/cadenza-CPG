@@ -6,7 +6,8 @@
 #   3. the toolchain's generic host test (tools/test_port.sh)
 #   4. the core-API parity trace (tests/core_parity.c: the seq_* API alone, 44.1 and 48 kHz) against tests/core_parity.sha256
 #   fork: the chromatic progression path (tests/test_chroma_path.c, docs/development/specs/02-chromatic-progression-path.md), and
-#   the palette table (tests/test_cpg_palettes.c, docs/development/specs/04-palette-table.md)
+#   the palette table (tests/test_cpg_palettes.c, docs/development/specs/04-palette-table.md), and the part's palette
+#   (tests/test_palette.c, docs/development/specs/05-part-palette.md)
 # MPC_VST points at a checkout of sd88me/mpc-vst-plugins (default: next to this repo).
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -40,7 +41,7 @@ docker run --rm -e SCREEN_BUDGET="$SCREEN_BUDGET" -v "$PWD":/w -v "$MPC_VST":/mv
   ./build/test_presets
   gcc -std=gnu11 $SAN -DSCREEN_BUDGET=$SCREEN_BUDGET -Ivst/build -I/mv/wrapper -Isrc -o build/test_plugin tests/test_plugin.c /mv/wrapper/vst2_wrap.c \
       src/engine.c src/seq_core.c src/theory.c src/gen.c src/melody.c src/voicing.c src/rhythm.c src/bassline.c src/melody2.c src/jamlib.c src/presets.c \
-      src/cpg_palettes.c -lm -ldl -lpthread
+      src/cpg_palettes.c src/palette.c -lm -ldl -lpthread
   ./build/test_plugin
   gcc -std=gnu11 -Wall -Wextra -Werror $SAN -Isrc -o build/test_feel tests/test_feel.c src/feel.c src/presets.c src/seq_core.c src/theory.c src/gen.c src/melody.c src/voicing.c src/rhythm.c src/jamlib.c src/bassline.c src/melody2.c -lm -lpthread
   ./build/test_feel
@@ -56,6 +57,8 @@ docker run --rm -e SCREEN_BUDGET="$SCREEN_BUDGET" -v "$PWD":/w -v "$MPC_VST":/mv
   ./build/test_chroma_path
   gcc -std=gnu11 -Wall -Wextra -Werror $SAN -Isrc -Itests -o build/test_cpg_palettes tests/test_cpg_palettes.c src/cpg_palettes.c src/theory.c
   ./build/test_cpg_palettes
+  gcc -std=gnu11 -Wall -Wextra -Werror $SAN -Isrc -o build/test_palette tests/test_palette.c src/palette.c src/cpg_palettes.c src/seq_core.c src/theory.c src/gen.c src/melody.c src/voicing.c src/rhythm.c src/jamlib.c src/bassline.c src/melody2.c -lm
+  ./build/test_palette
   gcc -std=gnu11 -Wall -Wextra -Werror $SAN -Isrc -o build/core_parity tests/core_parity.c src/seq_core.c src/theory.c src/gen.c src/melody.c src/voicing.c src/rhythm.c src/jamlib.c src/bassline.c src/melody2.c -lm -lpthread
   ./build/core_parity > build/core_parity_native.txt
   ./build/core_parity | cmp - build/core_parity_native.txt || { echo "run_tests: FAIL: the core parity trace differs between two runs" >&2; exit 1; }

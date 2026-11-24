@@ -34,11 +34,11 @@ gets its own specification in `docs/development/specs/` before any code is writt
 | 0a. Local tools | implemented | [spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools) |
 | 3. The missing sonorities | implemented; heard on the device with step 5 | [spec 03](specs/03-missing-sonorities.md), §8: no pad, Classic chord or Scale Mode chord left that Cadenza cannot voice; parity unchanged; 0.28.1 opens every such state with its fallbacks |
 | 4. The palette table | implemented; two questions for the owner (O15, O16) | [spec 04](specs/04-palette-table.md), §8: 184 palettes and 7 scale palettes, every chord exact, every root spelled as the CPG spells it in all twelve keys |
-| 5 | approved, next | [spec 05](specs/05-part-palette.md) |
+| 5. The part's palette | implemented: milestone M2, the engine complete | [spec 05](specs/05-part-palette.md), §8: load, clear, undo, save by value, the scale palette shown, the nearest palette; six loaded parts in 2.4 KB of state |
 
-The draft release *Cadenza 0.28.1-cpg.1 (test build)* holds steps 0 to 3 and the collected binary: one device run
-checks them at once (§8.1, O1). Step 3 changes nothing on screen and nothing in a state saved from the controls, which
-cannot produce its values.
+The draft release *Cadenza 0.28.1-cpg.1 (test build)* holds steps 0 to 5 and the collected binary: one device run
+checks them at once (§8.1, O1). Steps 3 to 5 change nothing on screen and nothing in a state saved from the controls,
+which cannot produce their values or load a palette yet.
 
 ## 2. Principles
 
@@ -195,7 +195,8 @@ already encodes that behaviour on its side of the interface.
 | Saved state | 8 KB | about 1.6 KB for a six-part genre preset | | offline |
 
 **Planned spending.** Step 3 about 2 to 4 KB of binary (measured: 3.3 KB of code); step 4's table 12 to 15 KB (measured: 16.1
-KB, which joins the plugin when step 5's front end calls it); step 5 about 2 to 4 KB: some 25 KB of the 70. The screens of phase B cost parameters and images. The skin is now the binding budget: 0.9 MB, where a new
+KB, which joins the plugin when a screen calls the front end); step 5 about 2 to 4 KB (measured: 1.4 KB of code, its verbs and
+front end joining with the table): some 25 KB of the 70, about 21 KB once phase B's first screen links them. The screens of phase B cost parameters and images. The skin is now the binding budget: 0.9 MB, where a new
 full-panel view has cost 1.6 MB or more. Phase B's screens therefore reuse existing views, and any new view needs a
 decision on the fork's skin budget first (§8.2, O10). The skin budget rests on a device probe ("MPC decodes the visible page
 only", VST-9); with root SSH, MPC's memory can be measured on the owner's MPC One before and after a new view, so that
@@ -213,7 +214,7 @@ decision can rest on the fork's own figures.
 | 2 | Chromatic chords through the progression path | §6.2 | 0 | no | S-M | implemented |
 | 3 | The missing sonorities: the catalogue's eight and Scale Mode's 7sus4 | avenue H | 2 | no | M | implemented |
 | 4 | The palette table, generated from the CPG | avenues B, K | 0, 3 | no | M | implemented |
-| 5 | The part's palette in the engine | §4.3, avenue D | 2, 4 | no | M | approved |
+| 5 | The part's palette in the engine | §4.3, avenue D | 2, 4 | no | M | implemented |
 | 6 | The palette browser | avenue C | 5 | yes | M-L | after M2 |
 | 7 | The palette in the bar editor | avenue D | 5 | yes | M | after M2 |
 | 8 | Live palette pads | avenue L | 5 | yes | M-L | after M2 |
@@ -336,17 +337,17 @@ for the record below it, and the ones concerning the integration as a whole go t
 
 In order:
 
-1. **The device run of the draft** *Cadenza 0.28.1-cpg.1 (test build)* (O1). It holds steps 0 to 3 and the collected
+1. **The device run of the draft** *Cadenza 0.28.1-cpg.1 (test build)* (O1). It holds steps 0 to 5 and the collected
    binary. Checks: the plugin loads from `VST2 Plugins` under MPC OS 3.10.1; INIT and House 124 play; a project saves and
    reopens, and opens again after the official 0.28.1 is restored; CHORDS, PHRASE, PLAY and GLOBAL read correctly in F,
    E♭, A♭ and D♭ major and C♯ and D♯ minor (PLAY's title: `Eb MAJOR`, `D# MINOR`). Step 2 shows nothing.
 2. **If it passes:** the release branch and its pull request (O2); `versions.json` to `0.28.1-cpg.2`; M1's offer (O3).
 3. **Step 0a**: done (spec 00, addendum A); its tools serve every later step.
-4. **Step 5**, approved, pushed with CI green. Steps 3 and 4 are implemented (specs 03 and 04, §8); step 4's table
-   holds the CPG's C palettes until O15 is answered.
+4. Steps 3 to 5 are implemented (specs 03 to 05, §8): milestone M2. Step 4's table holds the CPG's C palettes until O15 is
+   answered.
 5. **The web simulation**, once the author answers (O8 and O9 taken; O8b if he declines).
-6. **At M2:** the MPC memory probe over root SSH, the skin budget (O10), the design note to the author, then
-   specifications 06 and 07.
+6. **M2 is reached:** the MPC memory probe over root SSH, the skin budget (O10), the design note to the author (specs 01 to
+   05's "other front ends" sections hold its material), then specifications 06 and 07.
 
 ## 10. Risks
 
@@ -397,4 +398,4 @@ polymeter, the Chord Matcher (study, §7).
   rule, one chord a bar, the loop grown as Feel's presets grow it; specs 03 to 05 all approved. Then O11 answered:
   chromatic roots fixed (spec 01, addendum A); lesson 7 updated; only O1 remains decidable now. Then step 3 built:
   §1 and §6.1 updated, lessons 14 and 15, the budget after step 3 (§5), next steps (§9). Then step 4 built: O15 and O16,
-  found in the CPG while building it, join §8.1.
+  found in the CPG while building it, join §8.1. Then step 5 built: milestone M2 (§1, §6.1, §9).

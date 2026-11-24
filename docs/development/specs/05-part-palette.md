@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | approved: §2.1 answered by the owner, 2026-11-23 |
+| Status | implemented, 2026-11-24 (§8) |
 | Type | engine, save format |
 | Size | M |
 | Depends on | 02, 03, 04 |
@@ -108,8 +108,55 @@ Every screen (steps 6 to 10); editing a palette's chords, which nothing has aske
 ## 7. Open points, to settle while implementing
 
 - How Feel's `base` field should record a palette load (as the chord first written, presumably: 0). A question of
-  implementation, not for the owner; S05-D4 is in §2.2.
+  implementation, not for the owner; S05-D4 is in §2.2. *Settled (§8.2, 6): 0, as a Feel preset leaves it.*
 
 ## 8. Implementation notes
 
-Empty until implementation.
+### 8.1 What was built
+
+| Layer | Change |
+|---|---|
+| `src/theory.h`, `src/theory.c` | The palette chord, `theory_palette_chord_t` (root, quality, colour, spice, category, start), shared by the core and the table; `theory_palette_ok`, `theory_palette_src`, and `theory_palette_place`, S05-D5's rule. |
+| `src/cpg_palettes.h` | `cpg_chord_t` is now `theory_palette_chord_t`: the table and the core hold chords alike, and the core includes no header of the table (S04-D11). |
+| `src/seq_core.h`, `src/seq_core.c` | `seq_palette_t` in `seq_part_t` (S05-D1) and in the undo snapshot (`push_snap_part`, `restore_prog`); `seq_palette_load`, `seq_palette_clear`, `seq_palette`, `seq_palette_id`; the `.pl` field (`out_palette`, `load_pl`); `palette_rescale` in `seq_set_scale` (S05-D5). A part's first use copies the whole Verse, its palette with it (S05-D8): no code needed. |
+| `src/palette.h`, `src/palette.c` | The front end (§3.2): `palette_shown`, `palette_nearest`, and `palette_load_entry`, which passes a catalogue entry and its starting order to `seq_palette_load`. Joins `vst/vst.json`'s sources and the plugin test's command line. |
+| Tests | `tests/test_palette.c` (a new line of `tests/run_tests.sh`): §5's items 1 to 5 and §4's state size; `tests/compat/writer.c`: the `palette` scenario, pinned. |
+
+### 8.2 Choices made while building
+
+1. **One chord type.** The specification said the core holds chords "as step 4 represents them (`cpg_chord_t`)". So that
+   the core need not include the table's header, the type moved to `theory.h` and the table's name became an alias.
+2. **`.pl`'s count and flags.** One hex digit cannot hold 16, so the field holds the count less one. The starting-order
+   flag (S05-D1: the chords as step 4 represents them) shares a digit with the spice, `spice + 4 × start`, which keeps §3.3's
+   five characters a chord: 89 at most, as specified.
+3. **The loop's growth is not undone**, exactly as with Feel's presets (`seq_feel_preset`), which grow the loop through
+   `seq_set_bars` before their undo step: undo restores the slots and the palette, and leaves the loop as long as the load
+   made it. A step that wants the length undone too would change Feel's presets as well; left as 0.28.1 has it.
+4. **S05-D5's placement** carries the colour over: a degree whose chord, in that colour, has the same root and pitch
+   classes; else such a borrowed chord; else the chromatic source. In C Dorian, Axis of Awesome's C and Am are chromatic,
+   G is the borrowed V, F the IV.
+5. **A scale change** writes again every slot and change point whose root, colour and pitch classes are a palette chord's
+   (`palette_rescale`), so it keeps its sound; any other chord of the part follows the scale as it always has. Tested over
+   every scale with the blues, and for a part without a palette, whose degrees still follow.
+6. **Feel's state of a written slot** (mute, base, hand notes) goes, as a Feel preset clears it; a locked slot keeps its
+   own. A loaded chord's base is 0: §7's open point.
+7. **The nearest palette** reads the part's slots, not its change points, and counts a slot chord as held when an entry
+   has a chord of the same root and pitch classes. Tested on C G Am F (Axis of Awesome, the first entry holding all four)
+   and, for 40 random progressions over every scale, against a count made independently in the test.
+8. **Bad arguments** to `seq_palette_load` change nothing and return 0: a chord out of range, an empty palette, an order
+   of a length other than 1, 2, 4, 8 or 16 bars, or an index past the chords.
+
+### 8.3 Measurements
+
+| Quantity | Expected | Measured |
+|---|---|---|
+| The state, six parts of 16 bars, each with a loaded palette | within 8 KB, no part left out | 2 358 bytes, every part saved |
+| `.pl` | about 95 bytes a part | 95 for 16 chords, its name included |
+| Core parity hash | unchanged | unchanged |
+| Compatibility harness | `.pl` dropped by 0.28.1 | 21 scenarios: 16 identical, 5 as pinned; `palette`'s re-save drops `.pl` and the It6's `.cy`, every other field as written |
+| Binary | | +1 416 bytes of code locally (`tools/dev/armsize.sh`): the save, load, undo and scale paths. The verbs, the front end and the table join the plugin when a screen calls them (phase B) |
+
+### 8.4 Other front ends
+
+New core verbs and the `.pl` field, which a front end that does not use them leaves alone; a front end saving through
+`seq_state_save` writes it without knowing. For the design note to the author (milestone M2), with spec 03's.
