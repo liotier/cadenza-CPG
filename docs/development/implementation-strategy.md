@@ -187,7 +187,7 @@ already encodes that behaviour on its side of the interface.
 
 | Budget | Limit | Now | Headroom | Checked by |
 |---|---|---|---|---|
-| Binary | 720 KB (decision 21) | 650 KB (CI run 18, step 3) | about 70 KB | CI, every build |
+| Binary | 720 KB (decision 21) | 654 KB (CI run 20, step 5) | about 66 KB | CI, every build |
 | Skin images, decoded | 80 MB | 79.1 MB | **0.9 MB** | CI, every build |
 | Parameters | none set | 2 037 | n/a | each costs about 110 bytes of binary (0.22: 152 parameters, about 17 KB) and, when polled, audio-thread time |
 | Audio p99, worst block | 49 %, 80 % | 24.2 %, 65.5 % (the last device bench, [vst/bench.txt](../../vst/bench.txt), the author's Force) | | `tools/bench.sh` over the owner's root SSH, on the MPC One |
@@ -195,8 +195,8 @@ already encodes that behaviour on its side of the interface.
 | Saved state | 8 KB | about 1.6 KB for a six-part genre preset | | offline |
 
 **Planned spending.** Step 3 about 2 to 4 KB of binary (measured: 3.3 KB of code); step 4's table 12 to 15 KB (measured: 16.1
-KB, which joins the plugin when a screen calls the front end); step 5 about 2 to 4 KB (measured: 1.4 KB of code, its verbs and
-front end joining with the table): some 25 KB of the 70, about 21 KB once phase B's first screen links them. The screens of phase B cost parameters and images. The skin is now the binding budget: 0.9 MB, where a new
+KB, which joins the plugin when a screen calls the front end); step 5 about 2 to 4 KB (CI: 650 to 654 KB; the local estimate
+said 1.4 KB, CI's compiler decides): some 25 KB of the 70, about 21 KB once phase B's first screen links the table. The screens of phase B cost parameters and images. The skin is now the binding budget: 0.9 MB, where a new
 full-panel view has cost 1.6 MB or more. Phase B's screens therefore reuse existing views, and any new view needs a
 decision on the fork's skin budget first (§8.2, O10). The skin budget rests on a device probe ("MPC decodes the visible page
 only", VST-9); with root SSH, MPC's memory can be measured on the owner's MPC One before and after a new view, so that

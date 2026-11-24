@@ -154,7 +154,7 @@ Every screen (steps 6 to 10); editing a palette's chords, which nothing has aske
 | `.pl` | about 95 bytes a part | 95 for 16 chords, its name included |
 | Core parity hash | unchanged | unchanged |
 | Compatibility harness | `.pl` dropped by 0.28.1 | 21 scenarios: 16 identical, 5 as pinned; `palette`'s re-save drops `.pl` and the It6's `.cy`, every other field as written |
-| Binary | | +1 416 bytes of code locally (`tools/dev/armsize.sh`): the save, load, undo and scale paths. The verbs, the front end and the table join the plugin when a screen calls them (phase B) |
+| Binary | about 2 to 4 KB | CI: 654 KB, from 650 after step 3 (CI run 20); the local estimate, +1 416 bytes of code, undercounted. The table joins the plugin when a screen calls the front end (phase B) |
 
 ### 8.4 Other front ends
 
