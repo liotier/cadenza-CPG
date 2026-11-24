@@ -6,6 +6,6 @@ here.
 
 | Document | For | Where it goes | Status |
 |---|---|---|---|
-| [cpg-18-row4-key-invariance.md](cpg-18-row4-key-invariance.md) | the MPC Chord Progression Generator ([liotier/AkaiMPC](https://github.com/liotier/AkaiMPC)) | `AkaiMPCChordProgressionGenerator/docs/improvements/18-row4-key-invariance.md` | proposed: the owner's decision O15 (strategy, §8.3) |
+| [cpg-18-row4-key-invariance.md](cpg-18-row4-key-invariance.md) | the MPC Chord Progression Generator ([liotier/AkaiMPC](https://github.com/liotier/AkaiMPC)) | `AkaiMPCChordProgressionGenerator/docs/improvements/18-row4-key-invariance.md` | implemented in the CPG, 2026-11-24 (`a0a6bf6`, merged as `5f091e7`); the CPG's copy, with its implementation notes, is the reference; this one is the proposal as sent. The fork's submodule follows (spec 04, §8.4) |
 
 The design note to Cadenza's author (milestone M2, strategy §9) will join this list.

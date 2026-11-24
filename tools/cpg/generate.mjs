@@ -3,10 +3,10 @@
 //   node tools/cpg/generate.mjs <CPG folder> <chord listing> <names listing> <out dir>
 // <chord listing>: tools/cpg/enumerate.c's output; <names listing>: its --names output. Writes into <out dir>: cpg_palettes.c (the table
 // and its lookups, src/cpg_palettes.h's interface), cpg_expected.h (each stored chord's expected pitch classes, for
-// tests/test_cpg_palettes.c only) and palettes.txt (the report, S04-D12). Strict (S04-D7): any chord with no exact representation, an
-// identifier collision or a missing nickname stops it, naming the entry. The table stores each palette as the CPG builds it in C; the
-// report counts the keys in which the CPG builds another (spec 04, §8). Deterministic: tools/cpg/generate.sh compares the output with
-// the committed files.
+// tests/test_cpg_palettes.c only) and palettes.txt (the report, S04-D12). Strict (S04-D7): any chord with no exact representation, a
+// palette the CPG builds otherwise in another key than C's transposed (the table stores C's, and the CPG guarantees the rest since its
+// spec 18), an identifier collision or a missing nickname stops it, naming the entry. Deterministic: tools/cpg/generate.sh compares the
+// output with the committed files.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
@@ -85,7 +85,7 @@ function chromatic(where, pad, keyOffset = 0) {
 
 const genres = Object.keys(mt.progressions);
 const entries = [], ids = new Map();
-const stats = { quality: new Map(), colour: new Map(), mapped: [0, 0, 0, 0], layouts: new Map(), spellDiff: [], spellTotal: 0, keyed: [], keyedPads: 0 };
+const stats = { quality: new Map(), colour: new Map(), mapped: [0, 0, 0, 0], layouts: new Map(), spellDiff: [], spellTotal: 0 };
 const bump = (m, k) => m.set(k, (m.get(k) || 0) + 1);
 
 for (const [g, genre] of genres.entries()) {
@@ -100,18 +100,14 @@ for (const [g, genre] of genres.entries()) {
     const variant = gen.generateVariant('Classic', { key: 'C', mode: 'Major', progression: t.value, category: genre });
     if (variant.pads.length !== 16) fail(`${where}: ${variant.pads.length} pads`);
     const chords = variant.pads.map((p, k) => ({ ...chromatic(`${where} pad ${k + 1}`, p), spice: p.row - 1, start: p.isProgressionChord ? 1 : 0, pad: p }));
-    // The table stores the palette once, as the CPG builds it in C. In the other keys: whether the CPG builds C's transposed (the report
-    // counts the keys where it does not), and the report's spellings, of the pads that are the same chord
+    // The table stores the palette once, as the CPG builds it in C: in every other key the CPG must build C's transposed (its spec 18,
+    // which fixed row 4's key dependence), else the generation stops; and the report's spellings, in all twelve keys
     for (let key = 0; key < 12; key++) {
       const v = key ? gen.generateVariant('Classic', { key: mt.keys[key], mode: 'Major', progression: t.value, category: genre }) : variant;
-      let same = true;
       v.pads.forEach((p, k) => {
         const c = key ? chromatic(`${where} in ${mt.keys[key]} pad ${k + 1}`, p, key) : chords[k];
-        if (c.root !== chords[k].root || c.pcs.join() !== chords[k].pcs.join()) {
-          if (same) stats.keyed.push(`${ascii(mt.keys[key]).padEnd(5)} ${comment(where)}`);
-          same = false, stats.keyedPads++;
-          return;
-        }
+        if (c.root !== chords[k].root || c.pcs.join() !== chords[k].pcs.join())
+          fail(`${where}: pad ${k + 1} in ${mt.keys[key]} is not C's transposed (the CPG's spec 18 guarantees it)`);
         const rep = inScale(project, `${c.root}|${c.voiced.join(',')}`) || { src: chords[k].src, deg: 0 };
         const cadenza = names.get(`${key} ${project} ${rep.src} ${rep.deg}`), cpg = rootText(p.chordName);
         stats.spellTotal++;
@@ -252,11 +248,8 @@ r.push('Examples:');
 const ex = (genre, value) => { const e = entries.find(x => x.genre === genre && x.value === value); return e && `  ${comment(value)}: ${e.order.map(k => ascii(e.chords[k].pad.chordName)).join(' ')}`; };
 for (const [g, v] of [['Pop/Rock', 'I—V—vi—IV'], ['Jazz/Functional', 'ii—V—I'], ['Blues/Soul', '12-bar-blues'], ['Pop/Rock', 'I—V—vi—iii—IV']]) { const l = ex(g, v); if (l) r.push(l); }
 r.push('', `Scale palettes (Scale Mode in C, each chord its scale's own): ${scalePalettes.map((p, s) => `${SCALES[s]} ${p.filter(x => x.col >= 10).length}`).join(', ')} with a colour past COL_COUNT`);
-r.push('', `Keys in which the CPG builds another palette than C's transposed (row 4 only, measured): ${stats.keyed.length} of ${entries.length * 11}` +
-  ` entry-key pairs, ${stats.keyedPads} pads; the table holds C's`);
-for (const l of stats.keyed.slice(0, 12)) r.push(`  ${l}`);
-if (stats.keyed.length > 12) r.push(`  ... and ${stats.keyed.length - 12} more`);
-r.push('', `Root spellings, every chord in its entry's twelve keys, Cadenza (as S05-D5 writes it, spelled by spec 01) against the CPG, the pads that are C's transposed: ${stats.spellTotal} compared, ${stats.spellDiff.length} differ`);
+r.push('', `Every palette in every key is C's transposed (checked: the generation stops otherwise)`);
+r.push('', `Root spellings, every chord in its entry's twelve keys, Cadenza (as S05-D5 writes it, spelled by spec 01) against the CPG: ${stats.spellTotal} compared, ${stats.spellDiff.length} differ`);
 for (const l of stats.spellDiff.slice(0, 40)) r.push(`  ${l}`);
 if (stats.spellDiff.length > 40) r.push(`  ... and ${stats.spellDiff.length - 40} more`);
 writeFileSync(resolve(outDir, 'palettes.txt'), r.join('\n') + '\n');

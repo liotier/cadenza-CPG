@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | implemented, 2026-11-24 (§8); the two questions it found answered by the owner (§8.4): the CPG's fix specified for its repository, no chord category |
+| Status | implemented, 2026-11-24 (§8); the two questions it found answered by the owner (§8.4): the CPG's fix, specified for its repository and implemented there, the submodule moved; no chord category |
 | Type | data, tooling |
 | Size | M |
 | Depends on | 00 (the submodule), 03 (the full vocabulary) |
@@ -235,8 +235,9 @@ None: the two questions the draft left open are S04-D3 and S04-D9 of §2.1, both
    categorised. It is gone from the chord, the table (three bytes a chord became two) and step 5's `.pl`.
 5. **The CPG's palettes depend on the key** (§8.4, O15): the table holds each palette as the CPG builds it in C, and the
    report counts the keys in which it builds another. The generator first stopped on it; it now measures it, since the
-   table's design (S04-D4) holds one palette per entry whatever the answer. Once the CPG's fix lands and the submodule
-   moves, the count is 0 and the generator should stop on it again.
+   table's design (S04-D4) holds one palette per entry whatever the answer. *Done:* with the CPG's fix in (its spec 18,
+   submodule at `5f091e7`) the count was 0, and the generator stops again on any palette that is not C's transposed
+   (checked: run on `c84a306`, it stops at Pop/Rock `vi—IV—I—V`, pad 13 in E).
 6. **Starting orders** take each template chord to the palette chord of the starting order with the same root and pitch
    classes; the generator stops if one is missing (none is).
 
@@ -250,7 +251,7 @@ None: the two questions the draft left open are S04-D3 and S04-D9 of §2.1, both
 | As a project in the entry's tonality holds them (S05-D5) | | 1 554 degrees, 421 borrowed, 958 first range, 11 second range |
 | Table, on ARM (`arm-linux-gnueabihf-size`) | 12 to 14 KB | 13.1 KB: entries 9.6, text 2.8, scale palettes 0.3, code 0.4. The first version, with the category, took 16.1 KB |
 | Plugin binary, CI | within 720 KB | 650 KB after step 3 (CI run 18); the table joins it when step 5's front end calls it, the linker dropping it until then |
-| Root spellings differing from the CPG's | none in C | none: 35 028 compared, every chord of every palette in its twelve keys, as S05-D5 would write it in the entry's tonality |
+| Root spellings differing from the CPG's | none in C | none: 35 328 compared, every chord of every palette in its twelve keys, as S05-D5 would write it in the entry's tonality (35 028 before the CPG's spec 18, the pads that were C's transposed) |
 | Nicknames over 19 characters | 10, the longest 24 | 10, the longest 24 (*Secondary Dominant Chain*) |
 | Starting orders | §3.3 | as §3.3: 145 one chord a bar; 23 of three chords (11 ending on the tonic, 12 starting on it); 15 of five to seven; the blues |
 | Core parity hash | unchanged | unchanged |
@@ -263,8 +264,10 @@ All pass.
 
 **O15. The CPG's row 4 depends on the key.** *Answered (owner, 2026-11-24): "clearly fix it in the CPG"; specified for
 its repository in [upstream/cpg-18-row4-key-invariance.md](../upstream/cpg-18-row4-key-invariance.md), which measures the
-defect over all six styles (1 175 of 12 144 variants) and fixes it by reading roots from each pad's `degree`. The question
-as it was put:* In 122 of the 2 024 (entry, key) pairs, the CPG builds a palette that is not
+defect over all six styles (1 175 of 12 144 variants) and fixes it by reading roots from each pad's `degree`. Implemented in
+the CPG as specified (`a0a6bf6`, merged as `5f091e7`), its measurements matching the specification's. The submodule moved
+to `5f091e7`: the table's diff is the eleven Classic palettes in C of the specification's appendix, each in row 4 only;
+every palette is now C's transposed in all twelve keys. The question as it was put:* In 122 of the 2 024 (entry, key) pairs, the CPG builds a palette that is not
 C's transposed: row 4 holds other chords or the same in another order (300 pads; the report lists them). The cause is in
 `selectDynamicRow4Chords` ([generation.js](https://github.com/liotier/AkaiMPC/blob/main/AkaiMPCChordProgressionGenerator/modules/generation.js)):
 it scores a candidate's voice leading by comparing `candidate.root`, a pitch class relative to the tonic
