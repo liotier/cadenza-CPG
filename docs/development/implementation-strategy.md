@@ -33,8 +33,8 @@ gets its own specification in `docs/development/specs/` before any code is writt
 | Decision 21 | room in the binary: dead code dropped, budget 720 KB | test build 4 (commit `d9b619d`): 650 KB |
 | 0a. Local tools | implemented | [spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools) |
 | 3. The missing sonorities | implemented; heard on the device with step 5 | [spec 03](specs/03-missing-sonorities.md), §8: no pad, Classic chord or Scale Mode chord left that Cadenza cannot voice; parity unchanged; 0.28.1 opens every such state with its fallbacks |
-| 4. The palette table | implemented; two questions for the owner (O15, O16) | [spec 04](specs/04-palette-table.md), §8: 184 palettes and 7 scale palettes, every chord exact, every root spelled as the CPG spells it in all twelve keys |
-| 5. The part's palette | implemented: milestone M2, the engine complete | [spec 05](specs/05-part-palette.md), §8: load, clear, undo, save by value, the scale palette shown, the nearest palette; six loaded parts in 2.4 KB of state |
+| 4. The palette table | implemented; the CPG fix it found specified for the CPG's repository (O15), no chord category (O16) | [spec 04](specs/04-palette-table.md), §8: 184 palettes and 7 scale palettes, every chord exact, every root spelled as the CPG spells it in all twelve keys |
+| 5. The part's palette | implemented: milestone M2, the engine complete | [spec 05](specs/05-part-palette.md), §8: load, clear, undo, save by value, the scale palette shown, the nearest palette; six loaded parts in 2.3 KB of state |
 
 The draft release *Cadenza 0.28.1-cpg.1 (test build)* holds steps 0 to 5 and the collected binary: one device run
 checks them at once (§8.1, O1). Steps 3 to 5 change nothing on screen and nothing in a state saved from the controls,
@@ -195,7 +195,7 @@ already encodes that behaviour on its side of the interface.
 | Saved state | 8 KB | about 1.6 KB for a six-part genre preset | | offline |
 
 **Planned spending.** Step 3 about 2 to 4 KB of binary (measured: 3.3 KB of code); step 4's table 12 to 15 KB (measured: 16.1
-KB, which joins the plugin when a screen calls the front end); step 5 about 2 to 4 KB (CI: 650 to 654 KB; the local estimate
+KB, 13.1 KB once chords lost their category, decision 26; it joins the plugin when a screen calls the front end); step 5 about 2 to 4 KB (CI: 650 to 654 KB; the local estimate
 said 1.4 KB, CI's compiler decides): some 25 KB of the 70, about 21 KB once phase B's first screen links the table. The screens of phase B cost parameters and images. The skin is now the binding budget: 0.9 MB, where a new
 full-panel view has cost 1.6 MB or more. Phase B's screens therefore reuse existing views, and any new view needs a
 decision on the fork's skin budget first (§8.2, O10). The skin budget rests on a device probe ("MPC decodes the visible page
@@ -306,8 +306,6 @@ for the record below it, and the ones concerning the integration as a whole go t
 | # | Decision | Options | Rests on | Informs | Needed before |
 |---|---|---|---|---|---|
 | O1 | Run the draft *Cadenza 0.28.1-cpg.1 (test build)* on the MPC One, and say whether it passes (checks in §9, item 1). Postponed by the owner, 2026-11-23: no MPC at hand | pass, or what failed | none | O2, O3 | the release branch; M1 |
-| O15 | The CPG's row 4 depends on the key: in 122 of 2 024 (entry, key) pairs it builds another palette than C's transposed, because it compares a relative root with an absolute lowest note ([spec 04, §8.4](specs/04-palette-table.md#84-found-while-building-two-questions-for-the-owner)). Fix it in the CPG, then move the submodule? | fix in the CPG (recommended: a one-line change, which also changes 11 palettes in C), or keep the table on the CPG's C palettes | none | O16 (one CPG change could carry both) | nothing blocks: the table holds C's meanwhile; before the browser (step 6) shows palettes as the CPG's |
-| O16 | The palette chords' categories: the CPG's pads carry none ([spec 04, §8.4](specs/04-palette-table.md#84-found-while-building-two-questions-for-the-owner)) | the CPG's pads gain them, or the field is dropped until a screen needs it | O15 | steps 6 to 10 | the first screen that would show a category |
 
 ### 8.2 Depend on a further step or event
 
@@ -331,6 +329,8 @@ for the record below it, and the ones concerning the integration as a whole go t
 | O11 | The numerals that read D minor's F♯ major as `bIV`, `Gb7`: "fix it in the musically most correct way". Done in the fork: chromatic roots by the harmonic chromatic scale, leading-tone chords raised (S01-A1, S01-A2); upstream's numerals change, for the design note | 2026-11-23 | [spec 01, addendum A](specs/01-key-aware-spelling.md#addendum-a-chromatic-roots) |
 | O14 | Step 12, the genre crosswalk: dropped. "No need to constrain the user: they'll choose coherent options, maybe, or they'll be free to get weird" | 2026-11-23 | study, decision 24 |
 | O6, S04-D3 | The palette table takes the Classic style, its colours kept: "a solid foundation"; other styles' colourings ("jazzy frills") to be considered after a first version | 2026-11-23 | [spec 04, §2.1](specs/04-palette-table.md#21-for-the-owner-decidable-now) |
+| O15 | The CPG's row 4 depends on the key (1 175 of 12 144 variants over its six styles): "clearly fix it in the CPG". Specified for its repository, to be handed to an implementor there; the fork moves its submodule after it lands, and its generator then stops on any palette that is not C's transposed | 2026-11-24 | [upstream/cpg-18-row4-key-invariance.md](upstream/cpg-18-row4-key-invariance.md); study, decision 25 |
+| O16 | Chord categories: "pads should not be categorized - only the palettes (and Cadenza's rhythms, independently) are categorized". The field is gone from the palette chord, the table and `.pl` | 2026-11-24 | [spec 04, §8.4](specs/04-palette-table.md#84-found-while-building-two-questions-for-the-owner-answered); study, decision 26 |
 | O7 | Step 5's questions: a project keeps its palette by value (S05-D2); the genre presets get no palettes (S05-D9). Its approval follows step 4's, which it rests on | 2026-11-23 | [spec 05, §2.1](specs/05-part-palette.md#21-for-the-owner-decidable-now); study, decisions 22 and 23 |
 
 ## 9. Next steps
@@ -343,8 +343,8 @@ In order:
    E♭, A♭ and D♭ major and C♯ and D♯ minor (PLAY's title: `Eb MAJOR`, `D# MINOR`). Step 2 shows nothing.
 2. **If it passes:** the release branch and its pull request (O2); `versions.json` to `0.28.1-cpg.2`; M1's offer (O3).
 3. **Step 0a**: done (spec 00, addendum A); its tools serve every later step.
-4. Steps 3 to 5 are implemented (specs 03 to 05, §8): milestone M2. Step 4's table holds the CPG's C palettes until O15 is
-   answered.
+4. Steps 3 to 5 are implemented (specs 03 to 05, §8): milestone M2. Step 4's table holds the CPG's C palettes until the
+   CPG's spec 18 (O15) lands; then the submodule moves, the table is regenerated, and its diff is reviewed.
 5. **The web simulation**, once the author answers (O8 and O9 taken; O8b if he declines).
 6. **M2 is reached:** the MPC memory probe over root SSH, the skin budget (O10), the design note to the author (specs 01 to
    05's "other front ends" sections hold its material), then specifications 06 and 07.
@@ -398,4 +398,5 @@ polymeter, the Chord Matcher (study, §7).
   rule, one chord a bar, the loop grown as Feel's presets grow it; specs 03 to 05 all approved. Then O11 answered:
   chromatic roots fixed (spec 01, addendum A); lesson 7 updated; only O1 remains decidable now. Then step 3 built:
   §1 and §6.1 updated, lessons 14 and 15, the budget after step 3 (§5), next steps (§9). Then step 4 built: O15 and O16,
-  found in the CPG while building it, join §8.1. Then step 5 built: milestone M2 (§1, §6.1, §9).
+  found in the CPG while building it, join §8.1. Then step 5 built: milestone M2 (§1, §6.1, §9). Then O15 and O16 answered
+  (§8.3): the CPG fix specified for its repository (`upstream/`), chords without a category.

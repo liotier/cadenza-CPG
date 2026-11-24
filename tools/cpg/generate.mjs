@@ -172,11 +172,11 @@ if (size > 65535) fail('the text block passes 64 KB');
 c.push(`static const char TEXT[${size}] =`);
 text.forEach((s, i) => c.push(`    ${cString(s + (i < text.length - 1 ? '\0' : ''))}${i < text.length - 1 ? '' : ';'}`));
 c.push(`static const unsigned short GENRE[${genres.length}] = {${genreAt.join(', ')}};`, '');
-c.push('/* chord: root | quality << 4, colour | spice << 4 | start << 6, category; order: a palette index a bar, low nibble first */');
+c.push('/* chord: root | quality << 4, colour | spice << 4 | start << 6; order: a palette index a bar, low nibble first */');
 c.push(`static const cpg_entry_t ENTRY[${entries.length}] = {`);
 for (const e of entries) {
   c.push(`    /* ${comment(e.genre)}: ${comment(e.value)} */`);
-  const ch = e.chords.map(x => `{${hex2(x.root | x.quality << 4)}, ${hex2(x.colour | x.spice << 4 | x.start << 6)}, 0}`);
+  const ch = e.chords.map(x => `{${hex2(x.root | x.quality << 4)}, ${hex2(x.colour | x.spice << 4 | x.start << 6)}}`);
   const ord = Array.from({ length: 8 }, (_, i) => hex2((e.order[2 * i] ?? 0) | (e.order[2 * i + 1] ?? 0) << 4));
   c.push(`    {0x${e.id.toString(16).padStart(8, '0')}u, ${e.nick}, ${e.g}, ${e.minor}, ${e.bars},   /* ${comment(e.nickname)} */`);
   c.push(`     {${ch.slice(0, 8).join(', ')},`, `      ${ch.slice(8).join(', ')}},`);
@@ -198,8 +198,7 @@ const char *cpg_genre_name(int g) { return g >= 0 && g < cpg_genre_count() ? TEX
 const char *cpg_nickname(const cpg_entry_t *e) { return TEXT + e->nick; }
 cpg_chord_t cpg_chord(const cpg_entry_t *e, int k) {
     const unsigned char *b = e->chord[k & (CPG_PADS - 1)];
-    return (cpg_chord_t){(signed char)(b[0] & 15), (signed char)(b[0] >> 4), (signed char)(b[1] & 15), (signed char)(b[1] >> 4 & 3), (signed char)b[2],
-                         (signed char)(b[1] >> 6 & 1)};
+    return (cpg_chord_t){(signed char)(b[0] & 15), (signed char)(b[0] >> 4), (signed char)(b[1] & 15), (signed char)(b[1] >> 4 & 3), (signed char)(b[1] >> 6 & 1)};
 }
 int cpg_order(const cpg_entry_t *e, unsigned char out[CPG_MAX_BARS]) {
     for (int i = 0; i < e->bars; i++) out[i] = (unsigned char)(e->order[i / 2] >> (i % 2 * 4) & 15);
@@ -235,8 +234,8 @@ const longest = entries.reduce((a, e) => [...e.nickname].length > [...a.nickname
 const r = [];
 r.push(`# ${head.replace('\n * ', ' ')}`, '');
 r.push(`Entries: ${entries.length} in ${genres.length} genres; scale palettes: ${SCALES.length}; palettes: ${entries.length + SCALES.length}`);
-r.push(`Data: chords ${entries.length} x 16 x 3 = ${entries.length * 48} bytes, starting orders ${entries.length} x 8 = ${entries.length * 8}, entries` +
-  ` ${entries.length} x 68 = ${entries.length * 68}, nicknames and genre names ${nickBytes}, scale palettes ${SCALES.length * 48}: no pointer, no relocation`);
+r.push(`Data: chords ${entries.length} x 16 x 2 = ${entries.length * 32} bytes, starting orders ${entries.length} x 8 = ${entries.length * 8}, entries` +
+  ` ${entries.length} x 52 = ${entries.length * 52}, nicknames and genre names ${nickBytes}, scale palettes ${SCALES.length * 48}: no pointer, no relocation`);
 r.push(`Nicknames: longest ${[...longest.nickname].length} characters (${longest.nickname}); over 19 characters: ${entries.filter(e => [...e.nickname].length > 19).length}`);
 r.push(`Tonality: ${entries.filter(e => !e.minor).length} major, ${entries.filter(e => e.minor).length} minor`, '');
 r.push(`Chords stored (${entries.length * 16}), by quality:`);

@@ -78,9 +78,10 @@ int theory_fallback(int scale, int src, int deg, int colour, int *fsrc, int *fde
 int theory_src_ok(int src);
 /* fork (docs/development/specs/04-palette-table.md, S04-D4; spec 05): a palette chord, independent of the project's key and scale: a chromatic
  * chord on `root` semitones above the tonic of quality 0..3 (the first range's CQ_*) or 4..8 (the second range's CQ2_*) in colour COL_*
- * (below COL_ALL); spice 0..3, its row in the CPG's grid less one; category (0: none given); start: 1 for a chord of the starting order */
+ * (below COL_ALL); spice 0..3, its row in the CPG's grid less one; start: 1 for a chord of the starting order. No category: palettes are
+ * categorised, not their chords (the owner, decision O16) */
 #define THEORY_PALETTE_MAX 16
-typedef struct { signed char root, quality, colour, spice, category, start; } theory_palette_chord_t;
+typedef struct { signed char root, quality, colour, spice, start; } theory_palette_chord_t;
 int theory_palette_ok(theory_palette_chord_t c);    /* 1 for a chord in range */
 int theory_palette_src(theory_palette_chord_t c);   /* its chromatic source, of the first range or the second */
 /* S05-D5: where a project in `scale` writes the chord, its colour carried over: a degree of the scale whose chord voices the same pitch

@@ -80,7 +80,7 @@ static void test_load(seq_t *s) {
     seq_undo(s);
     names(s, got, sizeof got);
     CHECK(!seq_palette(s, NULL) && !strcmp(got, "C Am7 F G"), "undo takes back the slots and the palette together (C Am7 F G, got %s)", got);
-    theory_palette_chord_t bad[1] = {{12, 0, 0, 0, 0, 0}};
+    theory_palette_chord_t bad[1] = {{12, 0, 0, 0, 0}};
     unsigned char order[3] = {0, 0, 0};
     CHECK(!seq_palette_load(s, 1, bad, 1, order, 1) && !seq_palette_load(s, 1, bad, 0, order, 1) && !palette_load_entry(s, -1) &&
           !seq_palette(s, NULL), "bad arguments: nothing");

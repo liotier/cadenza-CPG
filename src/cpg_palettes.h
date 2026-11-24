@@ -11,18 +11,17 @@
 #define CPG_MAX_BARS 16    /* bars in a laid-out starting order */
 
 /* A catalogue chord, independent of the project's key and scale (S04-D4): theory.h's palette chord, which the core holds by value (spec
- * 05). Spice: the CPG's harmonic gradient, row 1 the foundation, row 4 the spiciest; category 0 while the CPG's pads carry none (spec 04,
- * §8) */
+ * 05). Spice: the CPG's harmonic gradient, row 1 the foundation, row 4 the spiciest */
 typedef theory_palette_chord_t cpg_chord_t;
 
-/* A catalogue entry. Its chords packed three bytes each (cpg_chord unpacks them); its starting order laid out by decision 4's rule
+/* A catalogue entry. Its chords packed two bytes each (cpg_chord unpacks them); its starting order laid out by decision 4's rule
  * (S04-D9), one palette index a bar, `bars` of them (1, 2, 4, 8 or 16), 4 bits each, the first bar in the low nibble. No pointer: the
  * nickname is an offset into one block of text (cpg_nickname), so the table needs no relocation in the shared object */
 typedef struct {
     uint32_t id;                         /* S04-D8: FNV-1a of "genre|template value" */
     unsigned short nick;                 /* cpg_nickname's offset */
     unsigned char genre, minor, bars;    /* genre: cpg_genre_name's index; minor: the CPG's templateTonality is minor */
-    unsigned char chord[CPG_PADS][3];
+    unsigned char chord[CPG_PADS][2];
     unsigned char order[CPG_MAX_BARS / 2];
 } cpg_entry_t;
 

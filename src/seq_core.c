@@ -4052,14 +4052,14 @@ static void out_feel(out_t *o, char c, const seq_part_t *p, const prog_view_t *o
  * as 0.13 did. A loop with no period of 16 or less (settle_slots) writes its first 16 slots there (what a 0.13 build then
  * plays, repeating) and every slot in `.ch` after `.cs`. */
 /* fork (docs/development/specs/05-part-palette.md, S05-D2): `|<c>.pl=` the part's palette, only when it holds one, in hex: the identifier
- * (8 digits), the count less one (1), then per chord its root, quality, colour, spice + 4 x start, and category (1 each). 0.28.1 ignores
- * the field: the slots play as written (spec 03's fallbacks where they apply), the palette is dropped */
+ * (8 digits), the count less one (1), then per chord its root, quality, colour, and spice + 4 x start (1 each). 0.28.1 ignores the field:
+ * the slots play as written (spec 03's fallbacks where they apply), the palette is dropped */
 static void out_palette(out_t *o, char c, const seq_part_t *p) {
     if (!p->pal.n) return;
     outf(o, "|%c.pl=%08x%x", c, (unsigned)p->pal.id, p->pal.n - 1);
     for (int k = 0; k < p->pal.n; k++) {
         const theory_palette_chord_t *x = &p->pal.chord[k];
-        outf(o, "%x%x%x%x%x", x->root, x->quality, x->colour, x->spice | x->start << 2, x->category);
+        outf(o, "%x%x%x%x", x->root, x->quality, x->colour, x->spice | x->start << 2);
     }
 }
 
@@ -4874,21 +4874,20 @@ static void load_cq(seq_part_t *p, const char *v, int len) {
 
 /* fork (spec 05): `.pl` (out_palette); a bad field is ignored whole, never refused: the part then holds no palette */
 static int pal_chord_ok(const theory_palette_chord_t *c) {
-    return theory_palette_ok(*c) && c->spice >= 0 && c->spice <= 3 && c->category >= 0 && c->category <= 15 && (c->start == 0 || c->start == 1);
+    return theory_palette_ok(*c) && c->spice >= 0 && c->spice <= 3 && (c->start == 0 || c->start == 1);
 }
 
 static void load_pl(seq_part_t *p, const char *v, int len) {
     seq_palette_t pal = {0};
     int hi = v && len >= 9 ? hexn(v, 4) : -1, lo = hi >= 0 ? hexn(v + 4, 4) : -1, n = lo >= 0 ? hexn(v + 8, 1) + 1 : 0;
-    if (n < 1 || len != 9 + 5 * n) return;
+    if (n < 1 || len != 9 + 4 * n) return;
     pal.id = (uint32_t)hi << 16 | (uint32_t)lo;
     pal.n = (unsigned char)n;
     for (int k = 0; k < n; k++) {
-        const char *x = v + 9 + 5 * k;
-        int d[5];
-        for (int i = 0; i < 5; i++) d[i] = hexn(x + i, 1);
-        pal.chord[k] = (theory_palette_chord_t){(signed char)d[0], (signed char)d[1], (signed char)d[2], (signed char)(d[3] & 3), (signed char)d[4],
-                                                (signed char)(d[3] >> 2)};
+        const char *x = v + 9 + 4 * k;
+        int d[4];
+        for (int i = 0; i < 4; i++) d[i] = hexn(x + i, 1);
+        pal.chord[k] = (theory_palette_chord_t){(signed char)d[0], (signed char)d[1], (signed char)d[2], (signed char)(d[3] & 3), (signed char)(d[3] >> 2)};
         if (d[3] < 0 || d[3] > 7 || !pal_chord_ok(&pal.chord[k])) return;
     }
     p->pal = pal;

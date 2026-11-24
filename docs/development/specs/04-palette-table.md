@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | implemented, 2026-11-24 (§8); two questions for the owner found while building (§8.4, strategy O15, O16) |
+| Status | implemented, 2026-11-24 (§8); the two questions it found answered by the owner (§8.4): the CPG's fix specified for its repository, no chord category |
 | Type | data, tooling |
 | Size | M |
 | Depends on | 00 (the submodule), 03 (the full vocabulary) |
@@ -47,7 +47,7 @@ None.
 |---|---|---|---|
 | S04-D1 | **A Node generator,** `tools/cpg/generate.mjs` (Node 20 or later), importing the CPG's `musicTheory.js` and `generation.js` from the submodule, and reading Cadenza's chord space from `tools/cpg/enumerate.c`'s listing. It runs during development and in CI, never in the plugin's build. | The CPG's modules run under Node already (the coverage tool proved it, step 0). Cadenza's side comes from Cadenza's own code, not from a JavaScript copy of it. | decisions 7 and 10 |
 | S04-D2 | **Its output is committed:** `src/cpg_palettes.c` (constant tables) and `src/cpg_palettes.h` (lookups only). CI's `cpg` job regenerates it and fails on any difference. | A submodule bump shows its effect as a reviewable diff, as `coverage.txt` does. | S04-D1; strategy, principle 5 |
-| S04-D4 | **Catalogue chords are stored independently of the scale,** as chromatic chords: root (semitones above the tonic), quality (first or second range), colour; with spice (0 to 3), category (the CPG's row-4 categories, diatonic or borrowed) and a flag for chords of the starting order. | The project's key and scale are chosen in Cadenza; step 5 maps each chord to a degree, a borrowed chord or a chromatic one when it writes it. | S03-D1 and S03-D2 |
+| S04-D4 | **Catalogue chords are stored independently of the scale,** as chromatic chords: root (semitones above the tonic), quality (first or second range), colour; with spice (0 to 3) and a flag for chords of the starting order. *Amended (owner, 2026-11-24, study decision 26): no category; palettes are categorised, not their chords.* | The project's key and scale are chosen in Cadenza; step 5 maps each chord to a degree, a borrowed chord or a chromatic one when it writes it. | S03-D1 and S03-D2 |
 | S04-D5 | **Scale palettes are stored relative to their scale:** degree, source, colour, as Cadenza's own slots hold them. | Each belongs to one Cadenza scale and is used only there; all its chords are that scale's (measured). | S03-D3 (the 7sus4); decision 18 |
 | S04-D6 | **A canonical form for each chord:** of the representations that voice the CPG pad's pitch classes exactly, the first-range quality before the second, then the lowest colour index. The fifth rule of decision 12 applies to the CPG's `dom13` and `minor11` only. | Several representations can voice the same pitch classes; one rule makes the table reproducible and reviewable. | S04-D4, S04-D5; decision 12 |
 | S04-D7 | **Strict.** Any pad with no exact representation stops the generation, naming the entry and the chord. | The CPG's own strict parser as precedent. | decision 5; spec 03 implemented |
@@ -153,7 +153,7 @@ Per catalogue entry:
 | genre | index into the 22 genre names |
 | nickname | S04-D10 |
 | tonality | major or minor, from the CPG's `templateTonality`: the browser's family filter (decision 6) |
-| palette | 16 chords as S04-D4, three bytes each: root (4 bits), quality (4: the four first-range and five second-range qualities), colour (4), spice (2), category (3), in the starting order (1) |
+| palette | 16 chords as S04-D4, two bytes each: root (4 bits), quality (4: the four first-range and five second-range qualities), colour (4), spice (2), in the starting order (1). *Three bytes before decision 26 removed a 3-bit category* |
 | starting order | laid out by S04-D9: one palette index a bar of its loop (1, 2, 4, 8 or 16 bars), 4 bits each. The order is the CPG parser's (`parseProgression`), never the template text split: the catalogue writes the 12-bar blues as the single token `12-bar-blues`, which the parser expands to twelve chords |
 
 Plus the 22 genre names and seven scale palettes of 16 chords as S04-D5.
@@ -161,8 +161,8 @@ Plus the 22 genre names and seven scale palettes of 16 chords as S04-D5.
 ### 3.2 Interface, `src/cpg_palettes.h`
 
 `cpg_count()`, `cpg_entry(i)`, `cpg_find(id)`, `cpg_genre_name(g)`, `cpg_scale_palette(scale)`: constant data, no
-allocation, no state. A chord's representation is `cpg_chord_t` (root, quality, colour, spice, category, flag), shared with
-step 5's verbs.
+allocation, no state. A chord's representation is `cpg_chord_t` (root, quality, colour, spice, flag), shared with step 5's
+verbs.
 
 ### 3.3 Expected starting orders, as S04-D9 lays them out
 
@@ -224,18 +224,19 @@ None: the two questions the draft left open are S04-D3 and S04-D9 of §2.1, both
 1. **No pointer in the table.** The first version held each nickname as a `const char *`: 206 pointers, each a dynamic
    relocation in the shared object, and the table in `.data.rel.ro`. Nicknames and genre names are now one block of text
    (2 783 bytes, the duplicates shared) and each entry an offset into it (`cpg_nickname`): the table is pure read-only data.
-   An entry takes 68 bytes: identifier 4, offset 2, genre, tonality and bars 3, chords 48, starting order 8, padding 3.
+   An entry takes 52 bytes: identifier 4, offset 2, genre, tonality and bars 3, chords 32, starting order 8, padding 3.
 2. **S04-D6's canonical order, made complete:** the first range before the second, then the lowest colour, then the lowest
    quality, which settles the ties the specification left (a power chord is the same on the major, minor and dominant
    qualities).
 3. **Spice** is the pad's row in the CPG's grid less one: the CPG's own "harmonic gradient", row 1 the foundation, row 4
    the spiciest (`generation.js`).
-4. **Category: none yet.** The CPG computes a category for each row-4 candidate (`ROW4_CATEGORIES`, eleven values) but its
-   pads do not carry it; rows 1 to 3 have none at all. Deriving it here would port CPG logic (against decision 18). The field
-   stays in `cpg_chord_t`, 0 for every chord, and the question goes to the owner (§8.4, O16).
+4. **No category.** The CPG computes a category for each row-4 candidate (`ROW4_CATEGORIES`, eleven values) but its pads
+   do not carry it. The field first stayed, 0 for every chord, until the owner answered (§8.4, O16): chords are not
+   categorised. It is gone from the chord, the table (three bytes a chord became two) and step 5's `.pl`.
 5. **The CPG's palettes depend on the key** (§8.4, O15): the table holds each palette as the CPG builds it in C, and the
    report counts the keys in which it builds another. The generator first stopped on it; it now measures it, since the
-   table's design (S04-D4) holds one palette per entry whatever the answer.
+   table's design (S04-D4) holds one palette per entry whatever the answer. Once the CPG's fix lands and the submodule
+   moves, the count is 0 and the generator should stop on it again.
 6. **Starting orders** take each template chord to the palette chord of the starting order with the same root and pitch
    classes; the generator stops if one is missing (none is).
 
@@ -247,7 +248,7 @@ None: the two questions the draft left open are S04-D3 and S04-D9 of §2.1, both
 | Every chord exact | yes | yes; 11 by decision 12's fifth rule (S04-D6) |
 | Chords by range | | of the catalogue's 2 944: 2 909 first range, 35 second (24 Locrian, 6 melodic minor, 2 dominant ♭5, 2 minor ♯5, 1 Phrygian dominant); 129 with a colour of step 3 (98 7(no5), 31 quartal). The scale palettes: the four tonic 7sus4 |
 | As a project in the entry's tonality holds them (S05-D5) | | 1 554 degrees, 421 borrowed, 958 first range, 11 second range |
-| Table, on ARM (`arm-linux-gnueabihf-size`) | 12 to 14 KB | 16.1 KB: entries 12.5, text 2.8, scale palettes 0.3, code 0.5. Over the estimate by about 2 KB: the estimate omitted the entries' padding and identifiers |
+| Table, on ARM (`arm-linux-gnueabihf-size`) | 12 to 14 KB | 13.1 KB: entries 9.6, text 2.8, scale palettes 0.3, code 0.4. The first version, with the category, took 16.1 KB |
 | Plugin binary, CI | within 720 KB | 650 KB after step 3 (CI run 18); the table joins it when step 5's front end calls it, the linker dropping it until then |
 | Root spellings differing from the CPG's | none in C | none: 35 028 compared, every chord of every palette in its twelve keys, as S05-D5 would write it in the entry's tonality |
 | Nicknames over 19 characters | 10, the longest 24 | 10, the longest 24 (*Secondary Dominant Chain*) |
@@ -258,9 +259,12 @@ Verification: 1, two generations identical and CI's `--check`; 2, every chord ag
 twelve keys; 3, both snapshot palettes named as the snapshot names them; 4, the layouts of §3.3 by name; 5, the parity hash.
 All pass.
 
-### 8.4 Found while building: two questions for the owner
+### 8.4 Found while building: two questions for the owner, answered
 
-**O15. The CPG's row 4 depends on the key.** In 122 of the 2 024 (entry, key) pairs, the CPG builds a palette that is not
+**O15. The CPG's row 4 depends on the key.** *Answered (owner, 2026-11-24): "clearly fix it in the CPG"; specified for
+its repository in [upstream/cpg-18-row4-key-invariance.md](../upstream/cpg-18-row4-key-invariance.md), which measures the
+defect over all six styles (1 175 of 12 144 variants) and fixes it by reading roots from each pad's `degree`. The question
+as it was put:* In 122 of the 2 024 (entry, key) pairs, the CPG builds a palette that is not
 C's transposed: row 4 holds other chords or the same in another order (300 pads; the report lists them). The cause is in
 `selectDynamicRow4Chords` ([generation.js](https://github.com/liotier/AkaiMPC/blob/main/AkaiMPCChordProgressionGenerator/modules/generation.js)):
 it scores a candidate's voice leading by comparing `candidate.root`, a pitch class relative to the tonic
@@ -273,4 +277,5 @@ the CPG, then move the submodule; the table's diff shows the 11 palettes. Until 
 
 **O16. Categories.** The specification gives each chord a category; the CPG's pads carry none (§8.2, 4). Options: the
 CPG's pads gain the category row 4 computes (and `diatonic` or `borrowed` for rows 1 to 3), in the same CPG change as O15;
-or the field is dropped until a screen needs it. No step specified so far reads it; steps 6 to 10 may.
+or the field is dropped until a screen needs it. *Answered (owner, 2026-11-24): "pads should not be categorized - only
+the palettes (and Cadenza's rhythms, independently) are categorized." The field is removed (§8.2, 4); study, decision 26.*

@@ -150,8 +150,8 @@ static void sc_sonority_feel(seq_t *s, const char *name) {
  * table), its chords spec 03's among them; 0.28.1 ignores `.pl`, playing the slots as written (spec 03's fallbacks where they apply) */
 static void sc_palette(seq_t *s, const char *name) {
     const theory_palette_chord_t chords[6] = {
-        {0, CQ_MAJOR, COL_TRIAD, 0, 0, 1}, {9, CQ_MINOR, COL_7TH, 0, 0, 1}, {8, CQ_DOM, COL_7NO5, 3, 0, 1},   /* C, Am7, Ab7 (the It6) */
-        {7, CQ_DOM, COL_7TH, 0, 0, 1}, {0, CQ_COUNT + CQ2_MELMIN, COL_7TH, 2, 0, 0}, {2, CQ_DOM, COL_QUARTAL, 3, 0, 0}};   /* G7; CmMaj7, D quartal */
+        {0, CQ_MAJOR, COL_TRIAD, 0, 1}, {9, CQ_MINOR, COL_7TH, 0, 1}, {8, CQ_DOM, COL_7NO5, 3, 1},   /* C, Am7, Ab7 (the It6) */
+        {7, CQ_DOM, COL_7TH, 0, 1}, {0, CQ_COUNT + CQ2_MELMIN, COL_7TH, 2, 0}, {2, CQ_DOM, COL_QUARTAL, 3, 0}};   /* G7; CmMaj7, D quartal */
     const unsigned char order[4] = {0, 1, 2, 3};
     CHECK(seq_palette_load(s, 0x12345678u, chords, 6, order, 4) == 1);
     CHECK(seq_palette(s, NULL) == 6 && seq_slot_colour(s, 2) == COL_7NO5);

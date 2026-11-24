@@ -50,7 +50,7 @@ static void test_chords(void) {
             int src = cpg_chord_src(c), rule = CPG_EXPECTED_FIFTHLESS[i] >> k & 1;
             unsigned want = CPG_EXPECTED_PCS[i][k], fifth = 1u << ((c.root + 7) % 12);
             sources &= theory_src_ok(src) && src > THEORY_NBORROW && c.root >= 0 && c.root < 12 && c.quality >= 0 &&
-                       c.quality < CQ_COUNT + CQ2_COUNT && c.colour >= 0 && c.colour < COL_ALL && c.category == 0;
+                       c.quality < CQ_COUNT + CQ2_COUNT && c.colour >= 0 && c.colour < COL_ALL && c.start >= 0 && c.start <= 1;
             spice &= c.spice == k / 4;
             fifthless += rule;
             for (int key = 0; key < 12; key++) {
@@ -61,7 +61,7 @@ static void test_chords(void) {
                 }
             }
         }
-    CHECK(sources, "every chord a chromatic source of either range, a colour below COL_ALL, no category yet");
+    CHECK(sources, "every chord a chromatic source of either range, a colour below COL_ALL");
     CHECK(!bad, "every chord of every palette voices the CPG pad's pitch classes in all 12 keys (%d wrong)", bad);
     CHECK(fifthless == 11, "%d chords take decision 12's fifth rule (a dom13 or minor11 Cadenza voices without its fifth)", fifthless);
     CHECK(spice, "a chord's spice is its row in the CPG's grid less one");

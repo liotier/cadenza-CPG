@@ -36,7 +36,7 @@ S04-D9.
 
 | # | Question | Answer | Alternatives considered | Rests on |
 |---|---|---|---|---|
-| S05-D2 | Does a project keep the palette it was made with, or follow the catalogue? | **It keeps it** (owner: the principle of least surprise, respect for the composer, and a cleaner boundary between the CPG and Cadenza): saved by value in a new field `<P>.pl=` (hex), only for a part that holds one, about 95 bytes a part. A later CPG revision never changes a saved project, as Cadenza's rule is for everything else. 0.28.1 ignores the unknown field: the slots play as written, the palette is dropped there. | Save only the catalogue identifier: a few bytes, and the project's palette follows CPG updates, which may then reshape a song's harmonic space without the user doing anything | S05-D1 |
+| S05-D2 | Does a project keep the palette it was made with, or follow the catalogue? | **It keeps it** (owner: the principle of least surprise, respect for the composer, and a cleaner boundary between the CPG and Cadenza): saved by value in a new field `<P>.pl=` (hex), only for a part that holds one, about 80 bytes a part. A later CPG revision never changes a saved project, as Cadenza's rule is for everything else. 0.28.1 ignores the unknown field: the slots play as written, the palette is dropped there. | Save only the catalogue identifier: a few bytes, and the project's palette follows CPG updates, which may then reshape a song's harmonic space without the user doing anything | S05-D1 |
 | S05-D9 | Do the six genre presets get palettes? | **No** (owner: Cadenza's genres are about time, the CPG's are palettes; orthogonal dimensions): their parts hold none, and show their scale's palette (S05-D3). Presets are baked states (`presets_data.h`) whose building tool is not in the release export; they keep sounding the same. | Give each preset's parts the nearest catalogue palette: re-baking the presets, without the author's tool | none |
 | S05-D4 | When a palette loads, does the loop keep its length, or grow until the starting order fits? | **Answered with S04-D9 (owner, 2026-11-23): Feel's preset rule.** The loop doubles until the laid-out order fits, never shrinks; a longer loop repeats the order, as a preset's phrase repeats. `seq_palette_load` sets the part's palette and writes the order, one chord a bar, through the whole-loop progression path in one undo step, keeping locked slots | PHRASE's preset rule: the loop keeps its length, the order repeated or cut to fit it | S04-D9 |
 
@@ -73,8 +73,9 @@ now (§2.1).
 
 ### 3.3 Saved state
 
-`<P>.pl=`: the identifier (8 hex digits), the count (1), then per chord root (1), quality (1), colour (1), spice (1) and
-category (1), all hex: at most 89 characters and the field's name, about 95 bytes a part, 570 for six. Chords using step
+`<P>.pl=`: the identifier (8 hex digits), the count less one (1), then per chord root (1), quality (1), colour (1) and spice
+with the starting-order flag (1, spice + 4 × start), all hex: at most 73 characters and the field's name, 79 bytes a part, 474
+for six. *Amended 2026-11-24: count and flag as built (§8.2, 2), and no category (study, decision 26).* Chords using step
 3's values are written into the slots with step 3's fallbacks, so an older build plays the fallbacks there.
 
 ## 4. Measurements
@@ -116,7 +117,7 @@ Every screen (steps 6 to 10); editing a palette's chords, which nothing has aske
 
 | Layer | Change |
 |---|---|
-| `src/theory.h`, `src/theory.c` | The palette chord, `theory_palette_chord_t` (root, quality, colour, spice, category, start), shared by the core and the table; `theory_palette_ok`, `theory_palette_src`, and `theory_palette_place`, S05-D5's rule. |
+| `src/theory.h`, `src/theory.c` | The palette chord, `theory_palette_chord_t` (root, quality, colour, spice, start), shared by the core and the table; `theory_palette_ok`, `theory_palette_src`, and `theory_palette_place`, S05-D5's rule. |
 | `src/cpg_palettes.h` | `cpg_chord_t` is now `theory_palette_chord_t`: the table and the core hold chords alike, and the core includes no header of the table (S04-D11). |
 | `src/seq_core.h`, `src/seq_core.c` | `seq_palette_t` in `seq_part_t` (S05-D1) and in the undo snapshot (`push_snap_part`, `restore_prog`); `seq_palette_load`, `seq_palette_clear`, `seq_palette`, `seq_palette_id`; the `.pl` field (`out_palette`, `load_pl`); `palette_rescale` in `seq_set_scale` (S05-D5). A part's first use copies the whole Verse, its palette with it (S05-D8): no code needed. |
 | `src/palette.h`, `src/palette.c` | The front end (§3.2): `palette_shown`, `palette_nearest`, and `palette_load_entry`, which passes a catalogue entry and its starting order to `seq_palette_load`. Joins `vst/vst.json`'s sources and the plugin test's command line. |
@@ -127,8 +128,8 @@ Every screen (steps 6 to 10); editing a palette's chords, which nothing has aske
 1. **One chord type.** The specification said the core holds chords "as step 4 represents them (`cpg_chord_t`)". So that
    the core need not include the table's header, the type moved to `theory.h` and the table's name became an alias.
 2. **`.pl`'s count and flags.** One hex digit cannot hold 16, so the field holds the count less one. The starting-order
-   flag (S05-D1: the chords as step 4 represents them) shares a digit with the spice, `spice + 4 × start`, which keeps §3.3's
-   five characters a chord: 89 at most, as specified.
+   flag (S05-D1: the chords as step 4 represents them) shares a digit with the spice, `spice + 4 × start`. Four characters
+   a chord, 73 at most: §3.3's five, with the category, until the owner removed it (study, decision 26).
 3. **The loop's growth is not undone**, exactly as with Feel's presets (`seq_feel_preset`), which grow the loop through
    `seq_set_bars` before their undo step: undo restores the slots and the palette, and leaves the loop as long as the load
    made it. A step that wants the length undone too would change Feel's presets as well; left as 0.28.1 has it.
@@ -150,8 +151,8 @@ Every screen (steps 6 to 10); editing a palette's chords, which nothing has aske
 
 | Quantity | Expected | Measured |
 |---|---|---|
-| The state, six parts of 16 bars, each with a loaded palette | within 8 KB, no part left out | 2 358 bytes, every part saved |
-| `.pl` | about 95 bytes a part | 95 for 16 chords, its name included |
+| The state, six parts of 16 bars, each with a loaded palette | within 8 KB, no part left out | 2 262 bytes, every part saved |
+| `.pl` | about 80 bytes a part | 79 for 16 chords, its name included |
 | Core parity hash | unchanged | unchanged |
 | Compatibility harness | `.pl` dropped by 0.28.1 | 21 scenarios: 16 identical, 5 as pinned; `palette`'s re-save drops `.pl` and the It6's `.cy`, every other field as written |
 | Binary | about 2 to 4 KB | CI: 654 KB, from 650 after step 3 (CI run 20); the local estimate, +1 416 bytes of code, undercounted. The table joins the plugin when a screen calls the front end (phase B) |
