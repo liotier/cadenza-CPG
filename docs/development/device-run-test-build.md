@@ -14,7 +14,7 @@ travel both ways between it and the official build.
 1. Logged in to GitHub, open [the repository's releases](https://github.com/liotier/cadenza-CPG/releases). The draft
    *Cadenza 0.28.1-cpg.1 (test build)* is visible to you only.
 2. Check its notes: "Built by GitHub Actions from liotier/cadenza-CPG@`<commit>`". The commit should be the branch's
-   latest, the one that added this document or later.
+   latest. The same commit appears on the device, on GLOBAL (§3, row 2).
 3. Download `Cadenza-0.28.1-cpg.1-mpc-sdk.zip`, the zip for MPC OS 3.10.1 and later (the other, `-mpc-armv7.zip`, is for
    3.9.1 and earlier, with an installer over SSH).
 4. Unzip it on the computer. It holds one folder, `Cadenza - VST - Cadenza`: the plugin (`.so`), its `plugin.json` and its
@@ -38,10 +38,10 @@ either build, and MPC cannot hold both at once. It replaces the official folder,
 | # | Action | Expected | Result |
 |---|---|---|---|
 | 1 | Add Cadenza to a track, from where the official one was in MPC's plugin list. | It loads; its screen draws. | |
-| 2 | GLOBAL: KEY E♭ (the official build calls it D#), SCALE Major. Look at PLAY's title. | `Eb MAJOR` (the official build shows `D# MAJOR`): this is the test build. | |
+| 2 | Open GLOBAL. Then on its piano tap the black key D# (the key selector labels every black key with its sharp, in both builds: spec 01, S01-D7), SCALE Major, and look at PLAY's title. | On GLOBAL's title row, in magenta between the part's name and TEMPO: `CPG 0.28.1-cpg.1` and the commit of step 1.2; the official build has nothing there. PLAY's title: `Eb MAJOR` (the official build shows `D# MAJOR`). | |
 | 3 | Load the INIT program and play. | Chords, Bass and Melody sound on their tracks, as with the official build. | |
 | 4 | Load House 124 and play. | It plays as with the official build. | |
-| 5 | In each key of the table below, look at CHORDS, PHRASE, PLAY and GLOBAL while a progression plays (a preset, or chords picked on PHRASE). | Every chord name is one of that key's row, never its other spelling: no A♯ in F major, no D♭ in C♯ minor, no D♯ in E♭ major. PLAY's title as in the first column. | |
+| 5 | In each key of the table below (on GLOBAL's piano: F, D#, G#, C# for the majors, C# and D# with SCALE Minor), look at CHORDS, PHRASE, PLAY and GLOBAL while a progression plays (a preset, or chords picked on PHRASE). | Every chord name is one of that key's row, never its other spelling: no A♯ in F major, no D♭ in C♯ minor, no D♯ in E♭ major. PLAY's title as in the first column. | |
 | 6 | In E♭ major with House 124 loaded, change something you can recognise (a chord picked on PHRASE), save the MPC project, then open it again. | It reopens as saved: key, chords, sound. | |
 | 7 | Swap back to the official build (§4), restart, open the project of row 6. | It opens and plays the same chords; PLAY's title now reads `D# MAJOR`, the official spelling of the same key. | |
 | 8 | Anything else you notice. | Nothing differs from 0.28.1 but the spelling. | |

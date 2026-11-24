@@ -144,7 +144,11 @@ into the Claude branch. A new Claude session is told to continue on the existing
 
 Fork builds keep Cadenza's plugin identity (decision 11) and replace the official plugin on the device; `versions.json`
 holds `0.28.1-cpg.N`, which names the zips, the drafts and the release branches. `N` moves to `N + 1` when
-`release/0.28.1-cpg.N` is cut. The official release's zip is kept for restoring.
+`release/0.28.1-cpg.N` is cut. The official release's zip is kept for restoring. Since 2026-11-24 every fork build carries
+a mark on GLOBAL's title row, in magenta between the part's name and TEMPO: `CPG`, the version and the commit it was built
+from, `+` when the tree differed from that commit (`vst/build.sh` passes it to `vst/make_skin.py`, which bakes it into the
+page's artwork: no parameter, no code). The owner asked for it after the first device run, to see without doubt which build
+runs; it is the fork's and stays out of any patch offered upstream.
 
 ### 4.6 Local tools (step 0a)
 

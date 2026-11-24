@@ -2078,10 +2078,25 @@ def jam_images_22():
     save(tile(R - L, CM_H, (15, 16, 18)), "page_%dx%d.png" % (R - L, CM_H))   # 0.24 the page colour over the main area's panels
 
 
+# fork: the build's mark on GLOBAL, so a device shows which build it runs. vst/build.sh passes the version and the commit (BUILD_MARK); a
+# build without it (the local header build, tools/dev/lib.sh) has none. Baked into the page's artwork: no parameter, no code
+MARK_COLOUR = "d96bd0"
+
+
+def build_mark(a):
+    mark = os.environ.get("BUILD_MARK", "").strip()
+    if not mark:
+        return
+    if not re.fullmatch(r"[0-9A-Za-z.+ -]{1,32}", mark):
+        raise SystemExit("make_skin.py: BUILD_MARK %r: letters, digits, '.', '+', '-' and spaces only, 32 at most" % mark)
+    a('text cx=890 cy=126 label="CPG %s" align=right size=%.1f weight=600 spacing=1 case=none color=%s' % (mark, NX, MARK_COLOUR))
+
+
 def global_tab(a):
     a("[tab GLOBAL]")
     header(a, "GLOBAL")
     part_readout(a)
+    build_mark(a)
     name(a, 1010, 126, "TEMPO", align="right")
     a("readout cx=1144 cy=126 w=232 h=44 label=\"\" key=bpm box=0 tsize=28 tcolor=f2a33a talign=right")
     name(a, L, 170, "KEY")   # a two-row piano: each black key centred over the boundary of its two white keys

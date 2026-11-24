@@ -12,8 +12,11 @@ cd "$(dirname "$0")"
 MPC_VST="$(cd "${MPC_VST:-../../mpc-vst-plugins}" && pwd)"
 U="$(id -u):$(id -g)"
 docker build -q -t mpc-vst-html-art "$MPC_VST/tools/html_art" >/dev/null
+# fork: the build's mark on GLOBAL (make_skin.py, build_mark): the version and the commit, + when the tree differs from it
+MARK="$(python3 -c 'import json; print(json.load(open("../versions.json"))["force"])') $(git rev-parse --short=7 HEAD 2>/dev/null || echo local)"
+git diff --quiet HEAD -- .. 2>/dev/null || MARK="$MARK+"
 # 0.22: the toolchain's Titillium (a word drawn into the JAM bar meters' frames) read-only at /fonts
-docker run --rm -u "$U" -e HOME=/tmp -e SKIN_FONTS=/fonts -v "$MPC_VST/tools/html_art/fonts":/fonts:ro -v "$PWD":/w -w /w \
+docker run --rm -u "$U" -e HOME=/tmp -e SKIN_FONTS=/fonts -e BUILD_MARK="$MARK" -v "$MPC_VST/tools/html_art/fonts":/fonts:ro -v "$PWD":/w -w /w \
   mpc-vst-html-art python3 make_skin.py
 CFG="$PWD/vst.json"
 if [ -n "${CFLAGS_EXTRA:-}" ]; then
