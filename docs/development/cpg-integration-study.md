@@ -1,6 +1,6 @@
 # Cadenza and the Chord Progression Generator: an integration study
 
-Status: study, revision 13 (the [revision history](#revision-history) closes the document). No code has been written; the
+Status: study, revision 14 (the [revision history](#revision-history) closes the document). No code has been written; the
 measurements come from throwaway scripts described in [Appendix A](#appendix-a-measurement-method).
 
 | Project | Version studied | Licence |
@@ -937,7 +937,7 @@ MPC One and MPC OS 3.10.1 as untested, and this fork's owner runs that combinati
 
 Decisions of the fork's owner, 2026-11-22: 1 to 9 in answer to revision 1, 10 and 11 to revision 2, 12 to 15 to
 revision 3, 16 to revision 4, 17 to 19 to revision 5; 2026-11-23: 20, after the device test's runs, then 21 to 24; 2026-11-24:
-25 and 26, after step 4.
+25 and 26, after step 4; 2026-11-25: 27 and 28, after the device run.
 
 | # | Decision | Consequence in this revision |
 |---|---|---|
@@ -967,6 +967,8 @@ revision 3, 16 to revision 4, 17 to 19 to revision 5; 2026-11-23: 20, after the 
 | 24 | No genre crosswalk: loading a palette suggests no voicing or bass style. The user is not constrained: they may choose coherent options, or be free to get weird. Avenue G and the strategy's step 12 are dropped. | avenue G; strategy, O14 |
 | 25 | The CPG's palettes must not depend on the key, and the defect that makes them do so (row 4 scored against the voicing's bass notes, in the wrong frame) is fixed in the CPG, by a specification written for its repository; the fork then moves its submodule. | [upstream/cpg-18-row4-key-invariance.md](upstream/cpg-18-row4-key-invariance.md), implemented in the CPG as its spec 18; [spec 04](specs/04-palette-table.md), §8.4; strategy, O15 |
 | 26 | Chords are not categorised, only palettes (by genre), and Cadenza's rhythms, independently (decision 23). A palette chord carries no category. | [spec 04](specs/04-palette-table.md), S04-D4; [spec 05](specs/05-part-palette.md), §3.3; strategy, O16 |
+| 27 | The author's silence slows nothing: he has not answered the owner's message of 2026-11-23, and no step waits for him. The patches offered to him (O3) wait for his answer; the design note is written anyway. | strategy, §8.3 (O3) |
+| 28 | The web simulation is not pursued for now, its potential kept: with root SSH on the MPC One, testing on the device is fast, and the device is where this project's difficulties have been. | strategy, §4.7 and §8.3 (O8b) |
 
 **To revisit.** Decision 12, the fifth of 11ths and 13ths: when a listener misses the fifth, when a voicing style wants it,
 when `THEORY_CHORD_MAX` is raised for another reason, or when the CPG's 11ths and 13ths change. The trade-off and the ways
@@ -1064,3 +1066,4 @@ All scripts were written in the session scratchpad and are not committed.
   the owner confirmed for the palettes' starting orders (spec 04, S04-D9).
 - Revision 13 records decisions 25 and 26, the owner's answers to the two questions step 4 found in the CPG: its palettes'
   key dependence is fixed upstream; chords carry no category.
+- Revision 14 records decisions 27 and 28: the author's silence slows nothing; the web simulation is not pursued for now.

@@ -159,7 +159,11 @@ steps with the host's gcc, and `armsize.sh [REF]` builds the plugin with an ARM 
 a commit and prints the difference. Their figures guide; CI's decide, and CI's summary gives the binary's bytes and
 headroom.
 
-### 4.7 A web simulation (proposed)
+### 4.7 A web simulation (not pursued for now: O8b, 2026-11-25)
+
+*The owner's decision (study, decision 28): the web build would be nice to have and its potential is kept, but with root
+SSH on the MPC One, on-device testing is fast, and the device is where the trickiness lies. What follows is kept for when
+it is taken up again.*
 
 Upstream's browser version (cadenzajam.com/try, built from upstream commit `2b2862a` with the toolchain at `8fbeffc`)
 runs the release's own engine and wrapper as a standalone WebAssembly module (`chordseq.wasm`: two imports, MIDI out and
@@ -317,14 +321,15 @@ for the record below it, and the ones concerning the integration as a whole go t
 | # | Decision | Waits for | Options then | Informs | Needed before |
 |---|---|---|---|---|---|
 | O3 | Send the author milestone M1: the dead-code patch (about 40 KB freed) and the spelling (about 4 KB) as a patch series, with a field report | his interest (the message offered them; no answer yet); O1 passed | send, hold | | nothing in the fork |
-| O8b | The web simulation if the author does not share `web/`: a rewrite of the host (B, which leaves the licence question of testing against his published module) or a page of our own (C) (§4.7) | the author's answer, or none after a reasonable wait | B, C, neither | O10 | any screen work in a browser |
-| O10 | The fork's skin budget: may new views raise it, and by how much | milestone M2, an MPC memory probe over root SSH with and without a new view, and specifications 06 to 08 | raise by an amount, or keep 80 MB | | the first screen needing a new view (likely step 8) |
+| O10 | The fork's skin budget: may new views raise it, and by how much | milestone M2 (reached), the MPC memory probe over root SSH ([prepared](device-memory-probe.md), the owner to run it), and specifications 06 to 08 | raise by an amount, or keep 80 MB | | the first screen needing a new view (likely step 8) |
 | O12 | Do the fallbacks of the new chords sound acceptable in the official 0.28.1? ([spec 03, §2.2](specs/03-missing-sonorities.md#22-for-the-owner-after-a-further-step)) | step 5's device run | accept, or amend a fallback | | nothing in the fork |
 
 ### 8.3 Taken since the list was made
 
 | # | Decision | Taken | Recorded in |
 |---|---|---|---|
+| O3 (in part) | The author has not answered the owner's message (2026-11-23): "let's not let that slow us". Nothing waits for him; O3, the patches offered to him, stays open until he answers | 2026-11-25 | study, decision 27 |
+| O8b | The web simulation: not pursued for now, its potential kept (nothing removed, §4.7 stays as written). With root SSH the owner tests on the MPC One quickly, and the device is where this project's difficulties have been (lesson 16): "it would be nice to have [...] but with SSH access I can test fairly rapidly on the device now, so web version wouldn't buy us more productivity" | 2026-11-25 | study, decision 28 |
 | O1 | The device run of the draft (the checks of §9, item 1): **passed**. It loads, plays, spells in F, A♭, D♭ and E♭ major, saves and reloads, and states and projects travel both ways between it and the official 0.28.1, once both builds come from the same package; the first attempt mixed the release's two packages, which name the plugin file differently, and MPC ties a state to that path (lesson 16) | 2026-11-25 | [device-run-test-build.md, §5](device-run-test-build.md#5-results) |
 | O4 | Step 0a, the local tools: S00-A1 (the native runner) and S00-A4 (the ARM size estimate), "as you see fit" | 2026-11-23 | [spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools) |
 | O8 | The web simulation's route: ask the author for upstream's `web/` folder first | 2026-11-23 | §4.7 |
@@ -351,7 +356,7 @@ In order:
 3. **Step 0a**: done (spec 00, addendum A); its tools serve every later step.
 4. Steps 3 to 5 are implemented (specs 03 to 05, §8): milestone M2. The CPG's spec 18 (O15) is implemented and the
    submodule follows it.
-5. **The web simulation**, once the author answers (O8 and O9 taken; O8b if he declines).
+5. ~~The web simulation~~: not pursued for now (O8b, study decision 28); testing is on the device, over root SSH.
 6. **M2 is reached:** the MPC memory probe over root SSH, the skin budget (O10), the design note to the author (specs 01 to
    05's "other front ends" sections hold its material, and lesson 16: the release's two packages name the plugin file
    differently, so states saved under one do not open under the other), then specifications 06 and 07.
@@ -407,4 +412,6 @@ polymeter, the Chord Matcher (study, §7).
   §1 and §6.1 updated, lessons 14 and 15, the budget after step 3 (§5), next steps (§9). Then step 4 built: O15 and O16,
   found in the CPG while building it, join §8.1. Then step 5 built: milestone M2 (§1, §6.1, §9). Then O15 and O16 answered
   (§8.3): the CPG fix specified for its repository (`upstream/`), chords without a category. Then the CPG's spec 18
-  implemented there and the submodule moved (O15). Then the device run passed (O1, lesson 16); O2 decidable now.
+  implemented there and the submodule moved (O15). Then the device run passed (O1, lesson 16); O2 decidable now. Then the
+  owner's two decisions of 2026-11-25: the author's silence slows nothing (decision 27), the web simulation not pursued
+  (O8b, decision 28); the memory probe for O10 prepared (`device-memory-probe.md`).
