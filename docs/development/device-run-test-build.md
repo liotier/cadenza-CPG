@@ -86,7 +86,7 @@ compatibility harness checks it offline for every saved field).
 | 3, 4 | Passed: "all live functionality nominal". |
 | 5 | Passed for F, A♭, D♭ and E♭ major (B♭, never A♯ in F); C♯ and D♯ minor not reported. |
 | 6 | Passed: saving and loading worked in the test build. |
-| 7 | **Passed**, 2026-11-25, with the test build installed from the armv7 zip's `portable` folder, like the official installation: the official 0.28.1 opens a state saved by `ce39284`. First attempt, with the SDK zip's folder: refused, "This state file is not for Cadenza" (§5.1). |
+| 7 | **Passed both ways**, 2026-11-25, with the test build installed from the armv7 zip's `portable` folder, like the official installation: the official 0.28.1 opens a state saved by `ce39284`, and the test build opens a state and a project saved by the official 0.28.1. First attempt, with the SDK zip's folder: refused, "This state file is not for Cadenza" (§5.1). |
 | 8 | Nothing reported. |
 
 The first loads found one procedural flaw, now fixed: the procedure named E♭ on the key selector, whose black keys carry

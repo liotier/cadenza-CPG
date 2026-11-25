@@ -325,7 +325,7 @@ for the record below it, and the ones concerning the integration as a whole go t
 
 | # | Decision | Taken | Recorded in |
 |---|---|---|---|
-| O1 | The device run of the draft (the checks of §9, item 1): **passed**. It loads, plays, spells in F, A♭, D♭ and E♭ major, saves and reloads, and the official 0.28.1 opens a state the test build saved, once both builds come from the same package; the first attempt mixed the release's two packages, which name the plugin file differently, and MPC ties a state to that path (lesson 16) | 2026-11-25 | [device-run-test-build.md, §5](device-run-test-build.md#5-results) |
+| O1 | The device run of the draft (the checks of §9, item 1): **passed**. It loads, plays, spells in F, A♭, D♭ and E♭ major, saves and reloads, and states and projects travel both ways between it and the official 0.28.1, once both builds come from the same package; the first attempt mixed the release's two packages, which name the plugin file differently, and MPC ties a state to that path (lesson 16) | 2026-11-25 | [device-run-test-build.md, §5](device-run-test-build.md#5-results) |
 | O4 | Step 0a, the local tools: S00-A1 (the native runner) and S00-A4 (the ARM size estimate), "as you see fit" | 2026-11-23 | [spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools) |
 | O8 | The web simulation's route: ask the author for upstream's `web/` folder first | 2026-11-23 | §4.7 |
 | O9 | The message to the author, introducing the fork and asking for `web/`: sent | 2026-11-23 | §4.7 |
