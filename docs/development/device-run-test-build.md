@@ -1,6 +1,6 @@
 # Device run of the test build (O1)
 
-Status: procedure, 2026-11-24; first run recorded in §5, row 7 and five keys of row 5 to confirm. Decision O1 of the
+Status: procedure, 2026-11-24; run 1 recorded in §5: row 7 failed, its cause being narrowed down (§5.1). Decision O1 of the
 [implementation strategy](implementation-strategy.md#81-decidable-now): run the draft *Cadenza 0.28.1-cpg.1 (test build)*
 on the MPC One and say whether it passes.
 
@@ -78,10 +78,39 @@ compatibility harness checks it offline for every saved field).
 | 1 | Passed: the plugin loads. |
 | 2 | Passed: `CPG 0.28.1-cpg.1 ce39284` visible on GLOBAL; D# and Major give `Eb MAJOR` on PLAY. |
 | 3, 4 | Passed: "all live functionality nominal". |
-| 5 | Passed for F major (B♭, never A♯); the other five keys not reported. |
+| 5 | Passed for F, A♭, D♭ and E♭ major (B♭, never A♯ in F); C♯ and D♯ minor not reported. |
 | 6 | Passed: saving and loading worked in the test build. |
-| 7 | Not reported: whether the official 0.28.1 opens a project saved with the test build. |
+| 7 | **Failed.** The official 0.28.1 refuses the test build's saved state: "This state file is not for Cadenza". |
 | 8 | Nothing reported. |
 
 The first loads found one procedural flaw, now fixed: the procedure named E♭ on the key selector, whose black keys carry
 sharps in both builds (S01-D7); and the owner asked for the build's mark on GLOBAL (strategy, §4.5).
+
+### 5.1 Row 7: what refuses the state
+
+The message is neither Cadenza's nor the toolchain wrapper's (neither holds the text; the wrapper hands the saved text to
+the engine untouched): it is MPC OS's. Its plugin host keeps, with a plugin's saved state, the plugin's description, and
+checks it on loading; a user on MPC Forums met the same refusal after reinstalling a plugin
+([thread](https://www.mpc-forums.com/viewtopic.php?p=1838042), unanswered). The compatibility harness tests the engine's
+state text, which 0.28.1 reads; it cannot see this layer.
+
+What MPC can tell apart between the two builds: their folder name, `.so` name, uid (`0x43685371`), `version.xml`
+(`1.0.0.0`) and AEffect version are the same; their `plugin.json` differs in three fields, compared with the official
+release's own (`Cadenza-0.28.1-mpc-sdk.zip`, read 2026-11-25):
+
+| Field | Official 0.28.1 | Test build |
+|---|---|---|
+| `version` | `0.28.1` | `0.28.1-cpg.1` |
+| `description` | "Chord-driven generative MIDI sequencer: [...]" | "Test build of a personal fork of Cadenza ([...]), not an official release." |
+| `url` | `https://github.com/Shrekage2024/cadenza-force` | `https://github.com/liotier/cadenza-CPG` |
+
+The likeliest cause is the version. The experiment that tells, with no new build, the official folder installed:
+
+1. In `VST2 Plugins/Cadenza - VST - Cadenza/plugin.json` (a text file), change `"version": "0.28.1"` to
+   `"version": "0.28.1-cpg.1"`; restart; open the project of row 6. If it opens, the version is what MPC checks.
+2. Else, also replace the `description` and `url` lines with the test build's; restart; open it again. If it opens, one of
+   those is; if not, `plugin.json` is not the cause.
+3. Either way, put the official `plugin.json` back afterwards.
+
+Also worth knowing: whether a project saved with the official 0.28.1 opens in the test build (the other direction). If it
+does not either, MPC asks for the same description both ways; if it does, it refuses only one way.

@@ -309,7 +309,7 @@ for the record below it, and the ones concerning the integration as a whole go t
 
 | # | Decision | Options | Rests on | Informs | Needed before |
 |---|---|---|---|---|---|
-| O1 | Run the draft *Cadenza 0.28.1-cpg.1 (test build)* on the MPC One, and say whether it passes (checks in §9, item 1). Run 1, 2026-11-24: loads, plays, spells F major right, saves and reloads ([results](device-run-test-build.md#5-results)); to confirm, the official 0.28.1 opening a project saved with the test build (row 7), and the other five keys | pass, or what failed | none | O2, O3 | the release branch; M1 |
+| O1 | Run the draft *Cadenza 0.28.1-cpg.1 (test build)* on the MPC One, and say whether it passes (checks in §9, item 1). Run 1, 2026-11-24: loads, plays, spells right, saves and reloads; **fails row 7**: the official 0.28.1 refuses the test build's saved state ("This state file is not for Cadenza"), MPC OS's check of the plugin's description, most likely its `plugin.json` version ([results and the experiment](device-run-test-build.md#51-row-7-what-refuses-the-state)) | pass, or what failed | none | O2, O3 | the release branch; M1 |
 
 ### 8.2 Depend on a further step or event
 
