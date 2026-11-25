@@ -36,8 +36,8 @@ gets its own specification in `docs/development/specs/` before any code is writt
 | 4. The palette table | implemented; the CPG fix it found specified and implemented in the CPG, the submodule moved (O15); no chord category (O16) | [spec 04](specs/04-palette-table.md), §8: 184 palettes and 7 scale palettes, every chord exact, every root spelled as the CPG spells it in all twelve keys |
 | 5. The part's palette | implemented: milestone M2, the engine complete | [spec 05](specs/05-part-palette.md), §8: load, clear, undo, save by value, the scale palette shown, the nearest palette; six loaded parts in 2.3 KB of state |
 
-The draft release *Cadenza 0.28.1-cpg.1 (test build)* holds steps 0 to 5 and the collected binary: one device run
-checks them at once (§8.1, O1). Steps 3 to 5 change nothing on screen and nothing in a state saved from the controls,
+The draft release *Cadenza 0.28.1-cpg.1 (test build)* holds steps 0 to 5 and the collected binary; its device run passed on
+2026-11-25 (O1), after one lesson about MPC's saved states (lesson 16). Steps 3 to 5 change nothing on screen and nothing in a state saved from the controls,
 which cannot produce their values or load a palette yet.
 
 ## 2. Principles
@@ -310,14 +310,13 @@ for the record below it, and the ones concerning the integration as a whole go t
 
 | # | Decision | Options | Rests on | Informs | Needed before |
 |---|---|---|---|---|---|
-| O1 | Run the draft *Cadenza 0.28.1-cpg.1 (test build)* on the MPC One, and say whether it passes (checks in §9, item 1). Run 1, 2026-11-24: loads, plays, spells right, saves and reloads; row 7 failed ("This state file is not for Cadenza"): MPC ties a state to the plugin's file path, and the two builds came from different packages (`cadenza.so` against `cadenza-arm32.so`), the engine reading the state fine ([diagnosis](device-run-test-build.md#51-row-7-what-refuses-the-state)); row 7 to run again with the same package | pass, or what failed | none | O2, O3 | the release branch; M1 |
+| O2 | Cut `release/0.28.1-cpg.1` from this branch and open its pull request to `main`: the fork's first release, steps 0 to 5 as the device run passed them. Its notes say to install the package of the same kind as the official installation (lesson 16) | go, or not yet | O1 (passed) | | the next version, `0.28.1-cpg.2` |
 
 ### 8.2 Depend on a further step or event
 
 | # | Decision | Waits for | Options then | Informs | Needed before |
 |---|---|---|---|---|---|
-| O2 | Cut `release/0.28.1-cpg.1` and open its pull request to `main` | O1 passed | go, or not yet | | the next version, `0.28.1-cpg.2` |
-| O3 | Send the author milestone M1: the dead-code patch (about 40 KB freed) and the spelling (about 4 KB) as a patch series, with a field report | O1 passed; his interest (the message offered them, as drafted) | send, hold | | nothing in the fork |
+| O3 | Send the author milestone M1: the dead-code patch (about 40 KB freed) and the spelling (about 4 KB) as a patch series, with a field report | his interest (the message offered them; no answer yet); O1 passed | send, hold | | nothing in the fork |
 | O8b | The web simulation if the author does not share `web/`: a rewrite of the host (B, which leaves the licence question of testing against his published module) or a page of our own (C) (§4.7) | the author's answer, or none after a reasonable wait | B, C, neither | O10 | any screen work in a browser |
 | O10 | The fork's skin budget: may new views raise it, and by how much | milestone M2, an MPC memory probe over root SSH with and without a new view, and specifications 06 to 08 | raise by an amount, or keep 80 MB | | the first screen needing a new view (likely step 8) |
 | O12 | Do the fallbacks of the new chords sound acceptable in the official 0.28.1? ([spec 03, §2.2](specs/03-missing-sonorities.md#22-for-the-owner-after-a-further-step)) | step 5's device run | accept, or amend a fallback | | nothing in the fork |
@@ -326,6 +325,7 @@ for the record below it, and the ones concerning the integration as a whole go t
 
 | # | Decision | Taken | Recorded in |
 |---|---|---|---|
+| O1 | The device run of the draft (the checks of §9, item 1): **passed**. It loads, plays, spells in F, A♭, D♭ and E♭ major, saves and reloads, and the official 0.28.1 opens a state the test build saved, once both builds come from the same package; the first attempt mixed the release's two packages, which name the plugin file differently, and MPC ties a state to that path (lesson 16) | 2026-11-25 | [device-run-test-build.md, §5](device-run-test-build.md#5-results) |
 | O4 | Step 0a, the local tools: S00-A1 (the native runner) and S00-A4 (the ARM size estimate), "as you see fit" | 2026-11-23 | [spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools) |
 | O8 | The web simulation's route: ask the author for upstream's `web/` folder first | 2026-11-23 | §4.7 |
 | O9 | The message to the author, introducing the fork and asking for `web/`: sent | 2026-11-23 | §4.7 |
@@ -342,7 +342,7 @@ for the record below it, and the ones concerning the integration as a whole go t
 
 In order:
 
-1. **The device run of the draft** *Cadenza 0.28.1-cpg.1 (test build)* (O1). It holds steps 0 to 5 and the collected
+1. **Done (O1, passed 2026-11-25):** the device run of the draft *Cadenza 0.28.1-cpg.1 (test build)*. It holds steps 0 to 5 and the collected
    binary. Checks: the plugin loads from `VST2 Plugins` under MPC OS 3.10.1; INIT and House 124 play; a project saves and
    reopens, and opens again after the official 0.28.1 is restored; CHORDS, PHRASE, PLAY and GLOBAL read correctly in F,
    E♭, A♭ and D♭ major and C♯ and D♯ minor (PLAY's title: `Eb MAJOR`, `D# MINOR`). Steps 2 to 5 show nothing. The
@@ -407,4 +407,4 @@ polymeter, the Chord Matcher (study, §7).
   §1 and §6.1 updated, lessons 14 and 15, the budget after step 3 (§5), next steps (§9). Then step 4 built: O15 and O16,
   found in the CPG while building it, join §8.1. Then step 5 built: milestone M2 (§1, §6.1, §9). Then O15 and O16 answered
   (§8.3): the CPG fix specified for its repository (`upstream/`), chords without a category. Then the CPG's spec 18
-  implemented there and the submodule moved (O15).
+  implemented there and the submodule moved (O15). Then the device run passed (O1, lesson 16); O2 decidable now.

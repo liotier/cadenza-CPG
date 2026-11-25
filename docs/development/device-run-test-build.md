@@ -1,7 +1,7 @@
 # Device run of the test build (O1)
 
-Status: procedure, 2026-11-25; run 1 recorded in §5: row 7 failed, its cause found (§5.1): the two builds were installed
-from different packages; row 7 to be run again with the same package (§1, step 3). Decision O1 of the
+Status: run 1 **passed**, 2026-11-25 (§5): row 7 failed at first because the two builds were installed from different
+packages (§5.1), and passed once they came from the same one. Decision O1 of the
 [implementation strategy](implementation-strategy.md#81-decidable-now): run the draft *Cadenza 0.28.1-cpg.1 (test build)*
 on the MPC One and say whether it passes.
 
@@ -86,7 +86,7 @@ compatibility harness checks it offline for every saved field).
 | 3, 4 | Passed: "all live functionality nominal". |
 | 5 | Passed for F, A♭, D♭ and E♭ major (B♭, never A♯ in F); C♯ and D♯ minor not reported. |
 | 6 | Passed: saving and loading worked in the test build. |
-| 7 | **Failed.** The official 0.28.1 refuses the test build's saved state: "This state file is not for Cadenza". |
+| 7 | **Passed**, 2026-11-25, with the test build installed from the armv7 zip's `portable` folder, like the official installation: the official 0.28.1 opens a state saved by `ce39284`. First attempt, with the SDK zip's folder: refused, "This state file is not for Cadenza" (§5.1). |
 | 8 | Nothing reported. |
 
 The first loads found one procedural flaw, now fixed: the procedure named E♭ on the key selector, whose black keys carry
