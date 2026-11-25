@@ -90,6 +90,7 @@ Step 3 added two:
 |---|---|---|
 | 14 | A range's probes include its colours: spec 03 foresaw the three source probes past `THEORY_SRC_MAX` and missed three at `COL_COUNT`, which became a valid colour. | When a range grows, search the tests for every bound of it, sources and colours alike, and list them in the specification before building. |
 | 15 | A measuring tool changed with the thing it measures can change the measure. | The coverage tool's new lines were run on the previous enumeration first, reproducing its figures, before measuring the step. |
+| 16 | MPC ties a saved plugin state to the plugin's file path (drive, folder, file name) and uid; the official release's two packages name the file differently (`cadenza.so`, `cadenza-arm32.so`), so their states do not travel between them. The compatibility harness, which tests the engine's text, cannot see this layer. | A device run installs the fork from the same package as the installation it is compared with; a refusal is read from the saved states' `<PLUGIN>` descriptions before any guess. |
 
 ## 4. Workflow and infrastructure
 
@@ -309,7 +310,7 @@ for the record below it, and the ones concerning the integration as a whole go t
 
 | # | Decision | Options | Rests on | Informs | Needed before |
 |---|---|---|---|---|---|
-| O1 | Run the draft *Cadenza 0.28.1-cpg.1 (test build)* on the MPC One, and say whether it passes (checks in §9, item 1). Run 1, 2026-11-24: loads, plays, spells right, saves and reloads; **fails row 7**: the official 0.28.1 refuses the test build's saved state ("This state file is not for Cadenza"), MPC OS's check of the plugin's description, most likely its `plugin.json` version ([results and the experiment](device-run-test-build.md#51-row-7-what-refuses-the-state)) | pass, or what failed | none | O2, O3 | the release branch; M1 |
+| O1 | Run the draft *Cadenza 0.28.1-cpg.1 (test build)* on the MPC One, and say whether it passes (checks in §9, item 1). Run 1, 2026-11-24: loads, plays, spells right, saves and reloads; row 7 failed ("This state file is not for Cadenza"): MPC ties a state to the plugin's file path, and the two builds came from different packages (`cadenza.so` against `cadenza-arm32.so`), the engine reading the state fine ([diagnosis](device-run-test-build.md#51-row-7-what-refuses-the-state)); row 7 to run again with the same package | pass, or what failed | none | O2, O3 | the release branch; M1 |
 
 ### 8.2 Depend on a further step or event
 
@@ -352,7 +353,8 @@ In order:
    submodule follows it.
 5. **The web simulation**, once the author answers (O8 and O9 taken; O8b if he declines).
 6. **M2 is reached:** the MPC memory probe over root SSH, the skin budget (O10), the design note to the author (specs 01 to
-   05's "other front ends" sections hold its material), then specifications 06 and 07.
+   05's "other front ends" sections hold its material, and lesson 16: the release's two packages name the plugin file
+   differently, so states saved under one do not open under the other), then specifications 06 and 07.
 
 ## 10. Risks
 

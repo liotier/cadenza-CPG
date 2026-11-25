@@ -1,6 +1,7 @@
 # Device run of the test build (O1)
 
-Status: procedure, 2026-11-24; run 1 recorded in §5: row 7 failed, its cause being narrowed down (§5.1). Decision O1 of the
+Status: procedure, 2026-11-25; run 1 recorded in §5: row 7 failed, its cause found (§5.1): the two builds were installed
+from different packages; row 7 to be run again with the same package (§1, step 3). Decision O1 of the
 [implementation strategy](implementation-strategy.md#81-decidable-now): run the draft *Cadenza 0.28.1-cpg.1 (test build)*
 on the MPC One and say whether it passes.
 
@@ -15,10 +16,15 @@ travel both ways between it and the official build.
    *Cadenza 0.28.1-cpg.1 (test build)* is visible to you only.
 2. Check its notes: "Built by GitHub Actions from liotier/cadenza-CPG@`<commit>`". The commit should be the branch's
    latest. The same commit appears on the device, on GLOBAL (§3, row 2).
-3. Download `Cadenza-0.28.1-cpg.1-mpc-sdk.zip`, the zip for MPC OS 3.10.1 and later (the other, `-mpc-armv7.zip`, is for
-   3.9.1 and earlier, with an installer over SSH).
-4. Unzip it on the computer. It holds one folder, `Cadenza - VST - Cadenza`: the plugin (`.so`), its `plugin.json` and its
-   skin. It is the 32-bit build, as the official release is, which already runs on this MPC One.
+3. Download the package **of the same kind as your official installation**. Look in your official
+   `VST2 Plugins/Cadenza - VST - Cadenza` folder: MPC ties a project's or a preset's plugin state to the plugin's full file
+   path (§5.1), and the release's two packages name the file differently.
+   - It holds `cadenza.so`: download `Cadenza-0.28.1-cpg.1-mpc-armv7.zip` and use, after unzipping, the folder
+     `Cadenza-0.28.1-cpg.1/portable/Cadenza - VST - Cadenza` (it holds `cadenza.so` and a `plugin.json` naming it; it works
+     as it is under MPC OS 3.10.1). The owner's MPC One is in this case.
+   - It holds `cadenza-arm32.so`: download `Cadenza-0.28.1-cpg.1-mpc-sdk.zip`; after unzipping, its one folder,
+     `Cadenza - VST - Cadenza`.
+4. Either is the 32-bit build, as the official release is, which already runs on this MPC One.
 
 ## 2. Swap the official plugin for the test build
 
@@ -87,6 +93,23 @@ The first loads found one procedural flaw, now fixed: the procedure named E♭ o
 sharps in both builds (S01-D7); and the owner asked for the build's mark on GLOBAL (strategy, §4.5).
 
 ### 5.1 Row 7: what refuses the state
+
+**Found, 2026-11-25.** The owner sent two plugin state files (`.xpi`), one saved with each build. Their plugin descriptions
+differ in one field only, the plugin file: `…/VST2 Plugins/Cadenza - VST - Cadenza/cadenza-arm32.so` for the test build,
+`…/cadenza.so` for the official one; `version="1.0.0.0"` in both, which MPC reads from the plugin itself (the AEffect
+version, `vst.json`'s 1000), not from `plugin.json` (the experiment below changed nothing, as this predicts). The official
+release ships two packages that name the file differently: `Cadenza-0.28.1-mpc-armv7.zip`'s `portable/` folder holds
+`cadenza.so`, `Cadenza-0.28.1-mpc-sdk.zip` holds `cadenza-arm32.so` (both read 2026-11-25). The owner's official
+installation is the first, the test build was installed from the second, as §1 then said. The states themselves are sound:
+decoded (JUCE's fxb chunk set, uid `43685371`, plugin version 1000), the test build's loads in the official 0.28.1 engine
+built from `56e95a0`, under ASan and UBSan. So MPC refuses on the path, before Cadenza sees anything; between two
+installations of the same package, row 7 should pass. §1 now picks the package by the official installation's file name;
+the state saved with the SDK package's test build stays refused, as it would between the two official packages.
+
+What this means beyond the fork, for the author (strategy, §9): a state saved under one of the official packages does not
+open under the other, nor after the plugin folder moves to another drive (the path holds the drive's name).
+
+The investigation, as it went:
 
 The message is neither Cadenza's nor the toolchain wrapper's (neither holds the text; the wrapper hands the saved text to
 the engine untouched): it is MPC OS's. Its plugin host keeps, with a plugin's saved state, the plugin's description, and
