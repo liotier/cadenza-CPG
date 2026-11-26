@@ -1,6 +1,6 @@
 # MPC tab-switch probe
 
-Status: procedure, 2026-11-26; results to come (§4). The owner sees each tab draw after a switch, slowly enough to notice:
+Status: procedure, 2026-11-26; run 1 on 2026-11-26 (§4). The owner sees each tab draw after a switch, slowly enough to notice:
 "not annoyingly so, but [...] lower latency could be useful". This probe measures, on the MPC One, what a switch costs
 MPC and where, so that any change to the skin aims at the actual cost (strategy, principle 10: interaction first).
 
@@ -79,7 +79,43 @@ The filmstrip cache grows by what the probe reports. A reboot clears it; between
 
 ## 4. Results
 
-To come. How they will be read, and what each outcome would lead to:
+**Run 1, 2026-11-26**, by the owner: MPC One, MPC OS 3.10.1, the owner's project, test build `180f02c`, transport stopped.
+The log: [measurements/mpc-tabprobe-2026-11-26.csv](measurements/mpc-tabprobe-2026-11-26.csv) (the first two runs stopped
+on BusyBox's `head`, lesson 17; their idle lines are kept). MPC's main thread uses 24.9 ms a second at rest (the three idle
+lines, 69.8 s in all); each step's cost is its main-thread time less that rate over the step's wall time. The steps took
+9 to 13 s each between the Enters, so each figure is uncertain by about 50 to 80 ms (the idle rate varied from 19 to
+25 ms a second between runs).
+
+| Step | Main thread, net | Tab's lines (`vst/layout.conf`) |
+|---|---|---|
+| `to-play` (from GLOBAL), `to-play-2` (from BASS) | 79, 123 ms | 29 |
+| `to-global` | 101 ms | 27 |
+| `to-chords` | 283 ms | 444 |
+| `to-melody` | 337 ms | 371 |
+| `to-bass`, `to-bass-again` | 426, 384 ms | 577 |
+| `bass-phrase`, `bass-jam`, `bass-bass` (views inside BASS) | 260, 347, 245 ms | |
+| `close`, `open` (the window, on PLAY) | 196, 210 ms | |
+
+**What it shows.**
+
+1. **No filmstrip is written at a switch**: the cache did not grow at any step, opening the window included. That suspect
+   is cleared, provided the cache is still `/var/tmp/filmstrips` under MPC OS 3.10.1 (the probe counts nothing if the
+   folder is missing; to check).
+2. **A switch costs the main thread 0.1 s on the light tabs and 0.3 to 0.4 s on the dense ones**, in rough proportion to
+   the tab's lines, hidden views included: on the order of 0.6 ms a line above about 80 ms. This is the delay the owner sees.
+3. **A view switch inside BASS costs nearly as much as a tab switch** (0.25 to 0.35 s). Each view switch is a parameter
+   with `refresh_display` (as are 2 008 of the 2 037 parameters), so MPC is asked to refresh the screen; but a refresh alone
+   was measured at about 1.2 ms on the Force (`vst/budget.json`, `_screen_updates_per_s`). The cost is therefore in what
+   the view change makes MPC show, hide and draw, not in the refresh request.
+4. **The process totals are MPC's audio threads** (`Audio_Processing`, `AudioWorker0` and `2`), busy at the same rate at
+   rest: they say nothing about the switch.
+
+**Open questions**, for a second run: which components cost most (the BASS tab's 226 dot meters, its 90 buttons, its
+hidden views); whether a switch also costs MPC's Q-Link work (each dense tab binds 16 to 24 knobs, PLAY 6); and the
+owner's observation that opening Cadenza from MPC's main screen through Program Edit feels quicker than switching tabs
+inside it.
+
+How they will be read, and what each outcome would lead to:
 
 - **Filmstrip files written at each switch**, in proportion to the meters (the "per component" column): MPC decodes and
   writes a strip per meter. Then fewer frames (the dots' strips have 36 to 73, the knobs' 128), fewer or smaller strips,

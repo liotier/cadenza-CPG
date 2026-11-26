@@ -1,0 +1,23 @@
+# MPC One, MPC OS 3.10.1, the owner's project, Cadenza 0.28.1-cpg.1 test build 180f02c, transport stopped (docs/development/device-tab-probe.md)
+# 2026-11-26T22:47:54Z pid 313 (MPC 3 Main), CLK_TCK 100, kernel 6.18.44-az01-2026-08-10-rt6
+label,wall_ms,main_cpu_ms,mpc_cpu_ms,top_threads_ms,filmstrip_files_added,filmstrip_kb_added
+idle,11650,290,5470,,0,0
+# 2026-11-26T22:50:16Z pid 313 (MPC 3 Main), CLK_TCK 100, kernel 6.18.44-az01-2026-08-10-rt6
+label,wall_ms,main_cpu_ms,mpc_cpu_ms,top_threads_ms,filmstrip_files_added,filmstrip_kb_added
+idle,2110,60,1050,,0,0
+# 2026-11-26T22:56:23Z pid 313 (MPC 3 Main), CLK_TCK 100, kernel 6.18.44-az01-2026-08-10-rt6
+label,wall_ms,main_cpu_ms,mpc_cpu_ms,top_threads_ms,filmstrip_files_added,filmstrip_kb_added
+idle,2090,40,1030,Audio_Processin:340 AudioWorker2:200 AudioWorker0:170,0,0
+to-chords,11900,580,5910,Audio_Processin:1740 AudioWorker2:1060 AudioWorker0:920,0,0
+to-bass,10610,690,5460,Audio_Processin:1560 AudioWorker2:960 AudioWorker0:820,0,0
+to-melody,9330,570,4780,Audio_Processin:1400 AudioWorker2:840 AudioWorker0:720,0,0
+to-global,8800,320,4280,Audio_Processin:1300 AudioWorker2:770 AudioWorker0:680,0,0
+to-play,9260,310,4480,Audio_Processin:1370 AudioWorker2:830 AudioWorker0:710,0,0
+to-bass-again,13060,710,6520,Audio_Processin:1920 AudioWorker2:1180 AudioWorker0:1000,0,0
+bass-phrase,10030,510,5030,Audio_Processin:1500 AudioWorker2:890 AudioWorker0:780,0,0
+bass-jam,12970,670,6490,Audio_Processin:1910 AudioWorker2:1130 AudioWorker0:1000,0,0
+bass-bass,13460,580,6580,Audio_Processin:1970 AudioWorker2:1180 AudioWorker0:1030,0,0
+to-play-2,10730,390,5210,Audio_Processin:1570 AudioWorker2:930 AudioWorker0:820,0,0
+close,10610,460,5220,Audio_Processin:1580 AudioWorker2:950 AudioWorker0:810,0,0
+open,13250,540,6490,Audio_Processin:1950 AudioWorker2:1170 AudioWorker0:1030,0,0
+idle-2,53960,1350,25160,Audio_Processin:7740 AudioWorker2:4530 AudioWorker0:4120,0,0
