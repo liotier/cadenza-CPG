@@ -83,5 +83,7 @@ the [device run](device-run-test-build.md#3-checks)).
 2. O18, B1: done 2026-11-26 (the owner's fork, the branch, the pin); CI, then run 2 on the device
    ([device-run-test-build.md, §6](device-run-test-build.md#6-run-2-the-toolchain-from-open-mpc)).
 3. A3, the design note, alongside specifications 06 and 07.
-4. O20, B3: submitted, 2026-11-26 ([open-mpc/mpc-vst-plugins#1223](https://github.com/open-mpc/mpc-vst-plugins/pull/1223)); review answered on `wrapper-options`.
+4. O20, B3: submitted, 2026-11-26 ([open-mpc/mpc-vst-plugins#1223](https://github.com/open-mpc/mpc-vst-plugins/pull/1223)); review answered on `wrapper-options`. The
+   owner follows it on GitHub and brings the review here: this session cannot subscribe to it (open-mpc's repository is
+   not reachable from it), and reads the pull request's public page when the owner asks.
 5. A4 at milestone M3.
