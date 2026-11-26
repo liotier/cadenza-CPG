@@ -1,6 +1,6 @@
 # Cadenza and the Chord Progression Generator: an integration study
 
-Status: study, revision 15 (the [revision history](#revision-history) closes the document). No code has been written; the
+Status: study, revision 16 (the [revision history](#revision-history) closes the document). No code has been written; the
 measurements come from throwaway scripts described in [Appendix A](#appendix-a-measurement-method).
 
 | Project | Version studied | Licence |
@@ -370,7 +370,8 @@ already planned.
 2. **One engine, three products.** `seq_core` serves the Force, the iOS app and the browser version. Upstream, any engine
    change crosses the author's commercial products and parity tests this export does not contain.
 3. **The Force's budgets.** At most 1.2 MB of skin headroom: a new full-panel view has cost 1.6 MB or more by the budget's
-   own history, so screens must reuse existing views. At most 2.5 KB of binary headroom (2 556 bytes). Each new tile is a parameter, and
+   own history, so screens must reuse existing views. (Since decision 32 this no longer holds for the fork: the device
+   holds the shown page only, and the gauge is a tripwire at 160 MB.) At most 2.5 KB of binary headroom (2 556 bytes). Each new tile is a parameter, and
    the bench's random sweep grows with them. Upstream the owner approves every raise; in a fork the numbers still
    describe a real device.
 4. **The time grid.** Loops of 1, 2, 4, 8 or 16 bars ("128 divides by every loop length",
@@ -938,7 +939,7 @@ MPC One and MPC OS 3.10.1 as untested, and this fork's owner runs that combinati
 
 Decisions of the fork's owner, 2026-11-22: 1 to 9 in answer to revision 1, 10 and 11 to revision 2, 12 to 15 to
 revision 3, 16 to revision 4, 17 to 19 to revision 5; 2026-11-23: 20, after the device test's runs, then 21 to 24; 2026-11-24:
-25 and 26, after step 4; 2026-11-25: 27 and 28, after the device run; 2026-11-26: 29 to 31.
+25 and 26, after step 4; 2026-11-25: 27 and 28, after the device run; 2026-11-26: 29 to 32.
 
 | # | Decision | Consequence in this revision |
 |---|---|---|
@@ -973,6 +974,7 @@ revision 3, 16 to revision 4, 17 to 19 to revision 5; 2026-11-23: 20, after the 
 | 29 | Relations with upstream pursue two goals: offering the work to the author, and keeping the fork able to go on whatever the answer, none having come to the owner's issue or message. Upstream's public record shows releases, not work (one export per release; the gap before 0.28.1 was as long as the one since). | [upstream-relations.md](upstream-relations.md); strategy, O17 to O19 |
 | 30 | The form: "for now we endeavour a gentle feature branch". The documents speak of offers and of keeping the builds sound, not of leaving. The toolchain comes from its origin, open-mpc's repository, forked into the owner's account with the author's six wrapper commits on one branch, "to align on the actual origin and benefit from its improvements", rather than from the author's branch. These documents use neutral pronouns. | [upstream-relations.md](upstream-relations.md), §4; strategy, O18 and O20 |
 | 31 | MPC OS 3.9.1 and earlier: "Our branch does not need to cater for MPC OS 3.9.1 and earlier. Let's not remove support for that yet (we remain upstream-friendly), but let's not go out of our way to support it either." The fork's device runs are on MPC OS 3.10.1; the 3.9.1 installer route stays built, as upstream builds it, and untested by the fork. | strategy, §4.4 and §8.3 |
+| 32 | Interaction first: "we have been overly prudent with bitmaps. Yes, wantonly plastering high definition images everywhere is a bad idea, but whatever icons and graphical elements we add are none of that. So, let's prioritize optimizing for user interaction." The MPC One memory probe found Cadenza and its whole window holding at most 34 MB of MPC's memory, a shown page about 2.4 MB, 713 MB still available; the skin gauge (a sum of every image) becomes a tripwire at 160 MB, and screens are designed for interaction. | §5, item 3; strategy, principle 10 and O10; [device-memory-probe.md](device-memory-probe.md) |
 
 **To revisit.** Decision 12, the fifth of 11ths and 13ths: when a listener misses the fifth, when a voicing style wants it,
 when `THEORY_CHORD_MAX` is raised for another reason, or when the CPG's 11ths and 13ths change. The trade-off and the ways
@@ -1073,3 +1075,4 @@ All scripts were written in the session scratchpad and are not committed.
 - Revision 14 records decisions 27 and 28: the author's silence slows nothing; the web simulation is not pursued for now.
 - Revision 15 records decisions 29 to 31: working with upstream as a feature branch, planned in
   [upstream-relations.md](upstream-relations.md); MPC OS 3.9.1 kept but not catered for.
+- Revision 16 records decision 32: interaction first, the skin budget a tripwire, after the MPC One memory probe.

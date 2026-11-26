@@ -106,3 +106,7 @@ The proportional set (`Pss`) follows the resident set 7 MB below it throughout: 
 size of the largest new page while shown, not the sum. A per-page limit would measure what MPC holds; a raised gauge with a
 margin is simpler and keeps the build's existing check. Either way, the probe takes six minutes and can be run again after
 each new view.
+
+**Decision** (O10, 2026-11-26; study, decision 32): the gauge becomes a tripwire at 160 MB, and screens are designed for
+interaction first (strategy, principle 10). The probe stays available for a later check, at a milestone rather than after
+each view.

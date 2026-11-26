@@ -65,6 +65,10 @@ which cannot produce their values or load a palette yet.
    own screens.
 9. **The author's tests are kept, not bypassed.** When a step changes behaviour that an existing check pins, the check is
    changed with a comment naming the specification, never deleted; the specification lists those checks.
+10. **Interaction first** (decision 32). Screens are designed for the clearest interaction, with new views, icons and
+   graphical elements where they help; their images are not a constraint, the device having shown that they cost it
+   little (O10). The skin gauge stays as a tripwire against accidents, such as a large photograph. The budgets that guard
+   responsiveness stay binding: MPC's UI thread, screen updates, the plugin's open time.
 
 ## 3. What steps 0 to 2 taught
 
@@ -202,7 +206,7 @@ already encodes that behaviour on its side of the interface.
 | Budget | Limit | Now | Headroom | Checked by |
 |---|---|---|---|---|
 | Binary | 720 KB (decision 21) | 662 KB (CI run 34: the toolchain from open-mpc, whose per-parameter `automatable` field adds 8 KB of data; 654 KB after step 5) | about 58 KB | CI, every build |
-| Skin images, decoded | 80 MB | 79.1 MB | **0.9 MB** | CI, every build; on the device, the whole window holds at most 34 MB of MPC's memory, a shown page about 2.4 MB ([probe](device-memory-probe.md#4-results)); O10 |
+| Skin images, decoded | 160 MB, a tripwire (decision 32) | 79.1 MB | 80.9 MB | CI, every build; on the device, the whole window holds at most 34 MB of MPC's memory, a shown page about 2.4 MB ([probe](device-memory-probe.md#4-results)) |
 | Parameters | none set | 2 037 | n/a | each costs about 110 bytes of binary (0.22: 152 parameters, about 17 KB) and, when polled, audio-thread time |
 | Audio p99, worst block | 49 %, 80 % | 24.2 %, 65.5 % (the last device bench, [vst/bench.txt](../../vst/bench.txt), the author's Force) | | `tools/bench.sh` over the owner's root SSH, on the MPC One |
 | Screen updates | 80 a second | 71 a second at 160 BPM with FOLLOW on (the plugin test) | | offline |
@@ -210,11 +214,12 @@ already encodes that behaviour on its side of the interface.
 
 **Planned spending.** Step 3 about 2 to 4 KB of binary (measured: 3.3 KB of code); step 4's table 12 to 15 KB (measured: 16.1
 KB, 13.1 KB once chords lost their category, decision 26; it joins the plugin when a screen calls the front end); step 5 about 2 to 4 KB (CI: 650 to 654 KB; the local estimate
-said 1.4 KB, CI's compiler decides): some 25 KB of the 70, about 21 KB once phase B's first screen links the table. The screens of phase B cost parameters and images. The skin is now the binding budget: 0.9 MB, where a new
-full-panel view has cost 1.6 MB or more. Phase B's screens therefore reuse existing views, and any new view needs a
-decision on the fork's skin budget first (§8.2, O10). The skin budget rests on a device probe ("MPC decodes the visible page
-only", VST-9); with root SSH, MPC's memory can be measured on the owner's MPC One before and after a new view, so that
-decision can rest on the fork's own figures.
+said 1.4 KB, CI's compiler decides): some 25 KB of the 70, about 21 KB once phase B's first screen links the table. The screens of phase B cost parameters and images. The skin was the binding budget (0.9 MB
+of headroom, where a new full-panel view has cost 1.6 MB or more) until the MPC One memory probe showed the device holding
+the shown page only (about 2.4 MB) and Cadenza at most 34 MB in all; the gauge is now a tripwire at 160 MB (O10, decision
+32), and phase B's screens are designed for interaction first (principle 10). What binds them is MPC's UI thread and the
+screen updates; and parameters, which each cost binary and perhaps device memory (the probe's 17.6 MB with the window
+closed).
 
 ## 6. Main steps
 
@@ -320,7 +325,6 @@ for the record below it, and the ones concerning the integration as a whole go t
 | # | Decision | Options | Rests on | Informs | Needed before |
 |---|---|---|---|---|---|
 | O2 | Cut `release/0.28.1-cpg.1` from this branch and open its pull request to `main`: the fork's first release, steps 0 to 5 as the device run passed them. Its notes say to install the package of the same kind as the official installation (lesson 16). It also brings the README's fork notice to the repository's front page ([upstream-relations.md](upstream-relations.md), B2) | go, or not yet | O1 (passed) | | the next version, `0.28.1-cpg.2` |
-| O10 | The fork's skin budget, now that the device is measured ([device-memory-probe.md, §4](device-memory-probe.md#4-results)): on the MPC One, Cadenza and its whole window, every view shown, hold at most 34 MB of MPC's memory, a shown page about 2.4 MB, with 713 MB still available; the gauge (79.1 of 80 MB) sums every image and measures none of that. Phase B's screens (steps 6 to 10) need perhaps 5 to 15 MB of gauge | raise the gauge to 100 MB and run the probe again after each new view (recommended: room for steps 6 to 10; even if each new view kept the largest first-visit growth measured, 6.5 MB, six of them would take about 5 % of what remains); replace the gauge by a per-page limit (decoded images of one tab and mode, which is what MPC holds; needs the skin build to attribute images to pages); keep 80 MB | M2 (reached), the probe (run 2026-11-26) | specifications 06 and 07 | the first screen needing a new view (likely step 6 or 8) |
 
 ### 8.2 Depend on a further step or event
 
@@ -334,6 +338,7 @@ for the record below it, and the ones concerning the integration as a whole go t
 
 | # | Decision | Taken | Recorded in |
 |---|---|---|---|
+| O10 | The skin budget, after the memory probe: "we have been overly prudent with bitmaps. [...] whatever icons and graphical elements we add are none of that. So, let's prioritize optimizing for user interaction." The gauge goes to 160 MB as a tripwire against accidents ("wantonly plastering high definition images everywhere is a bad idea"); principle 10 | 2026-11-26 | study, decision 32; [device-memory-probe.md, §4](device-memory-probe.md#4-results); `vst/budget.json` |
 | O20 | The six wrapper options offered to open-mpc: "Sure, @ Schrey" (the author mentioned), the text rearranged for open-mpc's maintainers at the owner's request, then submitted by the owner as [open-mpc/mpc-vst-plugins#1223](https://github.com/open-mpc/mpc-vst-plugins/pull/1223), from the fork's `wrapper-options` branch | 2026-11-26 | [upstream/open-mpc-wrapper-options.md](upstream/open-mpc-wrapper-options.md); [upstream-relations.md](upstream-relations.md), B3 |
 | O18 | The toolchain from its origin: the owner forked open-mpc's repository ([liotier/mpc-vst-plugins](https://github.com/liotier/mpc-vst-plugins)); its branch `cadenza/toolchain` holds open-mpc's `main` at `34b964c` plus the author's six wrapper commits, the same patch; `.github/toolchain` names it. Measured before the move: Cadenza builds (+8 KB of data, open-mpc's per-parameter `automatable` field) and the offline suite passes; CI run 34 green (662 KB); run 2 on the device passed, 2026-11-26 ([device-run-test-build.md, §6](device-run-test-build.md#6-run-2-the-toolchain-from-open-mpc)) | 2026-11-26 | [spec 00, addendum B](specs/00-infrastructure.md#addendum-b-the-toolchain-from-open-mpc); study, decision 30 |
 | O17 | A1, the two packages naming the plugin file differently: "ok" to a paragraph in the design note, for the author's install notes, rather than an issue | 2026-11-26 | [upstream-relations.md, §3](upstream-relations.md#3-offers-to-the-author) |
@@ -369,7 +374,7 @@ In order:
    submodule follows it.
 5. ~~The web simulation~~: not pursued for now (O8b, study decision 28); testing is on the device, over root SSH.
 6. **M2 is reached:** the MPC memory probe over root SSH (run 2026-11-26: the device does not bind the skin), the skin
-   budget (O10, decidable now), the design note to the author (specs 01 to
+   budget (O10, taken: a tripwire at 160 MB, interaction first), the design note to the author (specs 01 to
    05's "other front ends" sections hold its material), then specifications 06 and 07.
 7. **Working with upstream** (decisions 29 to 31, [upstream-relations.md, §5](upstream-relations.md#5-order)): the
    README's notice (done on this branch); the toolchain from open-mpc (O18: the fork made, the branch pushed, the pin
@@ -381,7 +386,7 @@ In order:
 
 | Risk | Mitigation |
 |---|---|
-| The skin budget runs out: 0.9 MB of headroom, a full-panel view costing 1.6 MB or more | views reused; the device measured (34 MB for Cadenza at most, 713 MB still available), so the gauge can rise with a margin (O10); the probe again after each new view |
+| Screens slow MPC's UI thread or the plugin's opening | the UI-thread, screen-update and open-time budgets stay binding (principle 10); the device bench and `tools/soak.sh` over root SSH at each step with screens; the skin gauge a tripwire at 160 MB (decision 32) |
 | The binary budget runs out again | 70 KB of headroom after decision 21; each step estimated locally, measured in CI; further raises are the owner's |
 | CPU costs invisible offline | the device bench over root SSH at each step with screens; offline, few polled parameters and the plugin test's screen-update count |
 | A save-format change breaks projects in older builds | principle 4 (old fields hold usable values only); the harness at every step touching the state |
@@ -437,4 +442,5 @@ polymeter, the Chord Matcher (study, §7).
   from open-mpc) decidable now, O19 at M3, O20 after O18; lesson 16 completed with the two installation routes. Then O17
   and O18 taken (A1 to the design note; the owner's fork of open-mpc, the pin moved), and decision 31 (MPC OS 3.9.1 kept,
   not catered for). Then run 2 passed on the device: O20 decidable now, then taken (the pull request submitted). Then the memory probe's
-  first run: O10 decidable now, with the device's figures.
+  first run: O10 decidable now, with the device's figures, then taken (decision 32: a tripwire at 160 MB, principle 10,
+  interaction first).

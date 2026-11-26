@@ -35,9 +35,9 @@ what an older build trusts in a saved state. They are now for approval; their op
 implementation or the device can answer. The lessons themselves are in the
 [implementation strategy](../implementation-strategy.md#3-what-steps-0-to-2-taught).
 
-Steps 6 to 13 are not specified yet. They bring screens, whose costs depend on the skin budget (0.9 MB of headroom,
-the binding one now) and the device, and they follow milestone M2 (the engine complete), when a design note goes to
-Cadenza's author (study, §9) and the owner decides the fork's skin budget (strategy, §8).
+Steps 6 to 13 are not specified yet. They bring screens, designed for interaction first (strategy, principle 10;
+study, decision 32): the skin gauge is a tripwire at 160 MB since the MPC One memory probe, and what binds screens is MPC's
+UI thread, the screen updates and the parameters' cost. A design note goes to Cadenza's author alongside (study, §9).
 
 ## Status values
 
