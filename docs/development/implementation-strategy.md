@@ -202,7 +202,7 @@ already encodes that behaviour on its side of the interface.
 | Budget | Limit | Now | Headroom | Checked by |
 |---|---|---|---|---|
 | Binary | 720 KB (decision 21) | 662 KB (CI run 34: the toolchain from open-mpc, whose per-parameter `automatable` field adds 8 KB of data; 654 KB after step 5) | about 58 KB | CI, every build |
-| Skin images, decoded | 80 MB | 79.1 MB | **0.9 MB** | CI, every build |
+| Skin images, decoded | 80 MB | 79.1 MB | **0.9 MB** | CI, every build; on the device, the whole window holds at most 34 MB of MPC's memory, a shown page about 2.4 MB ([probe](device-memory-probe.md#4-results)); O10 |
 | Parameters | none set | 2 037 | n/a | each costs about 110 bytes of binary (0.22: 152 parameters, about 17 KB) and, when polled, audio-thread time |
 | Audio p99, worst block | 49 %, 80 % | 24.2 %, 65.5 % (the last device bench, [vst/bench.txt](../../vst/bench.txt), the author's Force) | | `tools/bench.sh` over the owner's root SSH, on the MPC One |
 | Screen updates | 80 a second | 71 a second at 160 BPM with FOLLOW on (the plugin test) | | offline |
@@ -320,13 +320,13 @@ for the record below it, and the ones concerning the integration as a whole go t
 | # | Decision | Options | Rests on | Informs | Needed before |
 |---|---|---|---|---|---|
 | O2 | Cut `release/0.28.1-cpg.1` from this branch and open its pull request to `main`: the fork's first release, steps 0 to 5 as the device run passed them. Its notes say to install the package of the same kind as the official installation (lesson 16). It also brings the README's fork notice to the repository's front page ([upstream-relations.md](upstream-relations.md), B2) | go, or not yet | O1 (passed) | | the next version, `0.28.1-cpg.2` |
+| O10 | The fork's skin budget, now that the device is measured ([device-memory-probe.md, §4](device-memory-probe.md#4-results)): on the MPC One, Cadenza and its whole window, every view shown, hold at most 34 MB of MPC's memory, a shown page about 2.4 MB, with 713 MB still available; the gauge (79.1 of 80 MB) sums every image and measures none of that. Phase B's screens (steps 6 to 10) need perhaps 5 to 15 MB of gauge | raise the gauge to 100 MB and run the probe again after each new view (recommended: room for steps 6 to 10; even if each new view kept the largest first-visit growth measured, 6.5 MB, six of them would take about 5 % of what remains); replace the gauge by a per-page limit (decoded images of one tab and mode, which is what MPC holds; needs the skin build to attribute images to pages); keep 80 MB | M2 (reached), the probe (run 2026-11-26) | specifications 06 and 07 | the first screen needing a new view (likely step 6 or 8) |
 
 ### 8.2 Depend on a further step or event
 
 | # | Decision | Waits for | Options then | Informs | Needed before |
 |---|---|---|---|---|---|
 | O3 | Send the author milestone M1 (offer A2 of [upstream-relations.md](upstream-relations.md#3-offers-to-the-author)): the dead-code patch (about 40 KB freed) and the spelling (about 4 KB) as a patch series, with a field report | the author's interest (the message offered them; no answer yet); O1 passed | send, hold | | nothing in the fork |
-| O10 | The fork's skin budget: may new views raise it, and by how much | milestone M2 (reached), the MPC memory probe over root SSH ([prepared](device-memory-probe.md), the owner to run it), and specifications 06 to 08 | raise by an amount, or keep 80 MB | | the first screen needing a new view (likely step 8) |
 | O12 | Do the fallbacks of the new chords sound acceptable in the official 0.28.1? ([spec 03, §2.2](specs/03-missing-sonorities.md#22-for-the-owner-after-a-further-step)) | step 5's device run | accept, or amend a fallback | | nothing in the fork |
 | O19 | A question to the author (offer A4 of [upstream-relations.md](upstream-relations.md#3-offers-to-the-author)): how the author would like to receive the work, and whether others may try the fork's builds meanwhile | milestone M3, when the fork has screens to show | ask, or not yet | | sharing any build with anyone: the licence permits it only with the author's agreement (upstream-relations.md, §2) |
 
@@ -368,7 +368,8 @@ In order:
 4. Steps 3 to 5 are implemented (specs 03 to 05, §8): milestone M2. The CPG's spec 18 (O15) is implemented and the
    submodule follows it.
 5. ~~The web simulation~~: not pursued for now (O8b, study decision 28); testing is on the device, over root SSH.
-6. **M2 is reached:** the MPC memory probe over root SSH, the skin budget (O10), the design note to the author (specs 01 to
+6. **M2 is reached:** the MPC memory probe over root SSH (run 2026-11-26: the device does not bind the skin), the skin
+   budget (O10, decidable now), the design note to the author (specs 01 to
    05's "other front ends" sections hold its material), then specifications 06 and 07.
 7. **Working with upstream** (decisions 29 to 31, [upstream-relations.md, §5](upstream-relations.md#5-order)): the
    README's notice (done on this branch); the toolchain from open-mpc (O18: the fork made, the branch pushed, the pin
@@ -380,7 +381,7 @@ In order:
 
 | Risk | Mitigation |
 |---|---|
-| The skin budget runs out: 0.9 MB of headroom, a full-panel view costing 1.6 MB or more | views reused; a decision on the fork's skin budget before any new view (§8.2, O10); the gauge in every CI build |
+| The skin budget runs out: 0.9 MB of headroom, a full-panel view costing 1.6 MB or more | views reused; the device measured (34 MB for Cadenza at most, 713 MB still available), so the gauge can rise with a margin (O10); the probe again after each new view |
 | The binary budget runs out again | 70 KB of headroom after decision 21; each step estimated locally, measured in CI; further raises are the owner's |
 | CPU costs invisible offline | the device bench over root SSH at each step with screens; offline, few polled parameters and the plugin test's screen-update count |
 | A save-format change breaks projects in older builds | principle 4 (old fields hold usable values only); the harness at every step touching the state |
@@ -435,4 +436,5 @@ polymeter, the Chord Matcher (study, §7).
   upstream as a feature branch ([upstream-relations.md](upstream-relations.md)): O17 (A1 on hold) and O18 (the toolchain
   from open-mpc) decidable now, O19 at M3, O20 after O18; lesson 16 completed with the two installation routes. Then O17
   and O18 taken (A1 to the design note; the owner's fork of open-mpc, the pin moved), and decision 31 (MPC OS 3.9.1 kept,
-  not catered for). Then run 2 passed on the device: O20 decidable now, then taken (the pull request submitted).
+  not catered for). Then run 2 passed on the device: O20 decidable now, then taken (the pull request submitted). Then the memory probe's
+  first run: O10 decidable now, with the device's figures.
