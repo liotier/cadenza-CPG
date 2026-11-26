@@ -19,6 +19,6 @@ dev_headers() {
 # dev_toolchain REPO: the mpc-vst-plugins checkout, as the author's scripts find it (MPC_VST, else next to the repo)
 dev_toolchain() {
   local mv="${MPC_VST:-$1/../mpc-vst-plugins}"
-  [ -f "$mv/tools/gen_vst.py" ] || { echo "no mpc-vst-plugins at $mv: set MPC_VST (branch chordseq/open-mpc, commit in .github/toolchain)" >&2; return 1; }
+  [ -f "$mv/tools/gen_vst.py" ] || { echo "no mpc-vst-plugins at $mv: set MPC_VST (the repo and commit in .github/toolchain)" >&2; return 1; }
   (cd "$mv" && pwd)
 }

@@ -244,3 +244,24 @@ copy of `vst/` (S00-A2) and the toolchain's location (`MPC_VST`, else next to th
 3. CI's summary gains the binary's bytes and headroom: the step ran in CI run 10
    ([45261448699](https://github.com/liotier/cadenza-CPG/actions/runs/45261448699), commit `17bd792`), green on its
    three jobs; the figures are on that run's summary page.
+
+## Addendum B: the toolchain from open-mpc
+
+Decision O18 of the [strategy](../implementation-strategy.md#8-decisions-for-the-owner), 2026-11-26 (study, decision 30).
+S00-D3 pinned the toolchain to the author's branch, `Shrekage2024/mpc-vst-plugins` `chordseq/open-mpc` at `8fbeffc`:
+open-mpc's `main` at `52c1fb0` plus six wrapper commits. The pin now names the owner's fork of open-mpc,
+[liotier/mpc-vst-plugins](https://github.com/liotier/mpc-vst-plugins), branch `cadenza/toolchain`: open-mpc's `main` at
+`34b964c` plus the same six commits, their authorship kept and their messages cleaned for open-mpc (each names the
+commit it was picked from); the change is the same patch (`git patch-id` equal). The branch only grows: a later move
+adds commits or merges open-mpc's `main`, never rewrites, so every commit the pin has named stays fetchable. The pull
+request to open-mpc (O20) goes from a topic branch of its own.
+
+S00-D3's reasons hold (one place, one edit); its first reason changes: the README now names this branch. Lesson 3's byte
+comparison with the official release, already lost to decision 21, does not return.
+
+**Verification.** Before the pin moved: the six commits apply to `34b964c` without conflict; Cadenza builds for armhf
+with the local cross-compiler (`tools/dev/armsize.sh`), code +152 bytes and data +8 148 bytes against `8fbeffc`, the data
+being open-mpc's new per-parameter `automatable` field (4 bytes for each of 2 037 parameters); the offline suite passes
+natively (`tools/dev/native_tests.sh`). After: CI; then a device run
+([device-run-test-build.md, §6](../device-run-test-build.md#6-run-2-the-toolchain-from-open-mpc)), which also checks on
+the MPC One what each of the six commits does.

@@ -938,7 +938,7 @@ MPC One and MPC OS 3.10.1 as untested, and this fork's owner runs that combinati
 
 Decisions of the fork's owner, 2026-11-22: 1 to 9 in answer to revision 1, 10 and 11 to revision 2, 12 to 15 to
 revision 3, 16 to revision 4, 17 to 19 to revision 5; 2026-11-23: 20, after the device test's runs, then 21 to 24; 2026-11-24:
-25 and 26, after step 4; 2026-11-25: 27 and 28, after the device run; 2026-11-26: 29 and 30.
+25 and 26, after step 4; 2026-11-25: 27 and 28, after the device run; 2026-11-26: 29 to 31.
 
 | # | Decision | Consequence in this revision |
 |---|---|---|
@@ -972,6 +972,7 @@ revision 3, 16 to revision 4, 17 to 19 to revision 5; 2026-11-23: 20, after the 
 | 28 | The web simulation is not pursued for now, its potential kept: with root SSH on the MPC One, testing on the device is fast, and the device is where this project's difficulties have been. | strategy, §4.7 and §8.3 (O8b) |
 | 29 | Relations with upstream pursue two goals: offering the work to the author, and keeping the fork able to go on whatever the answer, none having come to the owner's issue or message. Upstream's public record shows releases, not work (one export per release; the gap before 0.28.1 was as long as the one since). | [upstream-relations.md](upstream-relations.md); strategy, O17 to O19 |
 | 30 | The form: "for now we endeavour a gentle feature branch". The documents speak of offers and of keeping the builds sound, not of leaving. The toolchain comes from its origin, open-mpc's repository, forked into the owner's account with the author's six wrapper commits on one branch, "to align on the actual origin and benefit from its improvements", rather than from the author's branch. These documents use neutral pronouns. | [upstream-relations.md](upstream-relations.md), §4; strategy, O18 and O20 |
+| 31 | MPC OS 3.9.1 and earlier: "Our branch does not need to cater for MPC OS 3.9.1 and earlier. Let's not remove support for that yet (we remain upstream-friendly), but let's not go out of our way to support it either." The fork's device runs are on MPC OS 3.10.1; the 3.9.1 installer route stays built, as upstream builds it, and untested by the fork. | strategy, §4.4 and §8.3 |
 
 **To revisit.** Decision 12, the fifth of 11ths and 13ths: when a listener misses the fifth, when a voicing style wants it,
 when `THEORY_CHORD_MAX` is raised for another reason, or when the CPG's 11ths and 13ths change. The trade-off and the ways
@@ -1070,5 +1071,5 @@ All scripts were written in the session scratchpad and are not committed.
 - Revision 13 records decisions 25 and 26, the owner's answers to the two questions step 4 found in the CPG: its palettes'
   key dependence is fixed upstream; chords carry no category.
 - Revision 14 records decisions 27 and 28: the author's silence slows nothing; the web simulation is not pursued for now.
-- Revision 15 records decisions 29 and 30: working with upstream as a feature branch, planned in
-  [upstream-relations.md](upstream-relations.md).
+- Revision 15 records decisions 29 to 31: working with upstream as a feature branch, planned in
+  [upstream-relations.md](upstream-relations.md); MPC OS 3.9.1 kept but not catered for.

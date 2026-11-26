@@ -1,7 +1,7 @@
 # Device run of the test build (O1)
 
 Status: run 1 **passed**, 2026-11-25 (§5): row 7 failed at first because the two builds were installed from different
-packages (§5.1), and passed once they came from the same one. Decision O1 of the
+packages (§5.1), and passed once they came from the same one. Run 2, with the toolchain from open-mpc (§6): to come. Decision O1 of the
 [implementation strategy](implementation-strategy.md#81-decidable-now): run the draft *Cadenza 0.28.1-cpg.1 (test build)*
 on the MPC One and say whether it passes.
 
@@ -145,3 +145,25 @@ The likeliest cause is the version. The experiment that tells, with no new build
 
 Also worth knowing: whether a project saved with the official 0.28.1 opens in the test build (the other direction). If it
 does not either, MPC asks for the same description both ways; if it does, it refuses only one way.
+
+## 6. Run 2: the toolchain from open-mpc
+
+Decision O18 (strategy, §8): the fork now builds with open-mpc's toolchain carrying the author's six wrapper commits
+([spec 00, addendum B](specs/00-infrastructure.md#addendum-b-the-toolchain-from-open-mpc)). Cadenza's code is unchanged;
+the wrapper around it is open-mpc's current one. This run checks that nothing moved on the MPC One, and what each of the
+six commits does, which is also the device evidence for offering them to open-mpc (O20).
+
+Get and install the new draft as in §1 and §2 (the `portable` folder of the armv7 zip). On GLOBAL, the mark's commit is
+the branch's latest (CI's release notes name it).
+
+| # | Action | Expected | Checks | Result |
+|---|---|---|---|---|
+| 1 | Add Cadenza to a new track; open GLOBAL. | It loads; the mark shows the new commit. GLOBAL's MIDI channels read 1, 2, 3 and GATE 100 %. | `OPTION_ANSWER_INDEX` | |
+| 2 | Load House 124 and play, PLAY open, for a minute. Then open MPC's PRESET drawer while it plays. | It plays as before. The drawer opens and stays open; its slide-in restarts at most once a bar, never on every beat. | `ON_NO_UPDATE_PREFIX`, `LIT_UPDATE_ON_TEXT_POLL` | |
+| 3 | On CHORDS PHRASE, open a bar's editor; tap LOCK, then UNLOCK, three times in a row; then DONE. Again with CANCEL. | Every tap acts, not only the first: the label alternates LOCK and UNLOCK, DONE and CANCEL close the editor each time. | `ECHO_GUARD_POLLED_ONLY` | |
+| 4 | Rows 3, 4 and 6 of §3: INIT plays; House 124 plays; a project saves and reopens. | As in run 1. | the wrapper as a whole | |
+| 5 | Row 7 of §3, both ways, with the official 0.28.1 from the same kind of package. | A state saved by this build opens in the official one, and the other way. | the saved state's format | |
+| 6 | Anything else. | Nothing differs from run 1. | | |
+
+The other two commits have no visible effect on the device: one sets the engine table under `pthread_once` (two instances
+created at the same moment), the other only lets the wrapper link on Apple platforms.

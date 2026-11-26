@@ -140,6 +140,11 @@ into the Claude branch. A new Claude session is told to continue on the existing
   message holds `[test build]`, and on every push of a `release/*` branch.
 - A draft is named by the version: test builds of one version replace each other's draft until a device run passes;
   then the release branch freezes that version and `versions.json` moves to the next (§4.5).
+- The toolchain: [.github/toolchain](../../.github/toolchain) names the owner's fork of open-mpc, branch
+  `cadenza/toolchain` (O18; [spec 00, addendum B](specs/00-infrastructure.md#addendum-b-the-toolchain-from-open-mpc)).
+  The branch only grows; the pin moves deliberately, each move followed by CI and, when the wrapper changed, a device run.
+- MPC OS 3.9.1 and earlier (decision 31): both packages are still built, as upstream builds them, but the fork's device
+  runs are on 3.10.1 and nothing is added for the older route.
 
 ### 4.5 Versions and identity
 
@@ -315,8 +320,6 @@ for the record below it, and the ones concerning the integration as a whole go t
 | # | Decision | Options | Rests on | Informs | Needed before |
 |---|---|---|---|---|---|
 | O2 | Cut `release/0.28.1-cpg.1` from this branch and open its pull request to `main`: the fork's first release, steps 0 to 5 as the device run passed them. Its notes say to install the package of the same kind as the official installation (lesson 16). It also brings the README's fork notice to the repository's front page ([upstream-relations.md](upstream-relations.md), B2) | go, or not yet | O1 (passed) | | the next version, `0.28.1-cpg.2` |
-| O17 | Offer A1 ([upstream-relations.md, §3](upstream-relations.md#3-offers-to-the-author)): the release's two packages name the plugin file differently, so a state saved under one is refused under the other (lesson 16). They are the README's two installation routes, which a user following it never mixes; the owner's official installation used neither. The issue [drafted](upstream/cadenza-issue-plugin-path.md) is on hold | a paragraph in the design note, for the install notes (recommended); a comment on the owner's issue #4; nothing | O1 (passed, lesson 16) | | nothing in the fork |
-| O18 | The toolchain from its origin ([upstream-relations.md, §4](upstream-relations.md#4-keeping-the-forks-builds-sound), B1): the owner forks [open-mpc/mpc-vst-plugins](https://github.com/open-mpc/mpc-vst-plugins) into their account; a branch there holds open-mpc's `main` at `34b964c` plus the author's six wrapper commits (measured: they apply without conflict, Cadenza builds, +8 KB of data); `.github/toolchain` points at it; CI, then a device run (rows 1 to 7) | yes (recommended), no | | O20 | the next release (O2's successor), so that it is built on the toolchain it was tested with |
 
 ### 8.2 Depend on a further step or event
 
@@ -326,12 +329,15 @@ for the record below it, and the ones concerning the integration as a whole go t
 | O10 | The fork's skin budget: may new views raise it, and by how much | milestone M2 (reached), the MPC memory probe over root SSH ([prepared](device-memory-probe.md), the owner to run it), and specifications 06 to 08 | raise by an amount, or keep 80 MB | | the first screen needing a new view (likely step 8) |
 | O12 | Do the fallbacks of the new chords sound acceptable in the official 0.28.1? ([spec 03, §2.2](specs/03-missing-sonorities.md#22-for-the-owner-after-a-further-step)) | step 5's device run | accept, or amend a fallback | | nothing in the fork |
 | O19 | A question to the author (offer A4 of [upstream-relations.md](upstream-relations.md#3-offers-to-the-author)): how the author would like to receive the work, and whether others may try the fork's builds meanwhile | milestone M3, when the fork has screens to show | ask, or not yet | | sharing any build with anyone: the licence permits it only with the author's agreement (upstream-relations.md, §2) |
-| O20 | Offer the author's six wrapper options to open-mpc as a pull request, credited to the author (upstream-relations.md, B3); once merged, the fork's toolchain is open-mpc's `main` as it is | O18 and its device run | offer, or keep them on the fork's branch | | nothing in the fork |
+| O20 | Offer the author's six wrapper options to open-mpc as a pull request from a topic branch of the owner's fork, credited to the author, with the documentation open-mpc's contribution rules ask for each new `defines` option (upstream-relations.md, B3); once merged, the fork's toolchain is open-mpc's `main` as it is | run 2 on the device ([§6](device-run-test-build.md#6-run-2-the-toolchain-from-open-mpc)), its evidence for the pull request | offer, or keep them on the fork's branch | | nothing in the fork |
 
 ### 8.3 Taken since the list was made
 
 | # | Decision | Taken | Recorded in |
 |---|---|---|---|
+| O18 | The toolchain from its origin: the owner forked open-mpc's repository ([liotier/mpc-vst-plugins](https://github.com/liotier/mpc-vst-plugins)); its branch `cadenza/toolchain` holds open-mpc's `main` at `34b964c` plus the author's six wrapper commits, the same patch; `.github/toolchain` names it. Measured before the move: Cadenza builds (+8 KB of data, open-mpc's per-parameter `automatable` field) and the offline suite passes; CI, then the device run of [device-run-test-build.md, §6](device-run-test-build.md#6-run-2-the-toolchain-from-open-mpc) | 2026-11-26 | [spec 00, addendum B](specs/00-infrastructure.md#addendum-b-the-toolchain-from-open-mpc); study, decision 30 |
+| O17 | A1, the two packages naming the plugin file differently: "ok" to a paragraph in the design note, for the author's install notes, rather than an issue | 2026-11-26 | [upstream-relations.md, §3](upstream-relations.md#3-offers-to-the-author) |
+| Decision 31 | MPC OS 3.9.1 and earlier kept but not catered for: nothing removed ("we remain upstream-friendly"), nothing added for them; the fork's device runs are on 3.10.1 | 2026-11-26 | study, decision 31 |
 | Decisions 29 and 30 | Relations with upstream: "pursue dual goals: appealing to upstream, and also being prepared to pursue our own way if we do not get any answer" (29); then, the same day, the form: "for now we endeavour a gentle feature branch", and the toolchain taken from open-mpc, its origin, rather than from the author's branch, "to align on the actual origin and benefit from its improvements" (30). The plan: [upstream-relations.md](upstream-relations.md); O17 to O20 come from it. The same messages corrected the memory probe (the MPC One and the Force both have 2 GB) and set neutral pronouns in these documents | 2026-11-26 | study, decisions 29 and 30 |
 | O3 (in part) | The author has not answered the owner's message (2026-11-23): "let's not let that slow us". Nothing waits for an answer; O3, the patches offered, stays open until one comes | 2026-11-25 | study, decision 27 |
 | O8b | The web simulation: not pursued for now, its potential kept (nothing removed, §4.7 stays as written). With root SSH the owner tests on the MPC One quickly, and the device is where this project's difficulties have been (lesson 16): "it would be nice to have [...] but with SSH access I can test fairly rapidly on the device now, so web version wouldn't buy us more productivity" | 2026-11-25 | study, decision 28 |
@@ -364,9 +370,11 @@ In order:
 5. ~~The web simulation~~: not pursued for now (O8b, study decision 28); testing is on the device, over root SSH.
 6. **M2 is reached:** the MPC memory probe over root SSH, the skin budget (O10), the design note to the author (specs 01 to
    05's "other front ends" sections hold its material), then specifications 06 and 07.
-7. **Working with upstream** (decisions 29 and 30, [upstream-relations.md, §5](upstream-relations.md#5-order)): the
-   README's notice (done on this branch); the toolchain from open-mpc (O18), then the six wrapper options offered to it
-   (O20); the design note (A3) with specifications 06 and 07, holding A1 (O17); the question at M3 (O19).
+7. **Working with upstream** (decisions 29 to 31, [upstream-relations.md, §5](upstream-relations.md#5-order)): the
+   README's notice (done on this branch); the toolchain from open-mpc (O18: the fork made, the branch pushed, the pin
+   moved; CI, then run 2 on the device, [§6](device-run-test-build.md#6-run-2-the-toolchain-from-open-mpc)); then the six
+   wrapper options offered to open-mpc (O20); the design note (A3) with specifications 06 and 07, holding A1 (O17); the
+   question at M3 (O19).
 
 ## 10. Risks
 
@@ -425,4 +433,6 @@ polymeter, the Chord Matcher (study, §7).
   owner's two decisions of 2026-11-25: the author's silence slows nothing (decision 27), the web simulation not pursued
   (O8b, decision 28); the memory probe for O10 prepared (`device-memory-probe.md`). Then decisions 29 and 30, working with
   upstream as a feature branch ([upstream-relations.md](upstream-relations.md)): O17 (A1 on hold) and O18 (the toolchain
-  from open-mpc) decidable now, O19 at M3, O20 after O18; lesson 16 completed with the two installation routes.
+  from open-mpc) decidable now, O19 at M3, O20 after O18; lesson 16 completed with the two installation routes. Then O17
+  and O18 taken (A1 to the design note; the owner's fork of open-mpc, the pin moved), and decision 31 (MPC OS 3.9.1 kept,
+  not catered for).

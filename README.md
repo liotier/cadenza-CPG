@@ -207,9 +207,11 @@ More in the [manual's troubleshooting chapter](MANUAL.md#21-troubleshooting).
 ## Building and tests
 
 Builds run in Docker with the [mpc-vst-plugins](https://github.com/open-mpc/mpc-vst-plugins) toolchain, checked out next
-to this repo (or set `MPC_VST` to its path). Use the branch `chordseq/open-mpc` of
-[Shrekage2024/mpc-vst-plugins](https://github.com/Shrekage2024/mpc-vst-plugins/tree/chordseq/open-mpc): it adds
-five wrapper options that `vst/vst.json` turns on. Without them the plugin still builds, but it redraws MPC's screen
+to this repo (or set `MPC_VST` to its path). Use the branch `cadenza/toolchain` of
+[liotier/mpc-vst-plugins](https://github.com/liotier/mpc-vst-plugins/tree/cadenza/toolchain), at the commit
+[.github/toolchain](.github/toolchain) names: open-mpc's `main` with the six wrapper commits of the branch Cadenza 0.28.1
+was built with, [Shrekage2024/mpc-vst-plugins](https://github.com/Shrekage2024/mpc-vst-plugins/tree/chordseq/open-mpc)
+`chordseq/open-mpc`. They add five wrapper options that `vst/vst.json` turns on. Without them the plugin still builds, but it redraws MPC's screen
 more often while playing and reads some options back wrong (the MIDI channels, GATE).
 
 ```
