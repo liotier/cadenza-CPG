@@ -1,0 +1,1 @@
+# fork, diagnostic: while this file exists, vst/make_skin.py adds three copies of BASS (docs/development/device-tab-probe.md, section 5). Never in a release.

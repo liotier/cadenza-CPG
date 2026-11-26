@@ -125,3 +125,39 @@ How they will be read, and what each outcome would lead to:
 - **Main-thread time in proportion to the shown view only**, and a view switch inside a tab as costly as a tab switch:
   the images and components of the view itself are the cost. Then the view's own density is the lever.
 - **A second visit much cheaper than the first**: MPC caches, and only first visits matter.
+
+## 5. Run 2: where BASS's cost goes (diagnostic build)
+
+A diagnostic test build adds three copies of BASS after GLOBAL, each without one suspect (`vst/make_skin.py`, `diag_tabs`,
+active only while a file `vst/diag_tabs` exists; the mark on GLOBAL ends in `DIAG`). Never a release: the next build
+removes them.
+
+| Tab | Lines | What it lacks |
+|---|---|---|
+| BASS | 577 | nothing: the reference |
+| BNODOT | 351 | the 226 meters (the dots of the strips, the centre and the editor) |
+| BMAIN | 116 | every view but the BASS view: only the lines with no `when=` and those of `bview:Bass` and `yview:Bass` |
+| BNOQ | 577 | its Q-Links (`qlinks "BNOQ" = -`) |
+
+Install it as in [device-run-test-build.md, §6](device-run-test-build.md#6-run-2-the-toolchain-from-open-mpc) (the armv7
+zip's `portable` folder); GLOBAL's mark ends in `DIAG`. The extra tabs share BASS's parameters: what one shows, the others
+show, and a tap on one acts on BASS. The skin gauge reads more than usual (each copy repeats BASS's mode images), which is
+why this build's budget is raised for it alone.
+
+Before starting: transport **stopped**; on BASS, its BASS view (as `bass-bass` in run 1), so that BMAIN shows what BASS
+shows; then PLAY. **Press the second Enter as soon as the page has drawn** (2 to 3 s): the shorter the step, the less the
+idle background blurs it. Each switch starts from PLAY, so that the page left is always the same light one.
+
+| Labels, three times over | Between the two Enters |
+|---|---|
+| `idle` | (once, first) touch nothing for about ten seconds |
+| `to-bass-1`, `to-play` | tap BASS; then tap PLAY |
+| `to-bnodot-1`, `to-play` | tap BNODOT; then PLAY |
+| `to-bmain-1`, `to-play` | tap BMAIN; then PLAY |
+| `to-bnoq-1`, `to-play` | tap BNOQ; then PLAY |
+| the same with `-2`, then `-3` | |
+| `close-on-bass`, `open-on-bass` | (twice) on BASS, close Cadenza's window; open it again through Program Edit, as you did when it felt quicker. Which tab does it open on ? |
+| `idle-2` | (once, last) touch nothing for about ten seconds |
+
+How it will be read: BNODOT's saving over BASS is the meters' share, BMAIN's the hidden views', BNOQ's the Q-Links'; the
+three need not add up. `open-on-bass` against `to-bass` says whether opening the window costs less than switching tabs.

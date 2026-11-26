@@ -2179,9 +2179,38 @@ def layout():
     return "\n".join(o)
 
 
+# fork, diagnostic builds only: with a file vst/diag_tabs present, three copies of BASS follow GLOBAL, each without one suspect of the
+# tab-switch cost (docs/development/device-tab-probe.md, §5): BNODOT without its meters (the dots), BMAIN without its other views (only
+# the lines with no when= and those of bview:Bass and yview:Bass), BNOQ without its Q-Links. The mark on GLOBAL ends in DIAG. Never in a
+# release: the file is added for one test build and removed after.
+DIAG = os.path.exists(os.path.join(HERE, "diag_tabs"))
+
+
+def diag_tabs(conf):
+    bass = conf.split("\n[tab BASS]\n", 1)[1].split("\n[tab ", 1)[0].rstrip("\n").split("\n")
+    def tab(name, keep, qlinks):
+        lines = ["[tab %s]" % name]
+        for ln in bass:
+            if ln.startswith("qlinks "):
+                ln = 'qlinks "%s" = %s' % (name, qlinks if qlinks else ln.split(" = ", 1)[1])
+            elif not keep(ln):
+                continue
+            lines.append(ln)
+        return "\n".join(lines)
+    main = lambda ln: " when=" not in ln or re.search(r" when=(bview|yview):Bass(\s|$)", ln) is not None
+    return "\n\n".join([conf.rstrip("\n"),
+                        tab("BNODOT", lambda ln: not ln.startswith("meter "), None),
+                        tab("BMAIN", main, None),
+                        tab("BNOQ", lambda ln: True, "-")]) + "\n"
+
+
 if __name__ == "__main__":
     check_names()
+    if DIAG:
+        os.environ["BUILD_MARK"] = (os.environ.get("BUILD_MARK", "") + " DIAG").strip()
     conf = layout()   # first: it collects the tile sizes make_images draws
+    if DIAG:
+        conf = diag_tabs(conf)
     check_stepper_arrows(conf)
     make_images()
     n = make_params()
