@@ -1,7 +1,11 @@
 <!--
-Draft of an issue for Shrekage2024/cadenza-force (track A, offer A1: docs/development/upstream-relations.md, §3), to be
-posted by the owner as a new issue (O17). Before posting: run the check in "To confirm" with the two official packages,
-and keep the paragraph that matches its result. Nothing below names the owner's drive or files.
+Draft of an issue for Shrekage2024/cadenza-force (offer A1: docs/development/upstream-relations.md, §3). ON HOLD since
+2026-11-26: the two packages are the README's two installation routes (3.9.1: the armv7 zip's installer into
+/sdcard/Synths; 3.10.1: the SDK zip's folder into VST2 Plugins, in Akai's format, which names the binary by architecture).
+A user following the README never mixes them; the owner's installation used the armv7 zip's portable/ folder under
+3.10.1, outside both. What remains is a note for users who change routes, which concerns every plugin the open-mpc
+toolchain packages; O17 proposes a paragraph of the design note instead of an issue. Kept as written, for the record.
+Nothing below names the owner's drive or files.
 -->
 
 **Title:** Saved states do not open across the release's two packages: they name the plugin file differently

@@ -106,8 +106,16 @@ built from `56e95a0`, under ASan and UBSan. So MPC refuses on the path, before C
 installations of the same package, row 7 should pass. §1 now picks the package by the official installation's file name;
 the state saved with the SDK package's test build stays refused, as it would between the two official packages.
 
-What this means beyond the fork, for the author (strategy, §9): a state saved under one of the official packages does not
-open under the other, nor after the plugin folder moves to another drive (the path holds the drive's name).
+Why the release has two packages: they are the README's two installation routes. For MPC OS 3.9.1 and earlier, the armv7
+zip's installer copies `portable/Cadenza - VST - Cadenza` to `/sdcard/Synths` over SSH and adds it to MPC's plugin list;
+for 3.10.1 and later, the SDK zip's folder is copied into `VST2 Plugins`. The SDK zip follows Akai's plugin-folder format,
+one folder for every MPC, whose `plugin.json` names a binary for each architecture (`<name>-arm32.so`, `<name>-arm64.so`)
+so that both can sit side by side; the toolchain's `tools/sdk_zip.py` makes it from the per-build zip and renames the
+binary. A user who follows the README never mixes them. The owner's official installation used the armv7 zip's
+`portable/` folder in `VST2 Plugins` under 3.10.1, which works but is neither route; §1 keeps to it, so as to compare like
+with like. What this means beyond the fork: a user who changes routes, for instance on moving from 3.9.1 to 3.10.1, should
+expect saved states to be refused, since the folder changes as well as the file's name (not tested; upstream-relations.md,
+A1).
 
 The investigation, as it went:
 
