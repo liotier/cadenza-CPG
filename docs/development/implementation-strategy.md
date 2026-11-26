@@ -376,7 +376,9 @@ In order:
 6. **M2 is reached:** the MPC memory probe over root SSH (run 2026-11-26: the device does not bind the skin), the skin
    budget (O10, taken: a tripwire at 160 MB, interaction first), the design note to the author (specs 01 to
    05's "other front ends" sections hold its material), then specifications 06 and 07.
-7. **Working with upstream** (decisions 29 to 31, [upstream-relations.md, §5](upstream-relations.md#5-order)): the
+7. **Tab-switch latency** (principle 10): the owner sees each tab draw after a switch; the tab-switch probe over root SSH
+   ([device-tab-probe.md](device-tab-probe.md)) measures where MPC spends that time before any change to the skin.
+8. **Working with upstream** (decisions 29 to 31, [upstream-relations.md, §5](upstream-relations.md#5-order)): the
    README's notice (done on this branch); the toolchain from open-mpc (O18: the fork made, the branch pushed, the pin
    moved; CI green; run 2 on the device passed, [§6](device-run-test-build.md#6-run-2-the-toolchain-from-open-mpc)); then
    the six wrapper options offered to open-mpc (O20, submitted: [open-mpc/mpc-vst-plugins#1223](https://github.com/open-mpc/mpc-vst-plugins/pull/1223)); the design note (A3) with specifications 06 and 07, holding A1 (O17); the
