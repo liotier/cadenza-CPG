@@ -1,6 +1,6 @@
 # Cadenza and the Chord Progression Generator: an integration study
 
-Status: study, revision 16 (the [revision history](#revision-history) closes the document). No code has been written; the
+Status: study, revision 17 (the [revision history](#revision-history) closes the document). No code has been written; the
 measurements come from throwaway scripts described in [Appendix A](#appendix-a-measurement-method).
 
 | Project | Version studied | Licence |
@@ -939,7 +939,7 @@ MPC One and MPC OS 3.10.1 as untested, and this fork's owner runs that combinati
 
 Decisions of the fork's owner, 2026-11-22: 1 to 9 in answer to revision 1, 10 and 11 to revision 2, 12 to 15 to
 revision 3, 16 to revision 4, 17 to 19 to revision 5; 2026-11-23: 20, after the device test's runs, then 21 to 24; 2026-11-24:
-25 and 26, after step 4; 2026-11-25: 27 and 28, after the device run; 2026-11-26: 29 to 32.
+25 and 26, after step 4; 2026-11-25: 27 and 28, after the device run; 2026-11-26: 29 to 33.
 
 | # | Decision | Consequence in this revision |
 |---|---|---|
@@ -975,6 +975,7 @@ revision 3, 16 to revision 4, 17 to 19 to revision 5; 2026-11-23: 20, after the 
 | 30 | The form: "for now we endeavour a gentle feature branch". The documents speak of offers and of keeping the builds sound, not of leaving. The toolchain comes from its origin, open-mpc's repository, forked into the owner's account with the author's six wrapper commits on one branch, "to align on the actual origin and benefit from its improvements", rather than from the author's branch. These documents use neutral pronouns. | [upstream-relations.md](upstream-relations.md), §4; strategy, O18 and O20 |
 | 31 | MPC OS 3.9.1 and earlier: "Our branch does not need to cater for MPC OS 3.9.1 and earlier. Let's not remove support for that yet (we remain upstream-friendly), but let's not go out of our way to support it either." The fork's device runs are on MPC OS 3.10.1; the 3.9.1 installer route stays built, as upstream builds it, and untested by the fork. | strategy, §4.4 and §8.3 |
 | 32 | Interaction first: "we have been overly prudent with bitmaps. Yes, wantonly plastering high definition images everywhere is a bad idea, but whatever icons and graphical elements we add are none of that. So, let's prioritize optimizing for user interaction." The MPC One memory probe found Cadenza and its whole window holding at most 34 MB of MPC's memory, a shown page about 2.4 MB, 713 MB still available; the skin gauge (a sum of every image) becomes a tripwire at 160 MB, and screens are designed for interaction. | §5, item 3; strategy, principle 10 and O10; [device-memory-probe.md](device-memory-probe.md) |
+| 33 | One development branch, opportunistically, while the project settles; `main` left as it is ("Parties interested in development will know to look for a branch"); feature branches when the project stabilises. No release branch for now: the version in `versions.json` moves after each device run that passes, in a commit that records the bump, so that each passed build's draft is kept. | strategy, §4.2, §4.5 and O2 |
 
 **To revisit.** Decision 12, the fifth of 11ths and 13ths: when a listener misses the fifth, when a voicing style wants it,
 when `THEORY_CHORD_MAX` is raised for another reason, or when the CPG's 11ths and 13ths change. The trade-off and the ways
@@ -1076,3 +1077,4 @@ All scripts were written in the session scratchpad and are not committed.
 - Revision 15 records decisions 29 to 31: working with upstream as a feature branch, planned in
   [upstream-relations.md](upstream-relations.md); MPC OS 3.9.1 kept but not catered for.
 - Revision 16 records decision 32: interaction first, the skin budget a tripwire, after the MPC One memory probe.
+- Revision 17 records decision 33: one branch, no release branch for now, the version bumped after each passed device run.

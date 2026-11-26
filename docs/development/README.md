@@ -11,7 +11,7 @@ study's [decision log](cpg-integration-study.md#10-decision-log).
 
 | Document | Status | Subject |
 |---|---|---|
-| [cpg-integration-study.md](cpg-integration-study.md) | study, revision 16 | What the MPC Chord Progression Generator's palettes (and the Ouarpeggiator's palette walk) can bring to Cadenza, measured against Cadenza's engine, budgets and licence; the palette model; avenues ranked and staged; decision log; open questions |
+| [cpg-integration-study.md](cpg-integration-study.md) | study, revision 17 | What the MPC Chord Progression Generator's palettes (and the Ouarpeggiator's palette walk) can bring to Cadenza, measured against Cadenza's engine, budgets and licence; the palette model; avenues ranked and staged; decision log; open questions |
 | [implementation-strategy.md](implementation-strategy.md) | strategy, revision 2 | The order of work: where it stands, principles, what steps 0 to 2 taught, workflow and infrastructure, budgets, the main steps, milestones, next steps, risks |
 | [specs/](specs/README.md) | 00 to 05 and 0a implemented (milestone M2), device runs pending | One specification per step: infrastructure, spelling, the chromatic path, the missing sonorities, the palette table, the part's palette |
 | [measurements/](measurements/coverage.txt) | generated, checked by CI | The CPG coverage measurement (`tools/cpg/coverage.sh`) and the palette table's report ([palettes.txt](measurements/palettes.txt), `tools/cpg/generate.sh`) |

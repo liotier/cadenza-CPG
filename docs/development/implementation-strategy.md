@@ -119,9 +119,9 @@ first presentation) reads as independent when it is not.
 
 | Branch | Role |
 |---|---|
-| `main` | takes pull requests from tested release branches only |
+| `main` | upstream's `56e95a0`, left as it is for now (decision 33): those interested in the development look for the branch |
 | one Claude branch, at present `claude/gifted-carson-j102ab` | the development line: specifications, code, tests, CI |
-| a release branch per tested build, `release/0.28.1-cpg.N` | cut from the Claude branch once a build has passed its device run, with the owner's go; merged into `main` by pull request |
+| no release branches for now (decision 33) | the project is opportunistic while it settles: one development line, `main` left as it is; feature and release branches come when the project stabilises |
 
 Upstream releases are fetched from [Shrekage2024/cadenza-force](https://github.com/Shrekage2024/cadenza-force) and merged
 into the Claude branch. A new Claude session is told to continue on the existing Claude branch.
@@ -144,7 +144,7 @@ into the Claude branch. A new Claude session is told to continue on the existing
   signed in can download those from a public repository). It runs on a push to the Claude branch whose head commit
   message holds `[test build]`, and on every push of a `release/*` branch.
 - A draft is named by the version: test builds of one version replace each other's draft until a device run passes;
-  then the release branch freezes that version and `versions.json` moves to the next (§4.5).
+  then `versions.json` moves to the next version, so that the passed build's draft stays as it was (§4.5, decision 33).
 - The toolchain: [.github/toolchain](../../.github/toolchain) names the owner's fork of open-mpc, branch
   `cadenza/toolchain` (O18; [spec 00, addendum B](specs/00-infrastructure.md#addendum-b-the-toolchain-from-open-mpc)).
   The branch only grows; the pin moves deliberately, each move followed by CI and, when the wrapper changed, a device run.
@@ -154,8 +154,9 @@ into the Claude branch. A new Claude session is told to continue on the existing
 ### 4.5 Versions and identity
 
 Fork builds keep Cadenza's plugin identity (decision 11) and replace the official plugin on the device; `versions.json`
-holds `0.28.1-cpg.N`, which names the zips, the drafts and the release branches. `N` moves to `N + 1` when
-`release/0.28.1-cpg.N` is cut. The official release's zip is kept for restoring. Since 2026-11-24 every fork build carries
+holds `0.28.1-cpg.N`, which names the zips, the drafts and the build's mark. `N` moves to `N + 1` after each device run
+that passes (decision 33), in a commit of its own whose subject begins `Version 0.28.1-cpg.N+1:`; the passed build's draft
+is thereby kept. The official release's zip is kept for restoring. Since 2026-11-24 every fork build carries
 a mark on GLOBAL's title row, in magenta between the part's name and TEMPO: `CPG`, the version and the commit it was built
 from, `+` when the tree differed from that commit (`vst/build.sh` passes it to `vst/make_skin.py`, which bakes it into the
 page's artwork: no parameter, no code). The owner asked for it after the first device run, to see without doubt which build
@@ -323,9 +324,7 @@ for the record below it, and the ones concerning the integration as a whole go t
 
 ### 8.1 Decidable now
 
-| # | Decision | Options | Rests on | Informs | Needed before |
-|---|---|---|---|---|---|
-| O2 | Cut `release/0.28.1-cpg.1` from this branch and open its pull request to `main`: the fork's first release, steps 0 to 5 as the device run passed them. Its notes say to install the package of the same kind as the official installation (lesson 16). It also brings the README's fork notice to the repository's front page ([upstream-relations.md](upstream-relations.md), B2) | go, or not yet | O1 (passed) | | the next version, `0.28.1-cpg.2` |
+None at present (2026-11-26). The next ones come with specifications 06 and 07, and with the tab-switch probe's second run.
 
 ### 8.2 Depend on a further step or event
 
@@ -339,6 +338,7 @@ for the record below it, and the ones concerning the integration as a whole go t
 
 | # | Decision | Taken | Recorded in |
 |---|---|---|---|
+| O2 | No release branch for now: "Parties interested in development will know to look for a branch... No need to change Main yet. Let's continue with that single branch: later when the project stabilize, actual feature branches will be useful - but for now we are quite opportunistic. Do bump version in metadata and record version bumps in commits." The version moves after each passed device run, in a commit that says so | 2026-11-26 | study, decision 33; §4.2, §4.5 |
 | O10 | The skin budget, after the memory probe: "we have been overly prudent with bitmaps. [...] whatever icons and graphical elements we add are none of that. So, let's prioritize optimizing for user interaction." The gauge goes to 160 MB as a tripwire against accidents ("wantonly plastering high definition images everywhere is a bad idea"); principle 10 | 2026-11-26 | study, decision 32; [device-memory-probe.md, §4](device-memory-probe.md#4-results); `vst/budget.json` |
 | O20 | The six wrapper options offered to open-mpc: "Sure, @ Schrey" (the author mentioned), the text rearranged for open-mpc's maintainers at the owner's request, then submitted by the owner as [open-mpc/mpc-vst-plugins#1223](https://github.com/open-mpc/mpc-vst-plugins/pull/1223), from the fork's `wrapper-options` branch | 2026-11-26 | [upstream/open-mpc-wrapper-options.md](upstream/open-mpc-wrapper-options.md); [upstream-relations.md](upstream-relations.md), B3 |
 | O18 | The toolchain from its origin: the owner forked open-mpc's repository ([liotier/mpc-vst-plugins](https://github.com/liotier/mpc-vst-plugins)); its branch `cadenza/toolchain` holds open-mpc's `main` at `34b964c` plus the author's six wrapper commits, the same patch; `.github/toolchain` names it. Measured before the move: Cadenza builds (+8 KB of data, open-mpc's per-parameter `automatable` field) and the offline suite passes; CI run 34 green (662 KB); run 2 on the device passed, 2026-11-26 ([device-run-test-build.md, §6](device-run-test-build.md#6-run-2-the-toolchain-from-open-mpc)) | 2026-11-26 | [spec 00, addendum B](specs/00-infrastructure.md#addendum-b-the-toolchain-from-open-mpc); study, decision 30 |
@@ -369,7 +369,8 @@ In order:
    reopens, and opens again after the official 0.28.1 is restored; CHORDS, PHRASE, PLAY and GLOBAL read correctly in F,
    E♭, A♭ and D♭ major and C♯ and D♯ minor (PLAY's title: `Eb MAJOR`, `D# MINOR`). Steps 2 to 5 show nothing. The
    procedure, with the expected chord names: [device-run-test-build.md](device-run-test-build.md).
-2. **If it passes:** the release branch and its pull request (O2); `versions.json` to `0.28.1-cpg.2`; M1's offer (O3).
+2. **It passed:** no release branch (O2, decision 33); `versions.json` moves to `0.28.1-cpg.2` once the diagnostic build is
+   gone and `cpg.1`'s draft holds a normal build again; M1's offer (O3) waits for the author.
 3. **Step 0a**: done (spec 00, addendum A); its tools serve every later step.
 4. Steps 3 to 5 are implemented (specs 03 to 05, §8): milestone M2. The CPG's spec 18 (O15) is implemented and the
    submodule follows it.
@@ -446,4 +447,5 @@ polymeter, the Chord Matcher (study, §7).
   and O18 taken (A1 to the design note; the owner's fork of open-mpc, the pin moved), and decision 31 (MPC OS 3.9.1 kept,
   not catered for). Then run 2 passed on the device: O20 decidable now, then taken (the pull request submitted). Then the memory probe's
   first run: O10 decidable now, with the device's figures, then taken (decision 32: a tripwire at 160 MB, principle 10,
-  interaction first).
+  interaction first). Then O2 taken: no release branch for now, `main` left as it is, the version bumped after each passed
+  device run (decision 33); lesson 17 (BusyBox); the tab-switch probe and its diagnostic build.
