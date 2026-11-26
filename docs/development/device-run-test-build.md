@@ -1,6 +1,6 @@
 # Device run of the test build (O1)
 
-Status: run 1 **passed**, 2026-11-25 (§5): row 7 failed at first because the two builds were installed from different
+Status: run 1 **passed**, 2026-11-25 (§5; each row's outcome also in §3): row 7 failed at first because the two builds were installed from different
 packages (§5.1), and passed once they came from the same one. Run 2, with the toolchain from open-mpc (§6): to come. Decision O1 of the
 [implementation strategy](implementation-strategy.md#81-decidable-now): run the draft *Cadenza 0.28.1-cpg.1 (test build)*
 on the MPC One and say whether it passes.
@@ -43,14 +43,14 @@ either build, and MPC cannot hold both at once. It replaces the official folder,
 
 | # | Action | Expected | Result |
 |---|---|---|---|
-| 1 | Add Cadenza to a track, from where the official one was in MPC's plugin list. | It loads; its screen draws. | |
-| 2 | Open GLOBAL. Then on its piano tap the black key D# (the key selector labels every black key with its sharp, in both builds: spec 01, S01-D7), SCALE Major, and look at PLAY's title. | On GLOBAL's title row, in magenta between the part's name and TEMPO: `CPG 0.28.1-cpg.1` and the commit of step 1.2; the official build has nothing there. PLAY's title: `Eb MAJOR` (the official build shows `D# MAJOR`). | |
-| 3 | Load the INIT program and play. | Chords, Bass and Melody sound on their tracks, as with the official build. | |
-| 4 | Load House 124 and play. | It plays as with the official build. | |
-| 5 | In each key of the table below (on GLOBAL's piano: F, D#, G#, C# for the majors, C# and D# with SCALE Minor), look at CHORDS, PHRASE, PLAY and GLOBAL while a progression plays (a preset, or chords picked on PHRASE). | Every chord name is one of that key's row, never its other spelling: no A♯ in F major, no D♭ in C♯ minor, no D♯ in E♭ major. PLAY's title as in the first column. | |
-| 6 | In E♭ major with House 124 loaded, change something you can recognise (a chord picked on PHRASE), save the MPC project, then open it again. | It reopens as saved: key, chords, sound. | |
-| 7 | Swap back to the official build (§4), restart, open the project of row 6. | It opens and plays the same chords; PLAY's title now reads `D# MAJOR`, the official spelling of the same key. | |
-| 8 | Anything else you notice. | Nothing differs from 0.28.1 but the spelling. | |
+| 1 | Add Cadenza to a track, from where the official one was in MPC's plugin list. | It loads; its screen draws. || Run 1: passed (§5). |
+| 2 | Open GLOBAL. Then on its piano tap the black key D# (the key selector labels every black key with its sharp, in both builds: spec 01, S01-D7), SCALE Major, and look at PLAY's title. | On GLOBAL's title row, in magenta between the part's name and TEMPO: `CPG 0.28.1-cpg.1` and the commit of step 1.2; the official build has nothing there. PLAY's title: `Eb MAJOR` (the official build shows `D# MAJOR`). || Run 1: passed (§5). |
+| 3 | Load the INIT program and play. | Chords, Bass and Melody sound on their tracks, as with the official build. || Run 1: passed (§5). |
+| 4 | Load House 124 and play. | It plays as with the official build. || Run 1: passed (§5). |
+| 5 | In each key of the table below (on GLOBAL's piano: F, D#, G#, C# for the majors, C# and D# with SCALE Minor), look at CHORDS, PHRASE, PLAY and GLOBAL while a progression plays (a preset, or chords picked on PHRASE). | Every chord name is one of that key's row, never its other spelling: no A♯ in F major, no D♭ in C♯ minor, no D♯ in E♭ major. PLAY's title as in the first column. || Run 1: passed for the four majors; C♯ and D♯ minor not checked (§5). |
+| 6 | In E♭ major with House 124 loaded, change something you can recognise (a chord picked on PHRASE), save the MPC project, then open it again. | It reopens as saved: key, chords, sound. || Run 1: passed (§5). |
+| 7 | Swap back to the official build (§4), restart, open the project of row 6. | It opens and plays the same chords; PLAY's title now reads `D# MAJOR`, the official spelling of the same key. || Run 1: passed both ways, same package (§5, §5.1). |
+| 8 | Anything else you notice. | Nothing differs from 0.28.1 but the spelling. || Run 1: nothing reported (§5). |
 
 The chords of each key as the test build names them, the scale's seven, then the three borrowed chords PHRASE offers
 (computed from the build's own code):
@@ -153,7 +153,9 @@ Decision O18 (strategy, §8): the fork now builds with open-mpc's toolchain carr
 the wrapper around it is open-mpc's current one. This run checks that nothing moved on the MPC One, and what each of the
 six commits does, which is also the device evidence for offering them to open-mpc (O20).
 
-Get and install the new draft as in §1 and §2 (the `portable` folder of the armv7 zip). On GLOBAL, the mark's commit is
+Get and install the new draft as in §1 and §2: **the armv7 zip, its `portable/Cadenza - VST - Cadenza` folder**, not the
+SDK zip. Your official installation is that folder (`cadenza.so`); the SDK zip names the file `cadenza-arm32.so`, and
+MPC would then refuse, in either build, the states saved by the other (row 5 below, lesson 16). On GLOBAL, the mark's commit is
 the branch's latest (CI's release notes name it).
 
 | # | Action | Expected | Checks | Result |
