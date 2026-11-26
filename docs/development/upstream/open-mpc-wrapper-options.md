@@ -1,8 +1,8 @@
 <!--
 Draft of a pull request to open-mpc/mpc-vst-plugins (O20; docs/development/upstream-relations.md, B3), from
 liotier/mpc-vst-plugins branch wrapper-options to open-mpc main. Written in open-mpc's template
-(.github/pull_request_template.md). To be opened by the owner, or by Claude on the owner's go. The author's GitHub login
-is written without "@" below: with it, GitHub notifies the author; the owner decides whether to.
+(.github/pull_request_template.md). To be opened by the owner, or by Claude on the owner's go. The author is mentioned with
+"@", so GitHub notifies them: the owner's choice, 2026-11-26.
 -->
 
 **Title:** Wrapper: five optional VST2 behaviours and a `pthread_once`, from Cadenza's toolchain branch
@@ -12,7 +12,7 @@ is written without "@" below: with it, GitHub notifies the author; the owner dec
 Cadenza (a chord-driven MIDI sequencer plugin, [Shrekage2024/cadenza-force](https://github.com/Shrekage2024/cadenza-force))
 ships built on its author's branch of this repository, `Shrekage2024/mpc-vst-plugins` `chordseq/open-mpc`: `main` at
 `52c1fb0` (2026-11-13) plus six wrapper commits. This PR brings those six commits here, their authorship kept (Shrey
-Sharma, GitHub `Shrekage2024`), so that Cadenza, and anything built on it, can use this repository's `main` as it is.
+Sharma, @Shrekage2024), so that Cadenza, and anything built on it, can use this repository's `main` as it is.
 I maintain a feature branch of Cadenza and moved its builds to `main` plus these commits; they apply to `34b964c` without
 conflict.
 
@@ -29,6 +29,19 @@ All five options are off by default: a port that sets none builds and behaves as
 
 And one change that is not optional: `g_api` is set under `pthread_once`, so two instances created on two threads at once
 share one engine table instead of racing on it.
+
+**Beyond Cadenza.** Two of these may concern every port, which is why they might be better as defaults than as options;
+I kept them opt-in so that this PR changes nothing for existing ports, and leave that to you:
+- `ECHO_GUARD_POLLED_ONLY`: as I read `set_param_now`, an unpolled list tile keeps `last_on` at 0 ("unknown"), so the
+  guard is active for it, and a tile that never lights is read back as 0 and sends 1 at every touch: its second touch is
+  dropped. `poc/steptest` and `poc/songpos` have `"poll": false` params; the host test does not tap twice. Not tested on
+  another port.
+- `NO_ENGINE_CHANGED`: `tools/test_port.sh` has a macOS branch, so if the weak reference does not link there, every
+  port's host test on a Mac meets it. I have no Mac to check; a default under `__APPLE__` would then serve better.
+
+The two display options help any port whose screen changes while it plays (a playhead, a step or bar readout: the
+PRESET drawer, as `DISPLAY_REV_NO_UPDATE` did for the popup). `OPTION_ANSWER_INDEX` is niche: NOTES (2026-11-13) found no
+local `vst.json` with a number-only label that differs from its index.
 
 Commits: the six picked from `chordseq/open-mpc` (each message names its original), with their messages rewritten
 without the branch's local tags; one that drops the same tags from the code comments (comments only); one for the docs.
