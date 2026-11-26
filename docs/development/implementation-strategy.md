@@ -320,7 +320,6 @@ for the record below it, and the ones concerning the integration as a whole go t
 | # | Decision | Options | Rests on | Informs | Needed before |
 |---|---|---|---|---|---|
 | O2 | Cut `release/0.28.1-cpg.1` from this branch and open its pull request to `main`: the fork's first release, steps 0 to 5 as the device run passed them. Its notes say to install the package of the same kind as the official installation (lesson 16). It also brings the README's fork notice to the repository's front page ([upstream-relations.md](upstream-relations.md), B2) | go, or not yet | O1 (passed) | | the next version, `0.28.1-cpg.2` |
-| O20 | Offer the author's six wrapper options to open-mpc as a pull request from a topic branch of the owner's fork, credited to the author, with the documentation open-mpc's contribution rules ask for each new `defines` option (upstream-relations.md, B3); once merged, the fork's toolchain is open-mpc's `main` as it is | offer (the owner's intent, 2026-11-26: "we use that to offer a PR to open-mpc"), or keep them on the fork's branch | run 2 (passed 2026-11-26, the device evidence) | | nothing in the fork |
 
 ### 8.2 Depend on a further step or event
 
@@ -335,6 +334,7 @@ for the record below it, and the ones concerning the integration as a whole go t
 
 | # | Decision | Taken | Recorded in |
 |---|---|---|---|
+| O20 | The six wrapper options offered to open-mpc: "Sure, @ Schrey" (the author mentioned), the text rearranged for open-mpc's maintainers at the owner's request, then submitted by the owner as [open-mpc/mpc-vst-plugins#1223](https://github.com/open-mpc/mpc-vst-plugins/pull/1223), from the fork's `wrapper-options` branch | 2026-11-26 | [upstream/open-mpc-wrapper-options.md](upstream/open-mpc-wrapper-options.md); [upstream-relations.md](upstream-relations.md), B3 |
 | O18 | The toolchain from its origin: the owner forked open-mpc's repository ([liotier/mpc-vst-plugins](https://github.com/liotier/mpc-vst-plugins)); its branch `cadenza/toolchain` holds open-mpc's `main` at `34b964c` plus the author's six wrapper commits, the same patch; `.github/toolchain` names it. Measured before the move: Cadenza builds (+8 KB of data, open-mpc's per-parameter `automatable` field) and the offline suite passes; CI run 34 green (662 KB); run 2 on the device passed, 2026-11-26 ([device-run-test-build.md, §6](device-run-test-build.md#6-run-2-the-toolchain-from-open-mpc)) | 2026-11-26 | [spec 00, addendum B](specs/00-infrastructure.md#addendum-b-the-toolchain-from-open-mpc); study, decision 30 |
 | O17 | A1, the two packages naming the plugin file differently: "ok" to a paragraph in the design note, for the author's install notes, rather than an issue | 2026-11-26 | [upstream-relations.md, §3](upstream-relations.md#3-offers-to-the-author) |
 | Decision 31 | MPC OS 3.9.1 and earlier kept but not catered for: nothing removed ("we remain upstream-friendly"), nothing added for them; the fork's device runs are on 3.10.1 | 2026-11-26 | study, decision 31 |
@@ -373,7 +373,7 @@ In order:
 7. **Working with upstream** (decisions 29 to 31, [upstream-relations.md, §5](upstream-relations.md#5-order)): the
    README's notice (done on this branch); the toolchain from open-mpc (O18: the fork made, the branch pushed, the pin
    moved; CI green; run 2 on the device passed, [§6](device-run-test-build.md#6-run-2-the-toolchain-from-open-mpc)); then
-   the six wrapper options offered to open-mpc (O20, being prepared); the design note (A3) with specifications 06 and 07, holding A1 (O17); the
+   the six wrapper options offered to open-mpc (O20, submitted: [open-mpc/mpc-vst-plugins#1223](https://github.com/open-mpc/mpc-vst-plugins/pull/1223)); the design note (A3) with specifications 06 and 07, holding A1 (O17); the
    question at M3 (O19).
 
 ## 10. Risks
@@ -435,4 +435,4 @@ polymeter, the Chord Matcher (study, §7).
   upstream as a feature branch ([upstream-relations.md](upstream-relations.md)): O17 (A1 on hold) and O18 (the toolchain
   from open-mpc) decidable now, O19 at M3, O20 after O18; lesson 16 completed with the two installation routes. Then O17
   and O18 taken (A1 to the design note; the owner's fork of open-mpc, the pin moved), and decision 31 (MPC OS 3.9.1 kept,
-  not catered for). Then run 2 passed on the device: O20 decidable now.
+  not catered for). Then run 2 passed on the device: O20 decidable now, then taken (the pull request submitted).

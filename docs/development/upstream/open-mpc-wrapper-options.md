@@ -4,6 +4,7 @@ liotier/mpc-vst-plugins branch wrapper-options to open-mpc main. Written in open
 (.github/pull_request_template.md), for its maintainers: what the repository's ports gain first, Cadenza as the origin
 and the device evidence. To be opened by the owner, or by Claude on the owner's go. The author is mentioned with "@", so
 GitHub notifies them: the owner's choice, 2026-11-26.
+Submitted by the owner, 2026-11-26: [open-mpc/mpc-vst-plugins#1223](https://github.com/open-mpc/mpc-vst-plugins/pull/1223). This file is the text as drafted; the pull request is the reference.
 -->
 
 **Title:** Wrapper: engine table under `pthread_once`; opt-in fixes for live screens, unpolled list tiles, index answers and Apple builds

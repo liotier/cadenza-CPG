@@ -57,7 +57,7 @@ concerns every plugin the open-mpc toolchain packages, not Cadenza alone, and is
 |---|---|---|---|
 | B1 | The toolchain from its origin: a fork of [open-mpc/mpc-vst-plugins](https://github.com/open-mpc/mpc-vst-plugins) in the owner's account, with one branch: open-mpc's `main` at a pinned commit plus the author's six wrapper commits (below), their authorship kept; `.github/toolchain` points at it. | One step from the origin instead of two; open-mpc's improvements reach the fork by moving the pin, deliberately, as the CPG submodule moves. | O18, taken: [liotier/mpc-vst-plugins](https://github.com/liotier/mpc-vst-plugins/tree/cadenza/toolchain) `cadenza/toolchain`, pinned; CI green; run 2 on the device passed, 2026-11-26 |
 | B2 | A notice at the top of the README: a personal feature branch of Cadenza, developed with a view to offering its work upstream; no builds offered; Cadenza itself at upstream. | The repository's front page (`main`) is upstream's README unchanged, presenting itself as "Cadenza 0.28.1" with install instructions; the notice avoids passing for Cadenza (no trademark rights; study, §9). | on this branch; reaches `main` with the release branch (O2) |
-| B3 | The author's six wrapper options offered to open-mpc as a pull request, credited to the author. | They are off by default and generic; once in open-mpc, the fork's toolchain is open-mpc's `main` as it is, and so could the author's be. | O20: B1's device run passed; the branch [`wrapper-options`](https://github.com/liotier/mpc-vst-plugins/tree/wrapper-options) pushed (the six commits, a comments-only commit, the docs) and the [text drafted](upstream/open-mpc-wrapper-options.md), for the owner's review |
+| B3 | The author's six wrapper options offered to open-mpc as a pull request, credited to the author. | They are off by default and generic; once in open-mpc, the fork's toolchain is open-mpc's `main` as it is, and so could the author's be. | O20, taken: submitted by the owner, 2026-11-26, as [open-mpc/mpc-vst-plugins#1223](https://github.com/open-mpc/mpc-vst-plugins/pull/1223), from [`wrapper-options`](https://github.com/liotier/mpc-vst-plugins/tree/wrapper-options) |
 | B4 | Upstream watched for releases: GitHub's Watch, Custom, Releases on upstream's repository. | A new release is merged promptly (strategy, §10). | the owner's account |
 
 **B1, measured 2026-11-26.** Cadenza's toolchain branch, `Shrekage2024/mpc-vst-plugins` `chordseq/open-mpc` at
@@ -83,5 +83,5 @@ the [device run](device-run-test-build.md#3-checks)).
 2. O18, B1: done 2026-11-26 (the owner's fork, the branch, the pin); CI, then run 2 on the device
    ([device-run-test-build.md, §6](device-run-test-build.md#6-run-2-the-toolchain-from-open-mpc)).
 3. A3, the design note, alongside specifications 06 and 07.
-4. O20, B3, once B1's device run passes.
+4. O20, B3: submitted, 2026-11-26 ([open-mpc/mpc-vst-plugins#1223](https://github.com/open-mpc/mpc-vst-plugins/pull/1223)); review answered on `wrapper-options`.
 5. A4 at milestone M3.
