@@ -10,7 +10,7 @@ out=/tmp/mpc-tabprobe.csv
 fs=${FS:-/var/tmp/filmstrips}
 pid=${PID:-$(pidof MPC 2>/dev/null | cut -d' ' -f1)}
 [ -n "$pid" ] && [ -r "/proc/$pid/stat" ] || { echo "mpc_tabprobe: no MPC process (pidof MPC); PID=<pid> to name one" >&2; exit 1; }
-hz=$(getconf CLK_TCK 2>/dev/null || echo 100)
+hz=$(getconf CLK_TCK 2>/dev/null || echo 100)   # BusyBox has no getconf: Linux reports these in 1/100 s (USER_HZ)
 line() { echo "$1" | tee -a "$out"; }
 # ticks FILE: utime + stime of a /proc stat file (the name in parentheses may hold spaces: fields counted after the last ')')
 ticks() { awk '{ sub(/.*\) /, ""); print $12 + $13 }' "$1" 2>/dev/null; }
@@ -37,7 +37,7 @@ while printf 'label> ' >&2 && IFS= read -r label; do
   t1=$(uptime_ms); m1=$(ticks /proc/$pid/task/$pid/stat); p1=$(ticks /proc/$pid/stat); set -- $(cache); c1=$1; k1=$2
   threads > /tmp/mpc-tabprobe.t1
   top=$(awk -v hz="$hz" 'NR == FNR { a[$1] = $2; next } ($1 in a) { d = $2 - a[$1]; if (d > 0) printf "%d %s\n", d * 1000 / hz, $3 }' \
-        /tmp/mpc-tabprobe.t0 /tmp/mpc-tabprobe.t1 | sort -rn | head -3 | awk '{ printf "%s%s:%d", (NR > 1 ? " " : ""), $2, $1 }')
+        /tmp/mpc-tabprobe.t0 /tmp/mpc-tabprobe.t1 | sort -rn | awk 'NR <= 3' | awk '{ printf "%s%s:%d", (NR > 1 ? " " : ""), $2, $1 }')
   line "$label,$((t1 - t0)),$(( (m1 - m0) * 1000 / hz )),$(( (p1 - p0) * 1000 / hz )),$top,$((c1 - c0)),$((k1 - k0))"
 done
 rm -f /tmp/mpc-tabprobe.t0 /tmp/mpc-tabprobe.t1
