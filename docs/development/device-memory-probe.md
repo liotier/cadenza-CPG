@@ -1,6 +1,6 @@
 # MPC memory probe (O10)
 
-Status: procedure, 2026-11-25; results to come (§4). It measures, on the owner's MPC One, what Cadenza's screens cost in
+Status: procedure, 2026-11-25, corrected 2026-11-26 (both devices have 2 GB; what `base` holds); results to come (§4). It measures, on the owner's MPC One, what Cadenza's screens cost in
 memory, so that the fork's skin budget (strategy, §8.2, O10) rests on this device's figures before any new screen
 (steps 6 to 10) is specified.
 
@@ -11,9 +11,13 @@ memory, so that the fork's skin budget (strategy, §8.2, O10) rests on this devi
 - Upstream's own probe (VST-9, on the author's Force) found that **MPC decodes the visible page only**: showing a tab
   cost about 1 to 3 MB of MPC's resident memory, a page with several views about 0.8 MB more while shown. Upstream raised
   the gauge eight times on that basis, each time with its owner's approval.
-- What is not known: whether the MPC One, with 2 GB of memory to the Force's 4, behaves the same, and how much memory
-  it has to spare with a project open. Those two figures decide how far the gauge may grow, or whether a per-page limit
-  should replace it.
+- The MPC One and the Force both have 2 GB of memory ([MPC One](https://www.musicradar.com/reviews/akai-mpc-one-review),
+  [Force](https://www.musicradar.com/reviews/akai-professional-force)), and both run MPC OS on the same family of
+  processor, so upstream's finding probably carries over. What is not known: whether it does on this device, and how much
+  memory the MPC One has to spare with the owner's projects open. Those two figures decide how far the gauge may grow, or
+  whether a per-page limit should replace it. (The second-generation MPCs have more memory, the MPC One's successor 4 GB
+  ([Engadget](https://engadget.com/2196725/akai-refreshes-the-mpc-one-and-key-37-workstations)); the 2 GB devices
+  set the limit.)
 
 ## 2. The probe
 
@@ -34,12 +38,14 @@ ssh -t root@<mpc-ip> sh /tmp/mpc_memprobe.sh
 
 ## 3. Steps
 
-Open a project with a few tracks first. Then type each label below, after doing what it says and waiting a few seconds;
-an empty Enter samples again under the same label.
+Prepare a project as you would use Cadenza in it: the instrument tracks Cadenza will play (chords, bass, melody, with
+their instruments loaded) and the empty track where Cadenza will load. A project of your own is better than a small one:
+`base` should measure what the instruments already hold, so that what follows measures Cadenza alone. Then type each label
+below, after doing what it says and waiting a few seconds; an empty Enter samples again under the same label.
 
 | Label | On the MPC |
 |---|---|
-| `base` | the project open, no Cadenza in it (or its track's plugin removed) |
+| `base` | that project open, with its instruments, Cadenza not yet added to the empty track |
 | `loaded` | Cadenza added to a track, its window not open |
 | `play` | Cadenza's window open on PLAY |
 | `chords`, `bass`, `melody`, `global` | each tab in turn |

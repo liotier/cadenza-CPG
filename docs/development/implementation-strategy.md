@@ -181,7 +181,7 @@ sends its MIDI only to an ALSA port it opens with `dlopen` (`engine.c`, `alsa_op
 module's `host_midi` import, so the web build routes MIDI by a means the export does not show. A rewrite would design its
 own and could match the published module only by testing against it, which means running code no licence grants us.
 Route chosen by the owner, 2026-11-23 (§8.3, O8): ask the author for `web/`; the message was sent the same day (O9). A
-rewrite or a page of our own only if he declines (§8.2, O8b).
+rewrite or a page of our own only if the author declines (§8.2, O8b).
 
 **Is the compiler a risk?** Measured, 2026-11-23: the published module was built with Emscripten in standalone mode (its
 exports name it; its compiler records are stripped). With an unrelated C-to-wasm toolchain, Zig 0.17.1's clang and WASI
@@ -314,21 +314,25 @@ for the record below it, and the ones concerning the integration as a whole go t
 
 | # | Decision | Options | Rests on | Informs | Needed before |
 |---|---|---|---|---|---|
-| O2 | Cut `release/0.28.1-cpg.1` from this branch and open its pull request to `main`: the fork's first release, steps 0 to 5 as the device run passed them. Its notes say to install the package of the same kind as the official installation (lesson 16) | go, or not yet | O1 (passed) | | the next version, `0.28.1-cpg.2` |
+| O2 | Cut `release/0.28.1-cpg.1` from this branch and open its pull request to `main`: the fork's first release, steps 0 to 5 as the device run passed them. Its notes say to install the package of the same kind as the official installation (lesson 16). It also brings the README's fork notice to the repository's front page ([upstream-relations.md](upstream-relations.md), B2) | go, or not yet | O1 (passed) | | the next version, `0.28.1-cpg.2` |
+| O17 | Post the bug report A1 to upstream's issue tracker ([draft](upstream/cadenza-issue-plugin-path.md); [upstream-relations.md, §3](upstream-relations.md#3-track-a-the-appeal)): the release's two packages name the plugin file differently, so states do not travel between them. Best confirmed first with the two official packages: save a project with the official build installed from the armv7 package, open it with the official build installed from the SDK package (about ten minutes) | confirm, then post (recommended); post with the fork's evidence alone; hold | O1 (passed, lesson 16) | O3: an answer would open the channel | nothing in the fork |
+| O18 | Copy the toolchain branch into the owner's account: a GitHub fork of `Shrekage2024/mpc-vst-plugins` (MIT), then `.github/toolchain` points at it, same commit ([upstream-relations.md, §4](upstream-relations.md#4-track-b-being-ready-to-go-on-alone), B1). The fork's builds then take nothing from the author's account | yes (recommended), no | | | nothing; it protects every later build |
 
 ### 8.2 Depend on a further step or event
 
 | # | Decision | Waits for | Options then | Informs | Needed before |
 |---|---|---|---|---|---|
-| O3 | Send the author milestone M1: the dead-code patch (about 40 KB freed) and the spelling (about 4 KB) as a patch series, with a field report | his interest (the message offered them; no answer yet); O1 passed | send, hold | | nothing in the fork |
+| O3 | Send the author milestone M1 (offer A2 of [upstream-relations.md](upstream-relations.md#3-track-a-the-appeal)): the dead-code patch (about 40 KB freed) and the spelling (about 4 KB) as a patch series, with a field report | the author's interest (the message offered them; no answer yet); O1 passed | send, hold | | nothing in the fork |
 | O10 | The fork's skin budget: may new views raise it, and by how much | milestone M2 (reached), the MPC memory probe over root SSH ([prepared](device-memory-probe.md), the owner to run it), and specifications 06 to 08 | raise by an amount, or keep 80 MB | | the first screen needing a new view (likely step 8) |
 | O12 | Do the fallbacks of the new chords sound acceptable in the official 0.28.1? ([spec 03, §2.2](specs/03-missing-sonorities.md#22-for-the-owner-after-a-further-step)) | step 5's device run | accept, or amend a fallback | | nothing in the fork |
+| O19 | Ask the author explicitly (offer A4 of [upstream-relations.md](upstream-relations.md#3-track-a-the-appeal)): would the author take the work upstream, or permit the fork to be shared under a name of its own, or neither | milestone M3, when the fork has screens to show | ask, or not | decision 11 (a name of its own only if sharing is permitted) | sharing any build with anyone: the licence permits it only with the author's permission (upstream-relations.md, §2) |
 
 ### 8.3 Taken since the list was made
 
 | # | Decision | Taken | Recorded in |
 |---|---|---|---|
-| O3 (in part) | The author has not answered the owner's message (2026-11-23): "let's not let that slow us". Nothing waits for him; O3, the patches offered to him, stays open until he answers | 2026-11-25 | study, decision 27 |
+| Decision 29 | Relations with upstream on two tracks: "pursue dual goals: appealing to upstream, and also being prepared to pursue our own way if we do not get any answer". The plan, with what the licence allows on each track: [upstream-relations.md](upstream-relations.md); O17 to O19 come from it. The same message corrected the memory probe: the MPC One and the Force both have 2 GB | 2026-11-26 | study, decision 29 |
+| O3 (in part) | The author has not answered the owner's message (2026-11-23): "let's not let that slow us". Nothing waits for an answer; O3, the patches offered, stays open until one comes | 2026-11-25 | study, decision 27 |
 | O8b | The web simulation: not pursued for now, its potential kept (nothing removed, §4.7 stays as written). With root SSH the owner tests on the MPC One quickly, and the device is where this project's difficulties have been (lesson 16): "it would be nice to have [...] but with SSH access I can test fairly rapidly on the device now, so web version wouldn't buy us more productivity" | 2026-11-25 | study, decision 28 |
 | O1 | The device run of the draft (the checks of §9, item 1): **passed**. It loads, plays, spells in F, A♭, D♭ and E♭ major, saves and reloads, and states and projects travel both ways between it and the official 0.28.1, once both builds come from the same package; the first attempt mixed the release's two packages, which name the plugin file differently, and MPC ties a state to that path (lesson 16) | 2026-11-25 | [device-run-test-build.md, §5](device-run-test-build.md#5-results) |
 | O4 | Step 0a, the local tools: S00-A1 (the native runner) and S00-A4 (the ARM size estimate), "as you see fit" | 2026-11-23 | [spec 00, addendum A](specs/00-infrastructure.md#addendum-a-local-tools) |
@@ -358,8 +362,10 @@ In order:
    submodule follows it.
 5. ~~The web simulation~~: not pursued for now (O8b, study decision 28); testing is on the device, over root SSH.
 6. **M2 is reached:** the MPC memory probe over root SSH, the skin budget (O10), the design note to the author (specs 01 to
-   05's "other front ends" sections hold its material, and lesson 16: the release's two packages name the plugin file
-   differently, so states saved under one do not open under the other), then specifications 06 and 07.
+   05's "other front ends" sections hold its material), then specifications 06 and 07.
+7. **The two tracks with upstream** (decision 29, [upstream-relations.md, §5](upstream-relations.md#5-order)): the README's
+   fork notice (done on this branch, B2); the bug report of lesson 16 (O17); the toolchain copy (O18); the design note
+   (A3) with specifications 06 and 07; the explicit question at M3 (O19).
 
 ## 10. Risks
 
@@ -373,7 +379,9 @@ In order:
 | Changes reach front ends the fork does not build | each specification lists them (lesson 6); the design note to the author |
 | Faults visible only on the device | a device run per step with screens or timing; CI zips that install as they are |
 | A CPG change breaks generation | the pinned submodule, bumped deliberately; the strict generator fails loudly |
-| The licence | builds for testing only, the fork being personal; a conversation with the author before screens (study, §9) |
+| The licence | builds for testing only, the fork being personal; sharing only with the author's permission (O19); the README's fork notice ([upstream-relations.md](upstream-relations.md), §2) |
+| The author's toolchain branch disappears, and CI stops building | a copy in the owner's account, the pin moved to it (O18) |
+| Upstream silent for good | nothing in the fork waits for it (decision 27); the constraints that serve upstream alone are marked, to drop if track A closes ([upstream-relations.md](upstream-relations.md), B3) |
 | Scope creep | each specification lists what it excludes; parked topics stay parked |
 
 ## 11. Not scheduled
@@ -402,8 +410,8 @@ polymeter, the Chord Matcher (study, §7).
   (§8.3: step 0a approved, the message to the author sent). Then: O5 to O7 name the questions of their specifications,
   whose decisions are split the same way (§2.1 decidable now, §2.2 after a further step, §2.3 following from
   decisions taken); the two deferred ones join §8.2 as O12 and O13; O1 postponed by the owner. Then the owner's answers:
-  step 3 approved (O5), step 5's questions answered (O7; study, decisions 22 and 23), step 4's S04-D3 studied at his request
-  and his question on S04-D9 answered (O6); O14 asks whether step 12 survives decision 23. Then: decision identifiers
+  step 3 approved (O5), step 5's questions answered (O7; study, decisions 22 and 23), step 4's S04-D3 studied at the owner's request
+  and the owner's question on S04-D9 answered (O6); O14 asks whether step 12 survives decision 23. Then: decision identifiers
   made global (§4.1), `S04-D3` for specification 04's decision 3, in every document and code comment. Then: S04-D3
   answered (Classic, its colours kept); O14 answered (step 12 dropped, study decision 24); S04-D9 shown to need no new
   mechanism, and S05-D4 found to be the same choice, both now O6; O13 merged into it. Then O6 answered: decision 4's
@@ -414,4 +422,5 @@ polymeter, the Chord Matcher (study, §7).
   (§8.3): the CPG fix specified for its repository (`upstream/`), chords without a category. Then the CPG's spec 18
   implemented there and the submodule moved (O15). Then the device run passed (O1, lesson 16); O2 decidable now. Then the
   owner's two decisions of 2026-11-25: the author's silence slows nothing (decision 27), the web simulation not pursued
-  (O8b, decision 28); the memory probe for O10 prepared (`device-memory-probe.md`).
+  (O8b, decision 28); the memory probe for O10 prepared (`device-memory-probe.md`). Then decision 29, two tracks with
+  upstream ([upstream-relations.md](upstream-relations.md)): O17 and O18 decidable now, O19 at M3, two risks added.

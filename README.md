@@ -1,3 +1,9 @@
+> **This is a personal development fork of Cadenza**, not an official release: it offers no builds, and is not a
+> substitute for Cadenza. Cadenza is Shrey Sharma's, at
+> [Shrekage2024/cadenza-force](https://github.com/Shrekage2024/cadenza-force). The fork integrates the palettes of the
+> [MPC Chord Progression Generator](https://github.com/liotier/AkaiMPC/tree/main/AkaiMPCChordProgressionGenerator); its
+> work is planned and recorded in [docs/development](docs/development/README.md). Below, Cadenza's own README.
+
 # Cadenza 0.28.1
 
 **A chord-driven generative MIDI sequencer for the Akai Force.** Cadenza is a native VST2 plugin that plays chords,
