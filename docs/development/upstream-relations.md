@@ -68,7 +68,7 @@ is in open-mpc's `main`, which has 537 commits more since `52c1fb0` (GitHub's co
 from another branch). The six apply to open-mpc's `main` at `34b964c` (26 November) without conflict, and Cadenza builds
 on the result (the local ARM cross-compiler, `tools/dev/armsize.sh`): code +152 bytes, data +8 148 bytes, which is
 open-mpc's new per-parameter `automatable` field, 4 bytes for each of Cadenza's 2 037 parameters. Within the binary budget
-(about 66 KB of headroom; CI's compiler decides).
+(about 66 KB of headroom; CI's compiler decides). CI then measured 662 KB, 8 KB above step 5's 654 KB (run 34).
 
 What open-mpc changed in the files Cadenza uses, since `52c1fb0`: the state chunk's size made configurable (`STATE_MAX`,
 default 8 192 bytes, the size it had); a per-parameter `automatable` flag (default true, so every parameter answers as

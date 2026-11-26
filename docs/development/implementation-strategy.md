@@ -201,7 +201,7 @@ already encodes that behaviour on its side of the interface.
 
 | Budget | Limit | Now | Headroom | Checked by |
 |---|---|---|---|---|
-| Binary | 720 KB (decision 21) | 654 KB (CI run 20, step 5) | about 66 KB | CI, every build |
+| Binary | 720 KB (decision 21) | 662 KB (CI run 34: the toolchain from open-mpc, whose per-parameter `automatable` field adds 8 KB of data; 654 KB after step 5) | about 58 KB | CI, every build |
 | Skin images, decoded | 80 MB | 79.1 MB | **0.9 MB** | CI, every build |
 | Parameters | none set | 2 037 | n/a | each costs about 110 bytes of binary (0.22: 152 parameters, about 17 KB) and, when polled, audio-thread time |
 | Audio p99, worst block | 49 %, 80 % | 24.2 %, 65.5 % (the last device bench, [vst/bench.txt](../../vst/bench.txt), the author's Force) | | `tools/bench.sh` over the owner's root SSH, on the MPC One |
