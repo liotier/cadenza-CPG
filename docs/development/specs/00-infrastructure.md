@@ -266,6 +266,6 @@ natively (`tools/dev/native_tests.sh`, 5 240 checks). After: CI run 34
 ([45788259722](https://github.com/liotier/cadenza-CPG/actions/runs/45788259722), commit `180f02c`) green on its three
 jobs, the plugin 662 KB (654 before; budget 720), the skin 79.1 MB unchanged, the toolchain's own host test passing its
 new checks (`effCanBeAutomated` follows "automatable" for all 2 037 parameters; an 8 193-byte chunk refused); the draft
-rebuilt from `180f02c` (run [45788259709](https://github.com/liotier/cadenza-CPG/actions/runs/45788259709)). Then a device run
+rebuilt from `180f02c` (run [45788259709](https://github.com/liotier/cadenza-CPG/actions/runs/45788259709)). Then a device run, **passed** 2026-11-26:
 ([device-run-test-build.md, §6](../device-run-test-build.md#6-run-2-the-toolchain-from-open-mpc)), which also checks on
 the MPC One what each of the six commits does.
