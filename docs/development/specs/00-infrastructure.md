@@ -254,7 +254,8 @@ open-mpc's `main` at `52c1fb0` plus six wrapper commits. The pin now names the o
 `34b964c` plus the same six commits, their authorship kept and their messages cleaned for open-mpc (each names the
 commit it was picked from); the change is the same patch (`git patch-id` equal). The branch only grows: a later move
 adds commits or merges open-mpc's `main`, never rewrites, so every commit the pin has named stays fetchable. The pull
-request to open-mpc (O20) goes from a topic branch of its own.
+request to open-mpc (O20), [#1223](https://github.com/open-mpc/mpc-vst-plugins/pull/1223), was opened from this branch;
+its review's patches were added to it (2026-11-27, `42161aa`), by fast-forward, so the pinned commit stays on it.
 
 S00-D3's reasons hold (one place, one edit); its first reason changes: the README now names this branch. Lesson 3's byte
 comparison with the official release, already lost to decision 21, does not return.
