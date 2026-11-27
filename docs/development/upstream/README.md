@@ -10,6 +10,7 @@ here.
 
 | [cadenza-issue-plugin-path.md](cadenza-issue-plugin-path.md) | Cadenza ([Shrekage2024/cadenza-force](https://github.com/Shrekage2024/cadenza-force)) | a new issue, posted by the owner | drafted, 2026-11-26, then put on hold: the release's two packages name the plugin file differently, so saved states do not travel between them (lesson 16), but they are the README's two installation routes, which a user following it never mixes (O17) |
 | [open-mpc-wrapper-options.md](open-mpc-wrapper-options.md) | the mpc-vst-plugins toolchain ([open-mpc/mpc-vst-plugins](https://github.com/open-mpc/mpc-vst-plugins)) | a pull request from [liotier/mpc-vst-plugins `wrapper-options`](https://github.com/liotier/mpc-vst-plugins/tree/wrapper-options) | submitted by the owner, 2026-11-26, as [open-mpc/mpc-vst-plugins#1223](https://github.com/open-mpc/mpc-vst-plugins/pull/1223): the six wrapper commits of Cadenza's toolchain branch, credited to their author, with the documentation open-mpc asks for (O20) |
+| [open-mpc-wrapper-options-review-1.md](open-mpc-wrapper-options-review-1.md) | the same pull request | a comment on it, posted by the owner | drafted, 2026-11-27: the answer to the first review (changes requested), with the patches on `wrapper-options` (`42161aa`): the missing commits, a test port, the prefix as a string literal, the 44.1 kHz comment, the engine table's retry kept |
 
 The design note to Cadenza's author (milestone M2, offer A3 of [upstream-relations.md](../upstream-relations.md)) will
 join this list.
